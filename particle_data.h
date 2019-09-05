@@ -28,6 +28,7 @@
 
 #include <sc.h>
 #include "initializer.h"
+#include "geometry.h"
 class Global_Data{
 
     public:
@@ -44,8 +45,11 @@ class Global_Data{
         double dt;
         double endt;
         double domain_len = 16; 
+        double bb[6]; // bounding box of initial fluid particles  
 
         double lxyz[3],hxyz[3],dxyz[3]; //boundingbox of octant
+        Geometry* geometry;
+        
         sc_array_t *particle_data; //local particle data on process
         
         sc_array_t *target_proc; //target process of particle

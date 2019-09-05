@@ -47,8 +47,8 @@ p4est_quadrant_t   *quad;
         //   cout<<qh<<endl;
       } 
     }
-    
-        printf("%f\n",len);
+  
+
   octree->destroy_octree();
     mpiret = sc_MPI_Finalize ();
     return 0;
