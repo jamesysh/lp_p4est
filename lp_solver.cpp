@@ -1,6 +1,5 @@
 #include "iostream"
 #include "lp_solver.h"
-#include "tool_fn.h"
 LPSolver::LPSolver(Global_Data *g){
     gdata = g;
 
@@ -11,7 +10,7 @@ void LPSolver::moveParticlesByG(double dt){
     pdata_t *pad;
     p4est_locidx_t li, lpnum = gdata->lpnum;
      
-    pad = (pdata_t *) sc_array_index_begin(gdata->particle_data);
+    pad = (pdata_t *) gdata->sc_array_index_begin(gdata->particle_data);
     for(li = 0; li<lpnum; li++){
        pad->oldv[0] = pad->v[0];
        pad->oldv[1] = pad->v[1];

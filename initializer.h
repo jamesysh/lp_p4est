@@ -2,7 +2,7 @@
 #define __INITIALIZER_H__
 
 #include "p4est_to_p8est.h"
-
+#include "eos.h"
 #ifndef P4_TO_P8
 #include <p4est.h>
 #else
@@ -46,6 +46,10 @@ class Initializer {
         double endt;
         double initlocalspacing;
         double initperturbation;
+        int eoschoice;
+        int pelletmaterial;
+        int gamma;
+
 };
 
 #endif // __INITIALIZER_H__

@@ -6,7 +6,6 @@
 #include "mpi.h"
 #include "particle_data.h"
 #include "geometry_pellet.h"
-#include "tool_fn.h"
 using namespace std;
 
 static bool ifPointInsideBox(double x, double y, double z, double bb[6]) {
@@ -58,6 +57,7 @@ static void createParticlesInOctant(p4est_iter_volume_info_t * info, void *user_
      
     Geometry * geom = g->geometry;
     State* state = g->state;
+    EOS* eos = g->eos;
     double x,y,z;
     int i,j,k;
     double ls = g->initlocalspacing;
@@ -111,6 +111,7 @@ static void createParticlesInOctant(p4est_iter_volume_info_t * info, void *user_
                 pd->pressure = state->pressure(x,y,z);
                 pd->localspacing = ls;
                 pd->mass = ls*ls*ls/pd->volume/sqrt(2); 
+                pd->soundspeed = eos->getSoundSpeed(pd->pressure,1./pd->volume);
                 (*lpnum) ++;
                 }
             }
@@ -122,15 +123,20 @@ static void createParticlesInOctant(p4est_iter_volume_info_t * info, void *user_
 
 Global_Data:: Global_Data(Initializer* init){
     
+    lpnum = 0;
+    gpnum = 0;
+    
     initlevel = init->initlevel;
     maxlevel = init->maxlevel;
-    lpnum = 0;
+    
     initlocalspacing = init->initlocalspacing;
     initperturbation = init->initperturbation;
     elem_particles = init->elem_particles;
     geometry = GeometryFactory::instance().createGeometry("pelletlayer"); 
     geometry->getBoundingBox(bb[0],bb[1],bb[2],bb[3],bb[4],bb[5]);
     state = StateFactory::instance().createState("pelletstate");
+    eoschoice = init->eoschoice;
+    setEOS();    
 }
 
 
@@ -184,10 +190,11 @@ void Global_Data:: cleanUpArrays(){
 
 
 void Global_Data:: writeVTKFiles(){
-
+    static bool FIRST;
+    static int timestep = 0;
     p4est_locidx_t li;
     pdata_t *pad;
-    string filename = "output_" + to_string(mpirank)+".vtk";
+    string filename = "output_" +to_string(mpirank)+"_"+to_string(timestep)+".vtk";
     
 	FILE *outfile;
 	outfile = fopen(filename.c_str(), "w");
@@ -228,4 +235,43 @@ void Global_Data:: writeVTKFiles(){
     }
     
     fclose(outfile);
+    if(mpirank == 0){
+    
+    FILE *visitfile;
+    string fname = "output_data.visit";
+    visitfile = fopen(filename.c_str(),"a");
+    if(FIRST){}
+    }
+
 }
+
+
+void * Global_Data::sc_array_index_begin (sc_array_t * arr)
+{
+  P4EST_ASSERT (arr != NULL);
+
+  if (arr->elem_count == 0) {
+    return NULL;
+  }
+
+  P4EST_ASSERT (arr->array != NULL);
+  return (void *) arr->array;
+}
+
+void Global_Data::setEOS(){
+
+	if(eoschoice == 1) // Polytropic gas EOS
+    {   
+         eos = new PolytropicGasEOS(gamma,pelletmaterial);
+	     std::vector<double> eos_parameters;
+	     eos->getParameters(eos_parameters);
+    }
+
+    else {
+		cout<<"The choice of EOS does not exist!!! Please correct the input file."<<endl;
+		assert(false);
+	}
+
+}
+
+

@@ -1,10 +1,23 @@
 #include<iostream>
-#include "tool_fn.h"
 #include "initializer.h"
 #include "mpi.h"
 #include "particle_data.h"
 #include "octree_manager.h"
+#include "lp_solver.h"
 using namespace std;
+
+static  int
+refine_init (p4est_t * p4est, p4est_topidx_t which_tree,
+           p4est_quadrant_t * quadrant)
+{
+    if(quadrant->level>4)
+
+        return 0;
+    else 
+        return 1;
+}
+
+
 
 int main(){
 
@@ -31,9 +44,11 @@ int main(){
  
     gdata->initFluidParticles();
 
-   
-    //gdata->writeVTKFiles();
+    LPSolver * lpsolver = new LPSolver(gdata);
 
+    gdata->writeVTKFiles();
+    
+    lpsolver->moveParticlesByG(lpsolver->dt);
 
 
     

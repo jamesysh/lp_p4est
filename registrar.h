@@ -121,11 +121,4 @@ StateRegistrar<Derived>::StateRegistrar(std::string name) {
 
 
 
-
-
-
-
-
-
 #endif // __REGISTRAR_H__
-
