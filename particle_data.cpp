@@ -6,6 +6,7 @@
 #include "mpi.h"
 #include "particle_data.h"
 #include "geometry_pellet.h"
+#include "tool_fn.h"
 using namespace std;
 
 static bool ifPointInsideBox(double x, double y, double z, double bb[6]) {
@@ -48,18 +49,6 @@ static bool ifOctantInsectBox(double lxyz[3],double bb[6],double l) //l:lenth of
 }
 
 
-static void        *
-sc_array_index_begin (sc_array_t * arr)
-{
-  P4EST_ASSERT (arr != NULL);
-
-  if (arr->elem_count == 0) {
-    return NULL;
-  }
-
-  P4EST_ASSERT (arr->array != NULL);
-  return (void *) arr->array;
-}
 
 static void createParticlesInOctant(p4est_iter_volume_info_t * info, void *user_data){
     double l; //actuall length of a octant
@@ -119,7 +108,7 @@ static void createParticlesInOctant(p4est_iter_volume_info_t * info, void *user_
 #endif
                 state->velocity(x,y,z,pd->v[0],pd->v[1],pd->v[2]);                
                 pd->volume = 1./state->density(x,y,z);
-                pd->pressure = 1./state->pressure(x,y,z);
+                pd->pressure = state->pressure(x,y,z);
                 pd->localspacing = ls;
                 pd->mass = ls*ls*ls/pd->volume/sqrt(2); 
                 (*lpnum) ++;
@@ -189,13 +178,15 @@ void Global_Data::initFluidParticles(){
 void Global_Data:: cleanUpArrays(){
 
 
-   sc_array_destroy(particle_data);
+   sc_array_destroy_null(&particle_data);
 
 }
 
 
 void Global_Data:: writeVTKFiles(){
 
+    p4est_locidx_t li;
+    pdata_t *pad;
     string filename = "output_" + to_string(mpirank)+".vtk";
     
 	FILE *outfile;
@@ -204,5 +195,37 @@ void Global_Data:: writeVTKFiles(){
 		printf("Unable to open file: %s\n",filename.c_str()); 
 		return;
 	}
+	fprintf(outfile,"# vtk DataFile Version 3.0\n");
+	fprintf(outfile,"The actual time is %.16g\n",0.0);
+	fprintf(outfile,"ASCII\n");
+	fprintf(outfile,"DATASET POLYDATA\n");
+	
+	fprintf(outfile,"POINTS %ld double\n",(long int)lpnum);
+    
+    pad = (pdata_t *)sc_array_index_begin(particle_data);
+    for(li = 0; li<lpnum; li++){
+    fprintf(outfile,"%.16g %.16g %.16g\n",pad->xyz[0],pad->xyz[1],pad->xyz[2]);
+    pad++ ;
+    }
+  
+    fprintf(outfile,"POINT_DATA %ld\n",(long int)lpnum);
+
+	fprintf(outfile,"VECTORS Velocity double\n");
+    
+    pad = (pdata_t *)sc_array_index_begin(particle_data);
+    for(li = 0; li<lpnum; li++){
+    fprintf(outfile,"%.16g %.16g %.16g\n",pad->v[0],pad->v[1],pad->v[2]);
+    pad++ ;
+    }
+
+	fprintf(outfile,"SCALARS pressure double\n");
+	fprintf(outfile,"LOOKUP_TABLE default\n");
+    
+    pad = (pdata_t *)sc_array_index_begin(particle_data);
+    for(li = 0; li<lpnum; li++){
+    fprintf(outfile,"%.16g\n",pad->pressure);
+    pad++ ;
+    }
+    
     fclose(outfile);
 }

@@ -71,6 +71,7 @@ typedef struct pdata{
 
     double xyz[3]; //coordinates
     double v[3]; //velocity
+    double oldv[3];
     double pressure;
     double soundspeed;
     double temperature;

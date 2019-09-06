@@ -12,7 +12,7 @@ Initializer::Initializer(){
     maxlevel = 20;
     elem_particles = 50;
     initlocalspacing = 0.01;
-    initperturbation = 0.;
+    initperturbation = 1;
 
 }
 

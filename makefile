@@ -14,7 +14,7 @@ CFLAGS = -Wall -std=c++11 -c  $(DEBUG) $(INCS) $(LIBS)
 LFLAGS = -Wall  $(DEBUG) $(INCS) $(LIBS)
 vpath %.h $(GEOMETRY_DIR) $(STATE_DIR) $(BOUNDARY_DIR)
 
-MAIN_OBJS = lp_main.o particle_data.o initializer.o octree_manager.o registrar.o
+MAIN_OBJS = lp_main.o particle_data.o initializer.o octree_manager.o registrar.o lp_solver.o
 GEOMETRY_OBJS = geometry.o geometry_pellet.o
 STATE_OBJS = state.o state_pellet.o 
 
@@ -35,15 +35,16 @@ S_OBJS:
 
 lp_main.o: lp_main.cpp tool_fn.h
 	$(CC) $(CFLAGS) lp_main.cpp
-particle_data.o: particle_data.cpp particle_data.h geometry.h
+particle_data.o: particle_data.cpp particle_data.h geometry.h initializer.h
 	$(CC) $(CFLAGS) particle_data.cpp
 initializer.o: initializer.cpp initializer.h
 	$(CC) $(CFLAGS) initializer.cpp
-octree_manager.o: octree_manager.cpp octree_manager.h
+octree_manager.o: octree_manager.cpp octree_manager.h particle_data.h
 	$(CC) $(CFLAGS) octree_manager.cpp
 registrar.o: registrar.h registrar.cpp
 	$(CC) $(CFLAGS) registrar.cpp
-
+lp_solver.o: lp_solver.h lp_solver.cpp initializer.h particle_data.h
+	$(CC) $(CFLAGS) lp_solver.cpp
 lp: $(OBJS)  
 	$(CC) $(LFLAGS) $(OBJS) -o lp -lsc -lp4est 
 

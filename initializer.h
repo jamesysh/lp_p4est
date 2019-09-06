@@ -31,7 +31,6 @@
 
 #include <sc.h>
 
-
 class Initializer {
 
     public:

@@ -1,10 +1,9 @@
 #include<iostream>
-
+#include "tool_fn.h"
 #include "initializer.h"
 #include "mpi.h"
 #include "particle_data.h"
 #include "octree_manager.h"
-#include "tool_fn.h"
 using namespace std;
 
 int main(){
@@ -33,7 +32,7 @@ int main(){
     gdata->initFluidParticles();
 
    
-    gdata->writeVTKFiles();
+    //gdata->writeVTKFiles();
 
 
 
