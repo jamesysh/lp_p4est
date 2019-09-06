@@ -9,12 +9,10 @@ using namespace std;
 
 int main(){
 
-    Initializer initializer = Initializer();
-    Initializer *init=&initializer;
+    Initializer *init = new Initializer();
 
-    Global_Data global_data = Global_Data(init);
+    Global_Data *gdata = new Global_Data(init);
 
-    Global_Data *gdata = &global_data;
 
     int mpiret;
     mpiret = sc_MPI_Init (NULL, NULL);
@@ -22,8 +20,7 @@ int main(){
     SC_CHECK_MPI (mpiret);
 
 
-    Octree_Manager octree_manager = Octree_Manager(gdata);
-    Octree_Manager *octree = &octree_manager;
+    Octree_Manager *octree = new Octree_Manager(gdata);
 
     octree->build_octree();
 
@@ -35,7 +32,21 @@ int main(){
  
     gdata->initFluidParticles();
 
+   
+    gdata->writeVTKFiles();
+
+
+
+    
+    gdata->cleanUpArrays(); 
+    
     octree->destroy_octree();
+   
+    
+    delete gdata;
+    delete octree;
+    delete init;
+
     mpiret = sc_MPI_Finalize ();
     return 0;
 }

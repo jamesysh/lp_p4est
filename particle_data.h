@@ -2,7 +2,6 @@
 #define __PARTICLE_DATA_H__
 
 #include "initializer.h"
-#include "geometry.h"
 class Global_Data{
 
     public:
@@ -11,14 +10,16 @@ class Global_Data{
         ~Global_Data(); 
         
         void initFluidParticles();
-        
+        void cleanUpArrays();
+        void writeVTKFiles();
+
         sc_MPI_Comm mpicomm;
         int mpisize,mpirank;
         int initlevel;
         int maxlevel;
         int elem_particles; //max number of particles per octant
         double initlocalspacing;
-        double cfl_coefficient;
+        double initperturbation;
         double dt;
         double endt;
         double domain_len = 16; 
@@ -26,7 +27,11 @@ class Global_Data{
 
         double lxyz[3],hxyz[3],dxyz[3]; //boundingbox of octant
         Geometry* geometry;
+        State* state;        
         
+        
+        p4est_locidx_t lpnum; //number of particles on local processor
+        p4est_gloidx_t gpnum, gplost; //number of particles on all processor, number of particles on all processers which left domain
         sc_array_t *particle_data; //local particle data on process
         
         sc_array_t *target_proc; //target process of particle
@@ -69,6 +74,9 @@ typedef struct pdata{
     double pressure;
     double soundspeed;
     double temperature;
+    double volume;
+    double mass;
+    double localspacing;
 
     p4est_gloidx_t      id;
 
@@ -80,7 +88,6 @@ typedef struct pdata{
 typedef struct octant_data
 {
  
-    int initparticle_flag; //if true fill octant with fluid particles
 
   /** Offset into local array of all particles after this quadrant */
     p4est_locidx_t      lpend;

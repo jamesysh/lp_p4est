@@ -26,6 +26,8 @@
 #include <p8est_vtk.h>
 #endif
 
+#include "geometry.h"
+#include "state.h"
 
 #include <sc.h>
 
@@ -44,7 +46,7 @@ class Initializer {
         double cfl_coefficient;
         double endt;
         double initlocalspacing;
-
+        double initperturbation;
 };
 
 #endif // __INITIALIZER_H__
