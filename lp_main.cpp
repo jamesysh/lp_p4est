@@ -1,10 +1,10 @@
 #include<iostream>
 
-#include "p4est_to_p8est.h"
+#include "initializer.h"
 #include "mpi.h"
 #include "particle_data.h"
-#include "initializer.h"
 #include "octree_manager.h"
+#include "tool_fn.h"
 using namespace std;
 
 int main(){
@@ -27,29 +27,15 @@ int main(){
 
     octree->build_octree();
 
-
-p4est_quadrant_t   *quad;
-
-   p4est_topidx_t      tt;
-  p4est_locidx_t      lq;
-  p4est_tree_t       *tree;
-  double len; 
-  for (tt = gdata->p4est->first_local_tree; tt <= gdata->p4est->last_local_tree;
-         ++tt) {
-      tree = p4est_tree_array_index (gdata->p4est->trees, tt);
-      for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
  
-        quad = p4est_quadrant_array_index (&tree->quadrants, lq);
-       p4est_qcoord_t      qh;
+    octree->refine_octree(1,refine_init,NULL,NULL);  //initial refinement of octree
 
-        qh = P4EST_QUADRANT_LEN (quad->level);
-         len = (double)qh/P4EST_ROOT_LEN*gdata->domain_len;
-        //   cout<<qh<<endl;
-      } 
-    }
-  
 
-  octree->destroy_octree();
+    octree->partition_octree(0,NULL);
+ 
+    gdata->initFluidParticles();
+
+    octree->destroy_octree();
     mpiret = sc_MPI_Finalize ();
     return 0;
 }

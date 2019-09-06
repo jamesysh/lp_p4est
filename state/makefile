@@ -14,11 +14,11 @@ SRC_FILES := $(wildcard *.cpp)
 OBJS := $(SRC_FILES:.cpp=.o)
 all: $(OBJS)
 
-geometry.o: geometry.h geometry.cpp
-	${CC} ${CFLAGS} geometry.cpp
-geometry_pellet.o: geometry.h geometry_pellet.h geometry_pellet.cpp
-	${CC} ${CFLAGS} geometry_pellet.cpp
 
+state.o: state.h state.cpp
+	${CC} ${CFLAGS} state.cpp
+state_pellet.o: state.h state_pellet.h state_pellet.cpp
+	$(CC) $(CFLAGS) state_pellet.cpp
 
 
 

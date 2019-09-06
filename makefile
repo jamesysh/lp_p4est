@@ -16,6 +16,7 @@ vpath %.h $(GEOMETRY_DIR) $(STATE_DIR) $(BOUNDARY_DIR)
 
 MAIN_OBJS = lp_main.o particle_data.o initializer.o octree_manager.o registrar.o
 GEOMETRY_OBJS = geometry.o geometry_pellet.o
+STATE_OBJS = state.o state_pellet.o 
 
 B_OBJS := $(foreach OBJ,$(BOUNDARY_OBJS),$(addprefix $(BOUNDARY_DIR),$(OBJ)))
 S_OBJS := $(foreach OBJ,$(STATE_OBJS),$(addprefix $(STATE_DIR),$(OBJ)))
@@ -27,11 +28,12 @@ all: $(OBJS) lp
 
 G_OBJS:
 	cd $(GEOMETRY_DIR)&&make;
+S_OBJS:
+	cd $(STATE_DIR)&&make;
 
 
 
-
-lp_main.o: lp_main.cpp
+lp_main.o: lp_main.cpp tool_fn.h
 	$(CC) $(CFLAGS) lp_main.cpp
 particle_data.o: particle_data.cpp particle_data.h geometry.h
 	$(CC) $(CFLAGS) particle_data.cpp
@@ -49,5 +51,6 @@ lp: $(OBJS)
 clean:
 	
 	cd $(GEOMETRY_DIR)&&make clean; 
+	cd $(STATE_DIR)&&make clean;
 	rm *.o
 	rm lp

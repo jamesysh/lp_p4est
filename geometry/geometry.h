@@ -3,7 +3,6 @@
 
 #include <unordered_map>
 #include <string>
-#include <initializer.h>
 class Geometry {
 public:
     /// Destructor

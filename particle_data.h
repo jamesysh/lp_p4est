@@ -1,32 +1,6 @@
 #ifndef __PARTICLE_DATA_H__
 #define __PARTICLE_DATA_H__
-#include "p4est_to_p8est.h"
 
-#ifndef P4_TO_P8
-#include <p4est.h>
-#else
-#include <p8est.h>
-#endif 
-
-#ifndef P4_TO_P8
-#include <p4est_bits.h>
-#include <p4est_build.h>
-#include <p4est_communication.h>
-#include <p4est_extended.h>
-#include <p4est_search.h>
-#include <p4est_vtk.h>
-#else
-#include <p4est_to_p8est.h>
-#include <p8est_bits.h>
-#include <p8est_build.h>
-#include <p8est_communication.h>
-#include <p8est_extended.h>
-#include <p8est_search.h>
-#include <p8est_vtk.h>
-#endif
-
-
-#include <sc.h>
 #include "initializer.h"
 #include "geometry.h"
 class Global_Data{
@@ -36,11 +10,14 @@ class Global_Data{
         Global_Data(Initializer* init);
         ~Global_Data(); 
         
+        void initFluidParticles();
+        
         sc_MPI_Comm mpicomm;
         int mpisize,mpirank;
         int initlevel;
         int maxlevel;
         int elem_particles; //max number of particles per octant
+        double initlocalspacing;
         double cfl_coefficient;
         double dt;
         double endt;
@@ -102,7 +79,9 @@ typedef struct pdata{
 /** Data type for payload data inside each quadrant */
 typedef struct octant_data
 {
-  
+ 
+    int initparticle_flag; //if true fill octant with fluid particles
+
   /** Offset into local array of all particles after this quadrant */
     p4est_locidx_t      lpend;
 
