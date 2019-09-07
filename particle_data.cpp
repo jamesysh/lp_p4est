@@ -190,7 +190,7 @@ void Global_Data:: cleanUpArrays(){
 
 
 void Global_Data:: writeVTKFiles(){
-    static bool FIRST;
+    static bool FIRST = true;
     static int timestep = 0;
     p4est_locidx_t li;
     pdata_t *pad;
@@ -236,13 +236,28 @@ void Global_Data:: writeVTKFiles(){
     
     fclose(outfile);
     if(mpirank == 0){
-    
     FILE *visitfile;
     string fname = "output_data.visit";
-    visitfile = fopen(filename.c_str(),"a");
-    if(FIRST){}
-    }
-
+    visitfile = fopen(fname.c_str(),"a");
+   
+	if(visitfile==nullptr) {
+		printf("Unable to open file: %s\n",fname.c_str()); 
+		return;
+	}
+    if(FIRST){
+        FIRST = false;
+        fprintf(visitfile,"!NBLOCKS %d\n",mpisize);
+    
+        }
+        for(int i=0;i<mpisize;i++){
+            string name ="output_" + to_string(i) + "_" + to_string(timestep) +".vtk"+"\n";
+            fprintf(visitfile,name.c_str());
+            
+            }
+    
+    fclose(visitfile);
+    }   
+    timestep ++;
 }
 
 

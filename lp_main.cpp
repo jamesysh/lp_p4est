@@ -48,10 +48,12 @@ int main(){
 
     gdata->writeVTKFiles();
     
+    for(int i = 0;i<5;i++){
     lpsolver->moveParticlesByG(lpsolver->dt);
 
-
+    }
     
+    gdata->writeVTKFiles();
     gdata->cleanUpArrays(); 
     
     octree->destroy_octree();
