@@ -7,8 +7,8 @@
 using namespace std;
 
 static  int
-refine_init (p4est_t * p4est, p4est_topidx_t which_tree,
-           p4est_quadrant_t * quadrant)
+refine_init (p8est_t * p8est, p4est_topidx_t which_tree,
+           p8est_quadrant_t * quadrant)
 {
     if(quadrant->level>4)
 
@@ -31,7 +31,6 @@ int main(){
 
     SC_CHECK_MPI (mpiret);
 
-
     Octree_Manager *octree = new Octree_Manager(gdata);
 
     octree->build_octree();
@@ -48,12 +47,8 @@ int main(){
 
     gdata->writeVTKFiles();
     
-    for(int i = 0;i<5;i++){
     lpsolver->moveParticlesByG(lpsolver->dt);
-
-    }
     
-    gdata->writeVTKFiles();
     gdata->cleanUpArrays(); 
     
     octree->destroy_octree();
@@ -61,6 +56,7 @@ int main(){
     
     delete gdata;
     delete octree;
+    delete lpsolver;
     delete init;
 
     mpiret = sc_MPI_Finalize ();
