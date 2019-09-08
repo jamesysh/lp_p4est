@@ -63,6 +63,7 @@ class Global_Data{
         p4est_locidx_t lpnum; //number of particles on local processor
         p4est_gloidx_t gpnum, gplost; //number of particles on all processor, number of particles on all processers which left domain
         p4est_locidx_t qremain, qreceive;
+        int flagrefine, gflagrefine;
         sc_array_t *particle_data; //local particle data on process
         
         sc_array_t *target_proc; //target process of particle
@@ -126,7 +127,8 @@ typedef struct pdata{
 typedef struct octant_data
 {
  
-
+   
+    p4est_locidx_t    poctant;
   /** Offset into local array of all particles after this quadrant */
     p4est_locidx_t      lpend;
 

@@ -73,7 +73,7 @@ static void createParticlesInOctant(p8est_iter_volume_info_t * info, void *user_
     p4est_locidx_t      *remainid;
 
 
-    oud->premain = oud->preceive = 0;
+    oud->premain = oud->preceive =  oud->poctant = 0;
     qh = P8EST_QUADRANT_LEN (quad->level);
     l = qh/(double)P8EST_ROOT_LEN*domain_len;
     p8est_qcoord_to_vertex (g->conn, tt, quad->x, quad->y,
@@ -118,6 +118,7 @@ static void createParticlesInOctant(p8est_iter_volume_info_t * info, void *user_
     //   pd = (pdata_t *) sc_array_push_count(g->particle_data,nump); 
    oud->lpend = *(lpnum); 
    oud->premain = *(lpnum) - oldnum; 
+   oud->poctant = oud->premain;
 };
 
 Global_Data:: Global_Data(Initializer* init){
@@ -125,6 +126,7 @@ Global_Data:: Global_Data(Initializer* init){
     lpnum = 0;
     gpnum = 0;
     
+    flagrefine = 1;
     initlevel = init->initlevel;
     maxlevel = init->maxlevel;
     minlevel = init->minlevel; 

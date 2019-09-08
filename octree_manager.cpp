@@ -125,6 +125,7 @@ void Octree_Manager:: adapt_replace (p8est_t * p8est, p4est_topidx_t which_tree,
       oud = (octant_data_t *) incoming[0]->p.user_data;
     g->ireindex += (oud->premain = g->qremain);
     g->irvindex += (oud->preceive = g->qreceive);
+    oud->poctant = oud->preceive + oud-> premain;
   }
 
   else {
@@ -153,6 +154,7 @@ void Octree_Manager:: adapt_replace (p8est_t * p8est, p4est_topidx_t which_tree,
         g->sc_array_paste (&iview, arr);
         oud = (octant_data_t *) (*pchild++)->p.user_data;
         ibeg += (oud->premain = (p4est_locidx_t) arr->elem_count);
+        oud->poctant = oud->premain;
       }
     }
     }
@@ -179,6 +181,7 @@ void Octree_Manager:: adapt_replace (p8est_t * p8est, p4est_topidx_t which_tree,
         oud = (octant_data_t *) (*pchild++)->p.user_data;
         P4EST_ASSERT (oud->u.lpend == -1);
         ibeg += (oud->preceive = (p4est_locidx_t) arr->elem_count);
+        oud->poctant += oud->preceive;
       }
     }
     }
@@ -194,12 +197,45 @@ int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,
               p8est_quadrant_t * quadrant)
 {
  
+  static p4est_locidx_t maxp = -1;  
   Global_Data      *g = (Global_Data *) p8est->user_pointer;
+
+  p4est_topidx_t      tt;
+
+  p8est_quadrant_t   *quad;
+  
+  p8est_tree_t       *tree;
+  tt = p8est->first_local_tree;
+  tree = p8est_tree_array_index (p8est->trees, tt);
+  
+  quad = p8est_quadrant_array_index (&tree->quadrants, 0);
+  octant_data_t          *oud = (octant_data_t *) quadrant->p.user_data;
+  
+  
+  if(quad == quadrant)
+  {  
+      if(maxp < g->elem_particles && maxp>-1)
+      { g->flagrefine = 0;
+      
+      }
+      else
+      { 
+          maxp = -1;
+      }
+       
+      int  mpiret = sc_MPI_Allreduce (&g->flagrefine, &g->gflagrefine, 1, sc_MPI_INT,
+                               sc_MPI_MAX, g->mpicomm);
+           
+      SC_CHECK_MPI (mpiret);
+  }
+  
+  if((oud->premain+oud->preceive) > maxp){
+      maxp = oud->poctant;
+  }
 
 
   
-  octant_data_t          *oud = (octant_data_t *) quadrant->p.user_data;
-
+  
   /* we have set this to -1 in adapt_coarsen */
 
   if ((double) (oud->premain + oud->preceive) > g->elem_particles) {
@@ -216,6 +252,7 @@ int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,
     g->irvindex += oud->preceive;
     return 0;
   }
+
 }
 
 void Octree_Manager:: adapt_octree(){
@@ -223,12 +260,15 @@ void Octree_Manager:: adapt_octree(){
     p8est_t *p8est = gdata->p8est;
     gdata->ireindex = gdata->irvindex = 0;
     p8est_coarsen_ext (p8est, 0, 1, adapt_coarsen, NULL, adapt_replace);
-    
-    
+    gdata->flagrefine = 1;
+    gdata->gflagrefine = 1;
+    while(gdata->gflagrefine ){   
     gdata->ireindex = gdata->ire2 = 0;
     gdata->irvindex = gdata->irv2 = 0;
     p8est_refine_ext (p8est, 0, gdata->maxlevel, adapt_refine, NULL, adapt_replace);
-    
+
+    }
+
 }
 
 
