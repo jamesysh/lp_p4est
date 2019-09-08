@@ -12,17 +12,15 @@ static bool ifPointInsideBox(double x, double y, double z, double bb[6]) {
     
     if(x>bb[0] && x<bb[1] && y>bb[2] && y<bb[3] 
 
-#ifdef P4_TO_P8
             && z>bb[4] && z<bb[5]
-#endif
             )
         return true;
     else
         return false;
 }
 
-static void adjustCoordByDomain(double dl, double xyz[3]){
-    
+void Global_Data:: adjustCoordByDomain( double xyz[3]){
+    double dl = domain_len;
     for(int i=0;i<3;i++){
         xyz[i] *= dl;
         xyz[i] -= dl/2;
@@ -49,7 +47,7 @@ static bool ifOctantInsectBox(double lxyz[3],double bb[6],double l) //l:lenth of
 
 
 
-static void createParticlesInOctant(p4est_iter_volume_info_t * info, void *user_data){
+static void createParticlesInOctant(p8est_iter_volume_info_t * info, void *user_data){
     double l; //actuall length of a octant
     bool iffill; //if fill octant with fluid particles;
     int nump;
@@ -62,27 +60,27 @@ static void createParticlesInOctant(p4est_iter_volume_info_t * info, void *user_
     int i,j,k;
     double ls = g->initlocalspacing;
     double initr = g->initperturbation;
-    int *lpnum = &g->lpnum; 
+    p4est_locidx_t *lpnum = &g->lpnum; 
+    p4est_locidx_t oldnum = *lpnum;
     p4est_topidx_t      tt = info->treeid;  /**< the tree containing \a quad */
-    p4est_quadrant_t   *quad = info->quad;
+    p8est_quadrant_t   *quad = info->quad;
     double domain_len = g->domain_len;
     double* bb = g->bb;
     pdata_t *pd;
     octant_data_t *oud = (octant_data_t *)quad->p.user_data;
     p4est_qcoord_t qh;
    
+    p4est_locidx_t      *remainid;
 
 
     oud->premain = oud->preceive = 0;
-    qh = P4EST_QUADRANT_LEN (quad->level);
-    l = qh/(double)P4EST_ROOT_LEN*domain_len;
-    p4est_qcoord_to_vertex (g->conn, tt, quad->x, quad->y,
-#ifdef P4_TO_P8
+    qh = P8EST_QUADRANT_LEN (quad->level);
+    l = qh/(double)P8EST_ROOT_LEN*domain_len;
+    p8est_qcoord_to_vertex (g->conn, tt, quad->x, quad->y,
                           quad->z,
-#endif
                           g->lxyz);
    
-    adjustCoordByDomain(domain_len,g->lxyz);
+    g->adjustCoordByDomain(g->lxyz);
     
     iffill = ifOctantInsectBox(g->lxyz,bb, l);
     if(!iffill){
@@ -101,11 +99,11 @@ static void createParticlesInOctant(p4est_iter_volume_info_t * info, void *user_
             if(geom->operator()(x,y,z)){
        
                 pd = (pdata_t *) sc_array_push_count (g->particle_data,1);
+                remainid = (p4est_locidx_t *) sc_array_push_count(g->iremain,1);
+                *remainid = *lpnum;
                 pd->xyz[0] = x;
                 pd->xyz[1] = y;
-#ifdef P4_TO_P8
                 pd->xyz[2] = z;
-#endif
                 state->velocity(x,y,z,pd->v[0],pd->v[1],pd->v[2]);                
                 pd->volume = 1./state->density(x,y,z);
                 pd->pressure = state->pressure(x,y,z);
@@ -119,6 +117,7 @@ static void createParticlesInOctant(p4est_iter_volume_info_t * info, void *user_
     }
     //   pd = (pdata_t *) sc_array_push_count(g->particle_data,nump); 
    oud->lpend = *(lpnum); 
+   oud->premain = *(lpnum) - oldnum; 
 };
 
 Global_Data:: Global_Data(Initializer* init){
@@ -128,7 +127,7 @@ Global_Data:: Global_Data(Initializer* init){
     
     initlevel = init->initlevel;
     maxlevel = init->maxlevel;
-    
+    minlevel = init->minlevel; 
     initlocalspacing = init->initlocalspacing;
     initperturbation = init->initperturbation;
     elem_particles = init->elem_particles;
@@ -154,9 +153,12 @@ void Global_Data::initFluidParticles(){
    p4est_gloidx_t  gpoffset;
    gplost = 0; 
    srand(time(NULL));   
-   P4EST_ASSERT (particle_data == NULL);
+     
+   
+   
    particle_data = sc_array_new(sizeof( pdata_t ));
-   p4est_iterate(p4est,NULL,(void *)this,createParticlesInOctant,NULL,NULL,NULL); 
+   iremain = sc_array_new(sizeof(p4est_locidx_t));
+   p8est_iterate(p8est,NULL,(void *)this,createParticlesInOctant,NULL,NULL,NULL); 
    p4est_gloidx_t gnum = 0,lnum = (p4est_gloidx_t)lpnum; 
     
 
@@ -186,6 +188,7 @@ void Global_Data:: cleanUpArrays(){
 
    sc_array_destroy_null(&particle_data);
 
+   sc_array_destroy_null(&iremain);
 }
 
 
@@ -261,6 +264,15 @@ void Global_Data:: writeVTKFiles(){
 }
 
 
+
+void Global_Data::sc_array_paste (sc_array_t * dest, sc_array_t * src)
+{
+  P4EST_ASSERT (dest->elem_size == src->elem_size);
+  P4EST_ASSERT (dest->elem_count == src->elem_count);
+
+  memcpy (dest->array, src->array, src->elem_count * src->elem_size);
+}
+
 void * Global_Data::sc_array_index_begin (sc_array_t * arr)
 {
   P4EST_ASSERT (arr != NULL);
@@ -288,5 +300,63 @@ void Global_Data::setEOS(){
 	}
 
 }
+
+
+void Global_Data::loopquad (p4est_topidx_t tt, p8est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]){
+
+    
+  int                 i;
+  p4est_qcoord_t      qh;
+  qh = P8EST_QUADRANT_LEN (quad->level);
+  p8est_qcoord_to_vertex (conn, tt, quad->x, quad->y,  quad->z,   lxyz);
+  p8est_qcoord_to_vertex (conn, tt, quad->x + qh, quad->y + qh,quad->z + qh,  hxyz);
+  adjustCoordByDomain(lxyz);
+  adjustCoordByDomain(hxyz);
+  for (i = 0; i < 3; ++i) {
+
+    dxyz[i] = hxyz[i] - lxyz[i];
+   
+  }
+
+}
+
+
+void Global_Data::split_by_coord ( sc_array_t * in,
+                sc_array_t * out[2], pa_mode_t mode, int component,
+                const double lxyz[3], const double dxyz[3])
+{
+  p4est_locidx_t      ppos;
+  const double       *x;
+  size_t              zz, znum;
+  pdata_t          *pad;
+
+  sc_array_truncate (out[0]);
+  sc_array_truncate (out[1]);
+
+  znum = in->elem_count;
+  for (zz = 0; zz < znum; ++zz) {
+    ppos = *(p4est_locidx_t *) sc_array_index (in, zz);
+    if (mode == PA_MODE_REMAIN) {
+      pad = (pdata_t *) sc_array_index (particle_data, ppos);
+      x = pad->xyz;
+    }
+    else if (mode == PA_MODE_RECEIVE) {
+      pad = (pdata_t *) sc_array_index (prebuf, ppos);
+      x = pad->xyz;
+    }
+    else {
+      P4EST_ASSERT (mode == PA_MODE_LOCATE);
+      pad = (pdata_t *) sc_array_index (particle_data, ppos);
+      x = pad->xyz;
+    }
+    if (x[component] <= lxyz[component] + .5 * dxyz[component]) {
+      *(p4est_locidx_t *) sc_array_push (out[0]) = ppos;
+    }
+    else {
+      *(p4est_locidx_t *) sc_array_push (out[1]) = ppos;
+    }
+  }
+}
+
 
 

@@ -2,6 +2,18 @@
 #define __PARTICLE_DATA_H__
 
 #include "initializer.h"
+
+
+
+typedef enum pa_mode
+{
+  PA_MODE_REMAIN,
+  PA_MODE_RECEIVE,
+  PA_MODE_LOCATE
+}
+pa_mode_t;
+
+
 class Global_Data{
 
     public:
@@ -9,8 +21,18 @@ class Global_Data{
         Global_Data(Initializer* init);
         ~Global_Data(); 
 
-        static void * sc_array_index_begin (sc_array_t * arr);
+        void * sc_array_index_begin (sc_array_t * arr);
+        
+        void sc_array_paste (sc_array_t * dest, sc_array_t * src);
+        void adjustCoordByDomain( double xyz[3]);
         void initFluidParticles();
+
+        void loopquad (p4est_topidx_t tt, p8est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]);
+        
+
+        void split_by_coord ( sc_array_t * in,
+                sc_array_t * out[2], pa_mode_t mode, int component,
+                const double lxyz[3], const double dxyz[3]);
         void cleanUpArrays();
         void writeVTKFiles();
         void setEOS();
@@ -19,6 +41,7 @@ class Global_Data{
         int mpisize,mpirank;
         int initlevel;
         int maxlevel;
+        int minlevel; 
         int elem_particles; //max number of particles per octant
         int eoschoice;
         int pelletmaterial;
@@ -39,13 +62,14 @@ class Global_Data{
         
         p4est_locidx_t lpnum; //number of particles on local processor
         p4est_gloidx_t gpnum, gplost; //number of particles on all processor, number of particles on all processers which left domain
+        p4est_locidx_t qremain, qreceive;
         sc_array_t *particle_data; //local particle data on process
         
         sc_array_t *target_proc; //target process of particle
         
-        sc_array_t *idremain; /**< locidx_t Index into padata of stay-local particles */
+        sc_array_t *iremain; /**< locidx_t Index into padata of stay-local particles */
 
-        sc_array_t *idreceive;/**< Index into particle receive buffer */
+        sc_array_t *ireceive;/**< Index into particle receive buffer */
 
         sc_array_t *recevs;   /**< comm_prank_t with one entry per receiver, sorted */
 
@@ -53,7 +77,7 @@ class Global_Data{
          
         sc_array_t *send_req; /**< sc_MPI_Request for sending */
 
-        sc_array_t *receivebuffer;  /**< pa_data_t All received particles */
+        sc_array_t *prebuf;  /**< pdata_t All received particles */
 
         sc_array_t *iffound;   /**< char Flag for received particles */
 
@@ -62,10 +86,16 @@ class Global_Data{
         sc_mempool_t *psmem;    /**< comm_psend_t to use as hash table entries */
 
 
+  
+        p4est_locidx_t      ireindex, ire2;   /**< Running index into iremain */
+
+        p4est_locidx_t      irvindex, irv2;   /**< Running index into ireceive */
+
+        sc_array_t *ilh[2],*jlh[2],*klh[2];
       //mesh data
-        p4est_connectivity_t *conn;
+        p8est_connectivity_t *conn;
       
-        p4est_t            *p4est;
+        p8est_t            *p8est;
 
       
 
@@ -104,8 +134,6 @@ typedef struct octant_data
   p4est_locidx_t      premain, preceive;
 }
 octant_data_t;
-
-
 
 
 #endif

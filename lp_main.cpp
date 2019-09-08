@@ -10,7 +10,9 @@ static  int
 refine_init (p8est_t * p8est, p4est_topidx_t which_tree,
            p8est_quadrant_t * quadrant)
 {
-    if(quadrant->level>4)
+    Global_Data *g = (Global_Data *) p8est->user_pointer;
+    int initlevel = g->initlevel;
+    if(quadrant->level >= initlevel)
 
         return 0;
     else 
@@ -39,15 +41,18 @@ int main(){
     octree->refine_octree(1,refine_init,NULL,NULL);  //initial refinement of octree
 
 
-    octree->partition_octree(0,NULL);
+    octree->partition_octree(1,NULL);
  
     gdata->initFluidParticles();
 
+    
+    gdata->ireindex = gdata->irvindex = 0;
+    p8est_coarsen_ext (gdata->p8est, 0, 1, octree->adapt_coarsen, NULL, octree->adapt_replace);
     LPSolver * lpsolver = new LPSolver(gdata);
 
-    gdata->writeVTKFiles();
+  //  gdata->writeVTKFiles();
     
-    lpsolver->moveParticlesByG(lpsolver->dt);
+   // lpsolver->moveParticlesByG(lpsolver->dt);
     
     gdata->cleanUpArrays(); 
     
