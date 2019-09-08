@@ -136,6 +136,8 @@ Global_Data:: Global_Data(Initializer* init){
     state = StateFactory::instance().createState("pelletstate");
     eoschoice = init->eoschoice;
     setEOS();    
+
+
 }
 
 
@@ -153,11 +155,9 @@ void Global_Data::initFluidParticles(){
    p4est_gloidx_t  gpoffset;
    gplost = 0; 
    srand(time(NULL));   
-     
+
    
    
-   particle_data = sc_array_new(sizeof( pdata_t ));
-   iremain = sc_array_new(sizeof(p4est_locidx_t));
    p8est_iterate(p8est,NULL,(void *)this,createParticlesInOctant,NULL,NULL,NULL); 
    p4est_gloidx_t gnum = 0,lnum = (p4est_gloidx_t)lpnum; 
     
@@ -189,6 +189,14 @@ void Global_Data:: cleanUpArrays(){
    sc_array_destroy_null(&particle_data);
 
    sc_array_destroy_null(&iremain);
+   
+   sc_array_destroy_null(&ireceive);
+
+  for (int i = 0; i < 2; ++i) {
+    sc_array_destroy_null (&ilh[i]);
+    sc_array_destroy_null (&jlh[i]);
+    sc_array_destroy_null (&klh[i]);
+  }
 }
 
 
@@ -357,6 +365,18 @@ void Global_Data::split_by_coord ( sc_array_t * in,
     }
   }
 }
+void Global_Data::prerun(){
 
+   ireceive = sc_array_new(sizeof(p4est_locidx_t));    
+
+   particle_data = sc_array_new(sizeof( pdata_t ));
+   iremain = sc_array_new(sizeof(p4est_locidx_t));
+   for (int i = 0; i < 2; ++i) {
+    ilh[i] = sc_array_new (sizeof (p4est_locidx_t));
+    jlh[i] = sc_array_new (sizeof (p4est_locidx_t));
+    klh[i] = sc_array_new (sizeof (p4est_locidx_t));
+  }
+
+}
 
 

@@ -1,6 +1,6 @@
 #include <iostream>
 #include "octree_manager.h"
-
+using namespace std;
 Octree_Manager:: Octree_Manager(Global_Data *g){
 
     gdata = g;
@@ -70,11 +70,10 @@ int Octree_Manager:: adapt_coarsen (p8est_t * p8est, p4est_topidx_t which_tree,
                p8est_quadrant_t * quadrants[])
 {
     int i;
-    p4est_locidx_t remain, receive;
+    p4est_locidx_t remain = 0, receive = 0;
     octant_data_t *oud;
     Global_Data *g = (Global_Data *)p8est->user_pointer;
-
-  
+    
     if (quadrants[1] == NULL ||
       quadrants[0]->level == g->minlevel) {
     
@@ -87,7 +86,7 @@ int Octree_Manager:: adapt_coarsen (p8est_t * p8est, p4est_topidx_t which_tree,
    
     remain = receive = 0;
   
-    for (i = 0; i < P4EST_CHILDREN; ++i) {
+    for (i = 0; i < P8EST_CHILDREN; ++i) {
         oud = (octant_data_t *) quadrants[i]->p.user_data;
         remain += oud->premain;
         receive += oud->preceive;
@@ -122,14 +121,14 @@ void Octree_Manager:: adapt_replace (p8est_t * p8est, p4est_topidx_t which_tree,
   Global_Data      *g = (Global_Data *) p8est->user_pointer;
   if (num_outgoing == P8EST_CHILDREN) {
     // we are coarsening 
-    oud = (octant_data_t *) incoming[0]->p.user_data;
+    
+      oud = (octant_data_t *) incoming[0]->p.user_data;
     g->ireindex += (oud->premain = g->qremain);
     g->irvindex += (oud->preceive = g->qreceive);
   }
 
   else {
     // we are refining 
-
     // access parent quadrant 
     g->loopquad (which_tree, outgoing[0],lxyz,hxyz,dxyz);
 
@@ -141,8 +140,10 @@ void Octree_Manager:: adapt_replace (p8est_t * p8est, p4est_topidx_t which_tree,
     // sort remaining particles into the children 
     pchild = incoming;
     g->split_by_coord ( &iview, g->klh, PA_MODE_REMAIN, 2, lxyz, dxyz);
+    
     for (wz = 0; wz < 2; ++wz) {
     g->split_by_coord ( g->klh[wz], g->jlh, PA_MODE_REMAIN, 1, lxyz, dxyz);
+    
     for (wy = 0; wy < 2; ++wy) {
       g->split_by_coord (g->jlh[wy], g->ilh, PA_MODE_REMAIN, 0, lxyz, dxyz);
       for (wx = 0; wx < 2; ++wx) {
@@ -155,8 +156,6 @@ void Octree_Manager:: adapt_replace (p8est_t * p8est, p4est_topidx_t which_tree,
       }
     }
     }
-    P4EST_ASSERT (ibeg == g->ireindex);
-    P4EST_ASSERT (pchild == incoming + P4EST_CHILDREN);
 
     // recover window onto received particles for the new family 
     ibeg = g->irv2;
@@ -191,9 +190,46 @@ void Octree_Manager:: adapt_replace (p8est_t * p8est, p4est_topidx_t which_tree,
 }
 
 
+int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,
+              p8est_quadrant_t * quadrant)
+{
+ 
+  Global_Data      *g = (Global_Data *) p8est->user_pointer;
 
 
+  
+  octant_data_t          *oud = (octant_data_t *) quadrant->p.user_data;
 
+  /* we have set this to -1 in adapt_coarsen */
+
+  if ((double) (oud->premain + oud->preceive) > g->elem_particles) {
+    /* we are trying to refine, we will possibly go into the replace function */
+    g->ire2 = g->ireindex;
+    g->ireindex += oud->premain;
+    g->irv2 = g->irvindex;
+    g->irvindex += oud->preceive;
+    return 1;
+  }
+  else {
+    /* maintain cumulative particle count for next quadrant */
+    g->ireindex += oud->premain;
+    g->irvindex += oud->preceive;
+    return 0;
+  }
+}
+
+void Octree_Manager:: adapt_octree(){
+
+    p8est_t *p8est = gdata->p8est;
+    gdata->ireindex = gdata->irvindex = 0;
+    p8est_coarsen_ext (p8est, 0, 1, adapt_coarsen, NULL, adapt_replace);
+    
+    
+    gdata->ireindex = gdata->ire2 = 0;
+    gdata->irvindex = gdata->irv2 = 0;
+    p8est_refine_ext (p8est, 0, gdata->maxlevel, adapt_refine, NULL, adapt_replace);
+    
+}
 
 
 

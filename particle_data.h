@@ -26,7 +26,7 @@ class Global_Data{
         void sc_array_paste (sc_array_t * dest, sc_array_t * src);
         void adjustCoordByDomain( double xyz[3]);
         void initFluidParticles();
-
+        void prerun();
         void loopquad (p4est_topidx_t tt, p8est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]);
         
 

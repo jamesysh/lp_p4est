@@ -42,12 +42,10 @@ int main(){
 
 
     octree->partition_octree(1,NULL);
- 
+    gdata->prerun(); 
     gdata->initFluidParticles();
 
-    
-    gdata->ireindex = gdata->irvindex = 0;
-    p8est_coarsen_ext (gdata->p8est, 0, 1, octree->adapt_coarsen, NULL, octree->adapt_replace);
+    octree->adapt_octree(); 
     LPSolver * lpsolver = new LPSolver(gdata);
 
   //  gdata->writeVTKFiles();
