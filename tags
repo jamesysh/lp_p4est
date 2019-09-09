@@ -17,6 +17,7 @@ CFLAGS	state/makefile	/^CFLAGS = -Wall -c -std=c++11 $(DEBUG) $(OMP) $(INCS)$/;"
 DEBUG	geometry/makefile	/^DEBUG  = -g$/;"	m
 DEBUG	makefile	/^DEBUG = -g$/;"	m
 DEBUG	state/makefile	/^DEBUG  = -g$/;"	m
+EOS	eos.h	/^class EOS {$/;"	c
 GEOMETRY_DIR	geometry/makefile	/^GEOMETRY_DIR=$(MAIN_DIR)\/geometry\/$/;"	m
 GEOMETRY_DIR	makefile	/^GEOMETRY_DIR=$(MAIN_DIR)\/geometry\/$/;"	m
 GEOMETRY_DIR	state/makefile	/^GEOMETRY_DIR=$(MAIN_DIR)\/geometry\/$/;"	m
@@ -44,10 +45,12 @@ LFLAGS	state/makefile	/^LFLAGS = -Wall  $(DEBUG) $(INCS) $(LIBS) $(OMP)$/;"	m
 LIBS	geometry/makefile	/^LIBS   = -L $(LAPACK_DIR) $/;"	m
 LIBS	makefile	/^LIBS = -L $(P4EST_LIB)$/;"	m
 LIBS	state/makefile	/^LIBS   = -L $(LAPACK_DIR) $/;"	m
+LPSolver	lp_solver.cpp	/^LPSolver::LPSolver(Global_Data *g){$/;"	f	class:LPSolver
+LPSolver	lp_solver.h	/^class LPSolver {$/;"	c
 MAIN_DIR	geometry/makefile	/^MAIN_DIR:=${CURDIR}\/..\/$/;"	m
 MAIN_DIR	makefile	/^MAIN_DIR:=${CURDIR}$/;"	m
 MAIN_DIR	state/makefile	/^MAIN_DIR:=${CURDIR}\/..\/$/;"	m
-MAIN_OBJS	makefile	/^MAIN_OBJS = lp_main.o particle_data.o initializer.o octree_manager.o registrar.o$/;"	m
+MAIN_OBJS	makefile	/^MAIN_OBJS = lp_main.o particle_data.o initializer.o octree_manager.o registrar.o lp_solver.o eos.o$/;"	m
 OBJS	geometry/makefile	/^OBJS := $(SRC_FILES:.cpp=.o)$/;"	m
 OBJS	makefile	/^OBJS = $(B_OBJS) $(S_OBJS) $(G_OBJS) $(MAIN_OBJS)$/;"	m
 OBJS	state/makefile	/^OBJS := $(SRC_FILES:.cpp=.o)$/;"	m
@@ -55,10 +58,15 @@ Octree_Manager	octree_manager.cpp	/^Octree_Manager:: Octree_Manager(Global_Data 
 Octree_Manager	octree_manager.h	/^class Octree_Manager{$/;"	c
 P4EST_INC	makefile	/^P4EST_INC = \/home\/syuan\/p4est\/include$/;"	m
 P4EST_LIB	makefile	/^P4EST_LIB = \/home\/syuan\/p4est\/lib$/;"	m
+PA_MODE_LOCATE	particle_data.h	/^  PA_MODE_LOCATE$/;"	e	enum:pa_mode
+PA_MODE_RECEIVE	particle_data.h	/^  PA_MODE_RECEIVE,$/;"	e	enum:pa_mode
+PA_MODE_REMAIN	particle_data.h	/^  PA_MODE_REMAIN,$/;"	e	enum:pa_mode
 PelletLayer	geometry/geometry_pellet.cpp	/^PelletLayer::PelletLayer(){$/;"	f	class:PelletLayer
 PelletLayer	geometry/geometry_pellet.h	/^class PelletLayer: public Geometry {$/;"	c
 PelletState	state/state_pellet.cpp	/^PelletState::PelletState():$/;"	f	class:PelletState
 PelletState	state/state_pellet.h	/^class PelletState: public State{$/;"	c
+PolytropicGasEOS	eos.h	/^	PolytropicGasEOS(double gamma,int pelletmaterial) :m_iPelletMaterial(pelletmaterial) {m_iEOSChoice=1; m_fGamma = gamma;}$/;"	f	class:PolytropicGasEOS
+PolytropicGasEOS	eos.h	/^class PolytropicGasEOS : public EOS {$/;"	c
 SRC_FILES	geometry/makefile	/^SRC_FILES := $(wildcard *.cpp) $/;"	m
 SRC_FILES	state/makefile	/^SRC_FILES := $(wildcard *.cpp) $/;"	m
 STATE_DIR	geometry/makefile	/^STATE_DIR=$(MAIN_DIR)\/state\/$/;"	m
@@ -72,48 +80,69 @@ StateFactory	state/state.h	/^	StateFactory() {}; \/\/\/< for singleton design pa
 StateFactory	state/state.h	/^class StateFactory {$/;"	c
 StateRegistrar	registrar.h	/^StateRegistrar<Derived>::StateRegistrar(std::string name) {$/;"	f	class:StateRegistrar
 StateRegistrar	registrar.h	/^class StateRegistrar {$/;"	c
+__EOS_H__	eos.h	3;"	d
 __GEOMETRY_H__	geometry/geometry.h	2;"	d
 __GEOMETRY_PELLET_H	geometry/geometry_pellet.h	2;"	d
 __INITIALIZER_H__	initializer.h	2;"	d
+__LP_SOLVER_H__	lp_solver.h	2;"	d
 __OCTREE_MANAGER__	octree_manager.h	2;"	d
 __PARTICLE_DATA_H__	particle_data.h	2;"	d
 __REGISTRAR_H__	registrar.h	2;"	d
 __STATE_H__	state/state.h	3;"	d
 __STATE_PELLET_H__	state/state_pellet.h	2;"	d
-__TOOL_FN_H__	tool_fn.h	2;"	d
-adjustCoordByDomain	particle_data.cpp	/^static void adjustCoordByDomain(double dl, double xyz[3]){$/;"	f	file:
+adapt_coarsen	octree_manager.cpp	/^int Octree_Manager:: adapt_coarsen (p8est_t * p8est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
+adapt_octree	octree_manager.cpp	/^void Octree_Manager:: adapt_octree(){$/;"	f	class:Octree_Manager
+adapt_refine	octree_manager.cpp	/^int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
+adapt_replace	octree_manager.cpp	/^void Octree_Manager:: adapt_replace (p8est_t * p8est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
+adjustCoordByDomain	particle_data.cpp	/^void Global_Data:: adjustCoordByDomain( double xyz[3]){$/;"	f	class:Global_Data
 bb	particle_data.h	/^        double bb[6]; \/\/ bounding box of initial fluid particles  $/;"	m	class:Global_Data
 build_octree	octree_manager.cpp	/^void Octree_Manager:: build_octree(){$/;"	f	class:Octree_Manager
 cfl_coefficient	initializer.h	/^        double cfl_coefficient;$/;"	m	class:Initializer
 cleanUpArrays	particle_data.cpp	/^void Global_Data:: cleanUpArrays(){$/;"	f	class:Global_Data
-conn	particle_data.h	/^        p4est_connectivity_t *conn;$/;"	m	class:Global_Data
+conn	particle_data.h	/^        p8est_connectivity_t *conn;$/;"	m	class:Global_Data
 createFunc	registrar.h	/^Geometry* GeometryRegistrar<Derived>::createFunc() {$/;"	f	class:GeometryRegistrar
 createFunc	registrar.h	/^State* StateRegistrar<Derived>::createFunc() {$/;"	f	class:StateRegistrar
 createGeometry	geometry/geometry.cpp	/^Geometry* GeometryFactory::createGeometry(std::string name) {$/;"	f	class:GeometryFactory
-createParticlesInOctant	particle_data.cpp	/^static void createParticlesInOctant(p4est_iter_volume_info_t * info, void *user_data){$/;"	f	file:
+createParticlesInOctant	particle_data.cpp	/^static void createParticlesInOctant(p8est_iter_volume_info_t * info, void *user_data){$/;"	f	file:
 createState	state/state.cpp	/^State* StateFactory::createState(std::string name) {$/;"	f	class:StateFactory
 density	state/state_pellet.cpp	/^double PelletState::density(double x, double y, double z){$/;"	f	class:PelletState
 destroy_octree	octree_manager.cpp	/^void Octree_Manager:: destroy_octree(){$/;"	f	class:Octree_Manager
+diagnosis	eos.h	/^    virtual void diagnosis(double rho0, double rho1, double t0, double t1){};$/;"	f	class:PolytropicGasEOS
 domain_len	particle_data.h	/^        double domain_len = 16; $/;"	m	class:Global_Data
+dt	lp_solver.h	/^    double dt = 0.1;$/;"	m	class:LPSolver
 dt	particle_data.h	/^        double dt;$/;"	m	class:Global_Data
 dxyz	particle_data.h	/^        double lxyz[3],hxyz[3],dxyz[3]; \/\/boundingbox of octant$/;"	m	class:Global_Data
 elem_particles	initializer.h	/^        int elem_particles; \/\/max number of particles per octant$/;"	m	class:Initializer
 elem_particles	particle_data.h	/^        int elem_particles; \/\/max number of particles per octant$/;"	m	class:Global_Data
 endt	initializer.h	/^        double endt;$/;"	m	class:Initializer
 endt	particle_data.h	/^        double endt;$/;"	m	class:Global_Data
+eos	particle_data.h	/^        EOS* eos;        $/;"	m	class:Global_Data
+eoschoice	initializer.h	/^        int eoschoice;$/;"	m	class:Initializer
+eoschoice	particle_data.h	/^        int eoschoice;$/;"	m	class:Global_Data
+flagrefine	particle_data.h	/^        int flagrefine, gflagrefine;$/;"	m	class:Global_Data
+gamma	initializer.h	/^        int gamma;$/;"	m	class:Initializer
+gamma	particle_data.h	/^        double gamma;$/;"	m	class:Global_Data
+gdata	lp_solver.h	/^    Global_Data * gdata; $/;"	m	class:LPSolver
 gdata	octree_manager.h	/^        Global_Data *gdata;$/;"	m	class:Octree_Manager
 geoTable	geometry/geometry.h	/^	std::unordered_map<std::string,GeoCreateFunc> geoTable; \/\/\/< hash table for the (name,creatFunction) pair$/;"	m	class:GeometryFactory
 geometry	particle_data.h	/^        Geometry* geometry;$/;"	m	class:Global_Data
 getBoundingBox	geometry/geometry_pellet.cpp	/^void PelletLayer::getBoundingBox(double& xmin, double& xmax, double& ymin, double& ymax, double& zmin, double& zmax){$/;"	f	class:PelletLayer
+getEOSChoice	eos.h	/^	int getEOSChoice() {return m_iEOSChoice;}$/;"	f	class:EOS
+getElectricConductivity	eos.cpp	/^double PolytropicGasEOS::getElectricConductivity(double pressure, double density) {$/;"	f	class:PolytropicGasEOS
+getEnergy	eos.cpp	/^double PolytropicGasEOS::getEnergy(double pressure, double density) {$/;"	f	class:PolytropicGasEOS
+getGamma	eos.h	/^    double getGamma() {return m_fGamma;}	$/;"	f	class:EOS
+getParameters	eos.h	/^	virtual void getParameters(std::vector<double>& params){params.push_back(m_fGamma);};$/;"	f	class:PolytropicGasEOS
+getSoundSpeed	eos.cpp	/^double PolytropicGasEOS::getSoundSpeed(double pressure, double density) {$/;"	f	class:PolytropicGasEOS
+getTemperature	eos.cpp	/^double PolytropicGasEOS::getTemperature(double pressure, double density) {$/;"	f	class:PolytropicGasEOS
+gflagrefine	particle_data.h	/^        int flagrefine, gflagrefine;$/;"	m	class:Global_Data
 gplost	particle_data.h	/^        p4est_gloidx_t gpnum, gplost; \/\/number of particles on all processor, number of particles on all processers which left domain$/;"	m	class:Global_Data
 gpnum	particle_data.h	/^        p4est_gloidx_t gpnum, gplost; \/\/number of particles on all processor, number of particles on all processers which left domain$/;"	m	class:Global_Data
 hxyz	particle_data.h	/^        double lxyz[3],hxyz[3],dxyz[3]; \/\/boundingbox of octant$/;"	m	class:Global_Data
 id	particle_data.h	/^    p4est_gloidx_t      id;$/;"	m	struct:pdata
-idreceive	particle_data.h	/^        sc_array_t *idreceive;\/**< Index into particle receive buffer *\/$/;"	m	class:Global_Data
-idremain	particle_data.h	/^        sc_array_t *idremain; \/**< locidx_t Index into padata of stay-local particles *\/$/;"	m	class:Global_Data
 ifOctantInsectBox	particle_data.cpp	/^static bool ifOctantInsectBox(double lxyz[3],double bb[6],double l) \/\/l:lenth of octant, lxyz:coord of octant$/;"	f	file:
 ifPointInsideBox	particle_data.cpp	/^static bool ifPointInsideBox(double x, double y, double z, double bb[6]) {$/;"	f	file:
 iffound	particle_data.h	/^        sc_array_t *iffound;   \/**< char Flag for received particles *\/$/;"	m	class:Global_Data
+ilh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
 initFluidParticles	particle_data.cpp	/^void Global_Data::initFluidParticles(){$/;"	f	class:Global_Data
 initlevel	initializer.h	/^        int initlevel ; \/\/init level of octree$/;"	m	class:Initializer
 initlevel	particle_data.h	/^        int initlevel;$/;"	m	class:Global_Data
@@ -124,45 +153,72 @@ initperturbation	particle_data.h	/^        double initperturbation;$/;"	m	class:
 innerradius	geometry/geometry_pellet.h	/^	double innerradius;$/;"	m	class:PelletLayer
 instance	geometry/geometry.cpp	/^GeometryFactory& GeometryFactory::instance() { $/;"	f	class:GeometryFactory
 instance	state/state.cpp	/^StateFactory& StateFactory::instance() { \/\/ singleton$/;"	f	class:StateFactory
+ire2	particle_data.h	/^        p4est_locidx_t      ireindex, ire2;   \/**< Running index into iremain *\/$/;"	m	class:Global_Data
+ireceive	particle_data.h	/^        sc_array_t *ireceive;\/**< Index into particle receive buffer *\/$/;"	m	class:Global_Data
+ireindex	particle_data.h	/^        p4est_locidx_t      ireindex, ire2;   \/**< Running index into iremain *\/$/;"	m	class:Global_Data
+iremain	particle_data.h	/^        sc_array_t *iremain; \/**< locidx_t Index into padata of stay-local particles *\/$/;"	m	class:Global_Data
+irv2	particle_data.h	/^        p4est_locidx_t      irvindex, irv2;   \/**< Running index into ireceive *\/$/;"	m	class:Global_Data
+irvindex	particle_data.h	/^        p4est_locidx_t      irvindex, irv2;   \/**< Running index into ireceive *\/$/;"	m	class:Global_Data
+jlh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
+klh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
 localspacing	particle_data.h	/^    double localspacing;$/;"	m	struct:pdata
+loopquad	particle_data.cpp	/^void Global_Data::loopquad (p4est_topidx_t tt, p8est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]){$/;"	f	class:Global_Data
 lpend	particle_data.h	/^    p4est_locidx_t      lpend;$/;"	m	struct:octant_data
 lpnum	particle_data.h	/^        p4est_locidx_t lpnum; \/\/number of particles on local processor$/;"	m	class:Global_Data
 lxyz	particle_data.h	/^        double lxyz[3],hxyz[3],dxyz[3]; \/\/boundingbox of octant$/;"	m	class:Global_Data
 m_fDen	state/state_pellet.h	/^	double m_fDen;$/;"	m	class:PelletState
+m_fGamma	eos.h	/^    double m_fGamma;	$/;"	m	class:EOS
 m_fPressure	state/state_pellet.h	/^	double m_fPressure;$/;"	m	class:PelletState
 m_fVel	state/state_pellet.h	/^	double m_fVel;$/;"	m	class:PelletState
+m_iEOSChoice	eos.h	/^    int m_iEOSChoice; \/\/\/< The eos choice: 1=Polytropic gas; 2=Stiffened Polytropic gas; 3=Saha Eos$/;"	m	class:EOS
+m_iPelletMaterial	eos.h	/^    int m_iPelletMaterial;$/;"	m	class:PolytropicGasEOS
 main	lp_main.cpp	/^int main(){$/;"	f
 mass	particle_data.h	/^    double mass;$/;"	m	struct:pdata
 maxlevel	initializer.h	/^        int maxlevel ;$/;"	m	class:Initializer
 maxlevel	particle_data.h	/^        int maxlevel;$/;"	m	class:Global_Data
+minlevel	initializer.h	/^        int minlevel;$/;"	m	class:Initializer
+minlevel	particle_data.h	/^        int minlevel; $/;"	m	class:Global_Data
+moveParticlesByG	lp_solver.cpp	/^void LPSolver::moveParticlesByG(double dt){$/;"	f	class:LPSolver
 mpicomm	particle_data.h	/^        sc_MPI_Comm mpicomm;$/;"	m	class:Global_Data
 mpirank	particle_data.h	/^        int mpisize,mpirank;$/;"	m	class:Global_Data
 mpisize	particle_data.h	/^        int mpisize,mpirank;$/;"	m	class:Global_Data
 octant_data	particle_data.h	/^typedef struct octant_data$/;"	s
 octant_data_t	particle_data.h	/^octant_data_t;$/;"	t	typeref:struct:octant_data
+oldv	particle_data.h	/^    double oldv[3];$/;"	m	struct:pdata
 operator ()	geometry/geometry_pellet.cpp	/^bool PelletLayer::operator()(double x, double y, double z) const{$/;"	f	class:PelletLayer
 outerradius	geometry/geometry_pellet.h	/^	double outerradius;$/;"	m	class:PelletLayer
-p4est	particle_data.h	/^        p4est_t            *p4est;$/;"	m	class:Global_Data
+p8est	particle_data.h	/^        p8est_t            *p8est;$/;"	m	class:Global_Data
+pa_mode	particle_data.h	/^typedef enum pa_mode$/;"	g
+pa_mode_t	particle_data.h	/^pa_mode_t;$/;"	t	typeref:enum:pa_mode
 particle_data	particle_data.h	/^        sc_array_t *particle_data; \/\/local particle data on process$/;"	m	class:Global_Data
-partition_octree	octree_manager.cpp	/^void Octree_Manager:: partition_octree(int allow_for_coarsening,p4est_weight_t weight_fn){$/;"	f	class:Octree_Manager
+partition_octree	octree_manager.cpp	/^void Octree_Manager:: partition_octree(int allow_for_coarsening,p8est_weight_t weight_fn){$/;"	f	class:Octree_Manager
 pdata	particle_data.h	/^typedef struct pdata{$/;"	s
 pdata_t	particle_data.h	/^} pdata_t;$/;"	t	typeref:struct:pdata
+pelletmaterial	initializer.h	/^        int pelletmaterial;$/;"	m	class:Initializer
+pelletmaterial	particle_data.h	/^        int pelletmaterial;$/;"	m	class:Global_Data
+poctant	particle_data.h	/^    p4est_locidx_t    poctant;$/;"	m	struct:octant_data
+prebuf	particle_data.h	/^        sc_array_t *prebuf;  \/**< pdata_t All received particles *\/$/;"	m	class:Global_Data
 preceive	particle_data.h	/^  p4est_locidx_t      premain, preceive;$/;"	m	struct:octant_data
 premain	particle_data.h	/^  p4est_locidx_t      premain, preceive;$/;"	m	struct:octant_data
+prerun	particle_data.cpp	/^void Global_Data::prerun(){$/;"	f	class:Global_Data
 pressure	particle_data.h	/^    double pressure;$/;"	m	struct:pdata
 pressure	state/state_pellet.cpp	/^double PelletState::pressure(double x, double y, double z) {$/;"	f	class:PelletState
 psend	particle_data.h	/^        sc_hash_t  *psend;    \/**< comm_psend_t with one entry per receiver *\/$/;"	m	class:Global_Data
 psmem	particle_data.h	/^        sc_mempool_t *psmem;    \/**< comm_psend_t to use as hash table entries *\/$/;"	m	class:Global_Data
-receivebuffer	particle_data.h	/^        sc_array_t *receivebuffer;  \/**< pa_data_t All received particles *\/$/;"	m	class:Global_Data
+qreceive	particle_data.h	/^        p4est_locidx_t qremain, qreceive;$/;"	m	class:Global_Data
+qremain	particle_data.h	/^        p4est_locidx_t qremain, qreceive;$/;"	m	class:Global_Data
 recevs	particle_data.h	/^        sc_array_t *recevs;   \/**< comm_prank_t with one entry per receiver, sorted *\/$/;"	m	class:Global_Data
 recv_req	particle_data.h	/^        sc_array_t  *recv_req; \/**< sc_MPI_Request for receiving *\/$/;"	m	class:Global_Data
-refine_init	tool_fn.h	/^refine_init (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f
-refine_octree	octree_manager.cpp	/^void Octree_Manager:: refine_octree(int recursive, p4est_refine_t refine_fn, p4est_init_t init_fn, p4est_replace_t replace_fn){$/;"	f	class:Octree_Manager
+refine_init	lp_main.cpp	/^refine_init (p8est_t * p8est, p4est_topidx_t which_tree,$/;"	f	file:
+refine_octree	octree_manager.cpp	/^void Octree_Manager:: refine_octree(int recursive, p8est_refine_t refine_fn, p8est_init_t init_fn, p8est_replace_t replace_fn){$/;"	f	class:Octree_Manager
 registerGeometry	geometry/geometry.cpp	/^void GeometryFactory::registerGeometry(std::string name, GeoCreateFunc func) {$/;"	f	class:GeometryFactory
 registerState	state/state.cpp	/^void StateFactory::registerState(std::string name, StateCreateFunc func) {$/;"	f	class:StateFactory
-sc_array_index_begin	particle_data.cpp	/^sc_array_index_begin (sc_array_t * arr)$/;"	f	file:
+sc_array_index_begin	particle_data.cpp	/^void * Global_Data::sc_array_index_begin (sc_array_t * arr)$/;"	f	class:Global_Data
+sc_array_paste	particle_data.cpp	/^void Global_Data::sc_array_paste (sc_array_t * dest, sc_array_t * src)$/;"	f	class:Global_Data
 send_req	particle_data.h	/^        sc_array_t *send_req; \/**< sc_MPI_Request for sending *\/$/;"	m	class:Global_Data
+setEOS	particle_data.cpp	/^void Global_Data::setEOS(){$/;"	f	class:Global_Data
 soundspeed	particle_data.h	/^    double soundspeed;$/;"	m	struct:pdata
+split_by_coord	particle_data.cpp	/^void Global_Data::split_by_coord ( sc_array_t * in,$/;"	f	class:Global_Data
 state	particle_data.h	/^        State* state;        $/;"	m	class:Global_Data
 stateTable	state/state.h	/^	std::unordered_map<std::string, StateCreateFunc> stateTable; \/\/\/< hash table for the (name,creatFunction) pair	$/;"	m	class:StateFactory
 target_proc	particle_data.h	/^        sc_array_t *target_proc; \/\/target process of particle$/;"	m	class:Global_Data
@@ -178,10 +234,13 @@ ycen	geometry/geometry_pellet.h	/^	double ycen;$/;"	m	class:PelletLayer
 ycen	state/state_pellet.h	/^	double ycen;$/;"	m	class:PelletState
 zcen	geometry/geometry_pellet.h	/^	double zcen;$/;"	m	class:PelletLayer
 zcen	state/state_pellet.h	/^	double zcen;$/;"	m	class:PelletState
+~EOS	eos.h	/^	virtual ~EOS() {};$/;"	f	class:EOS
 ~Geometry	geometry/geometry.h	/^	virtual ~Geometry() {}$/;"	f	class:Geometry
 ~Global_Data	particle_data.cpp	/^Global_Data:: ~Global_Data(){$/;"	f	class:Global_Data
 ~Initializer	initializer.h	/^        ~Initializer(){};$/;"	f	class:Initializer
+~LPSolver	lp_solver.h	/^    ~LPSolver(){}$/;"	f	class:LPSolver
 ~Octree_Manager	octree_manager.h	/^        ~Octree_Manager(){};$/;"	f	class:Octree_Manager
 ~PelletLayer	geometry/geometry_pellet.h	/^	virtual ~PelletLayer() {}$/;"	f	class:PelletLayer
 ~PelletState	state/state_pellet.h	/^	virtual ~PelletState(){};$/;"	f	class:PelletState
+~PolytropicGasEOS	eos.h	/^	virtual ~PolytropicGasEOS() {}$/;"	f	class:PolytropicGasEOS
 ~State	state/state.h	/^	virtual ~State() {};$/;"	f	class:State
