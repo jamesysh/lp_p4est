@@ -6,9 +6,70 @@
 #include "mpi.h"
 #include "particle_data.h"
 #include "geometry_pellet.h"
+#include "sc_notify.h"
 using namespace std;
 
+static int
+slocal_quad (p8est_t * p4est, p4est_topidx_t which_tree,
+             p8est_quadrant_t * quadrant, p4est_locidx_t local_num,
+             void *point)
+{
+  Global_Data      *g = (Global_Data *) p4est->user_pointer;
 
+  /* compute coordinate range of this quadrant */
+  g->loopquad ( which_tree, quadrant, g->lxyz, g->hxyz, g->dxyz);
+
+  /* always return 1 to search particles individually */
+  return 1;
+}
+
+
+static int
+slocal_point (p8est_t * p4est, p4est_topidx_t which_tree,
+              p8est_quadrant_t * quadrant, p4est_locidx_t local_num,
+              void *point)
+{
+  int                 i;
+  char               *cf;
+  size_t              zp;
+  Global_Data      *g = (Global_Data *) p4est->user_pointer;
+  octant_data_t          *qud;
+  double             *x;
+  pdata_t          *pad = (pdata_t *) point;
+
+  /* access location of particle to be searched */
+  x = pad->xyz;
+
+  /* due to roundoff we call this even for a local leaf */
+  for (i = 0; i < P8EST_DIM; ++i) {
+    if (!(g->lxyz[i] <= x[i] && x[i] <= g->hxyz[i])) {
+      /* the point is outside the search quadrant */
+      return 0;
+    }
+  }
+
+  if (local_num >= 0) {
+    /* quadrant is a local leaf */
+    /* first local match counts (due to roundoff there may be multiple) */
+    zp = sc_array_position (g->prebuf, point);
+    cf = (char *) sc_array_index (g->cfound, zp);
+    if (!*cf) {
+      /* make sure this particle is not found twice */
+      *cf = 1;
+
+      /* count this particle in its target quadrant */
+      *(p4est_locidx_t *) sc_array_push (g->ireceive) = (p4est_locidx_t) zp;
+      qud = (octant_data_t *) quadrant->p.user_data;
+      ++qud->preceive;
+    }
+
+    /* return value will have no effect */
+    return 0;
+  }
+
+  /* the leaf for this particle has not yet been found */
+  return 1;
+}
 static int
 psearch_quad (p8est_t * p4est, p4est_topidx_t which_tree,
               p8est_quadrant_t * quadrant, int pfirst, int plast,
@@ -501,6 +562,8 @@ void Global_Data::presearch(){
 
   p8est_search_all (p8est, 0, psearch_quad, psearch_point, particle_data);
 
+
+
 }
 
 
@@ -595,3 +658,221 @@ void Global_Data::packParticles(){
 
   sc_array_destroy_null (&pfound);
 }
+
+
+
+void Global_Data::communicateParticles(){
+
+  int                 mpiret;
+  int                 i;
+  int                 num_receivers;
+  int                 num_senders;
+  int                 count, cucount;
+  int                 msglen;
+  sc_MPI_Request     *reqs;
+  sc_array_t         *notif, *payl;
+  sc_array_t         *arr;
+  comm_psend_t       *cps;
+  comm_prank_t       *trank;
+
+  num_receivers = (int) recevs->elem_count;
+
+  notif = sc_array_new_count (sizeof (int), num_receivers);
+  payl = sc_array_new_count (sizeof (int), num_receivers);   //payload
+
+
+  for (i = 0; i < num_receivers; ++i) {
+
+    trank = (comm_prank_t *) sc_array_index_int (recevs, i);
+
+    *(int *) sc_array_index_int (notif, i) = trank->rank;
+
+    cps = trank->psend;
+  
+    assert(cps->rank == trank->rank);
+
+    arr = &cps->message;
+ 
+    *(int *) sc_array_index_int (payl, i) = (int) arr->elem_count;
+ 
+  
+  }
+
+
+  sc_notify_ext (notif, NULL, payl, NULL, mpicomm);
+
+  assert (payl->elem_count == notif->elem_count);
+
+  num_senders = (int) notif->elem_count;
+
+  cucount = 0;
+  for (i = 0; i < num_senders; ++i) {
+    cucount += *(int *) sc_array_index_int (payl, i);
+  }
+  prebuf = sc_array_new_count (sizeof(pdata_t), cucount);
+
+  /* post non-blocking receive */
+  recv_req = sc_array_new_count (sizeof (sc_MPI_Request), num_senders);
+
+  cucount = 0;
+
+  for (i = 0; i < num_senders; ++i) {
+    count = *(int *) sc_array_index_int (payl, i);
+    msglen = count * (int) sizeof(pdata_t);
+    mpiret = sc_MPI_Irecv
+      (sc_array_index (prebuf, cucount), msglen, sc_MPI_BYTE,
+       *(int *) sc_array_index_int (notif, i), COMM_TAG_PART, mpicomm,
+       (sc_MPI_Request *) sc_array_index_int (recv_req, i));
+    SC_CHECK_MPI (mpiret);
+    cucount += count;
+  }
+  assert(cucount == (int) prebuf->elem_count);
+
+  sc_array_destroy_null (&notif);
+  sc_array_destroy_null (&payl);
+
+    send_req = sc_array_new_count (sizeof (sc_MPI_Request), num_receivers);
+    for (i = 0; i < num_receivers; ++i) {
+      trank = (comm_prank_t *) sc_array_index_int (recevs, i);
+      cps = trank->psend;
+      arr = &cps->message;
+      msglen = (int) (arr->elem_count * arr->elem_size);
+      mpiret = sc_MPI_Isend
+        (arr->array, msglen, sc_MPI_BYTE, cps->rank, COMM_TAG_PART,
+         mpicomm, (sc_MPI_Request *) sc_array_index_int (send_req, i));
+      SC_CHECK_MPI (mpiret);
+    }
+
+  reqs = (sc_MPI_Request *) sc_array_index_begin (recv_req);
+  mpiret = sc_MPI_Waitall (num_senders, reqs, sc_MPI_STATUSES_IGNORE);
+  SC_CHECK_MPI (mpiret);
+  sc_array_destroy_null (&recv_req);
+
+  num_receivers = (int) recevs->elem_count;
+  reqs = (sc_MPI_Request *) sc_array_index_begin (send_req),
+    mpiret = sc_MPI_Waitall (num_receivers, reqs, sc_MPI_STATUSES_IGNORE);
+  SC_CHECK_MPI (mpiret);
+  sc_array_destroy_null (&send_req);
+
+}
+
+void Global_Data::postsearch(){
+
+  ireceive = sc_array_new (sizeof (p4est_locidx_t));
+  cfound = sc_array_new_count (sizeof (char), prebuf->elem_count);
+
+  sc_array_memset (cfound, 0);
+
+  p8est_search_local (p8est, 0, slocal_quad, slocal_point, prebuf);
+  
+  sc_array_destroy_null (&cfound);
+
+/*
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+
+  p8est_tree_t       *tree;
+  p8est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+    tree = p8est_tree_array_index (p8est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      if(qud->preceive>0 )
+          printf("%d %d %d \n",qud->premain,qud->preceive,mpirank);
+        
+    }
+  }
+*/
+}
+
+void Global_Data::regroupParticles(){
+
+  sc_array_t         *newpa;
+  p4est_topidx_t      tt;
+  p4est_locidx_t      newnum;
+  p4est_locidx_t      ppos;
+  p4est_locidx_t      lq, prev;
+  p4est_locidx_t      qboth, li;
+  p4est_locidx_t     *premain, *preceive;
+  p8est_tree_t       *tree;
+  p8est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  pdata_t          *pad;
+
+  newnum =
+    (p4est_locidx_t) (iremain->elem_count + ireceive->elem_count);
+  lpnum = newnum;
+
+  premain = (p4est_locidx_t *) sc_array_index_begin (iremain);
+  preceive = (p4est_locidx_t *) sc_array_index_begin (ireceive);
+  newpa = sc_array_new_count (sizeof (pdata_t), newnum);
+  pad = (pdata_t *) sc_array_index_begin (newpa);
+
+  prev = 0;
+  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+    tree = p8est_tree_array_index (p8est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      qboth = qud->premain + qud->preceive;
+      if (qboth == 0) {
+        qud->lpend = prev;
+        qud->premain = qud->preceive = 0;
+        qud->poctant = 0;
+        continue;
+      }
+      prev += qboth;
+
+      for (li = 0; li < qud->premain; ++li) {
+        ppos = *premain++;
+        memcpy (pad++, sc_array_index (particle_data, ppos), sizeof (pdata_t));
+      }
+      for (li = 0; li < qud->preceive; ++li) {
+        ppos = *preceive++;
+        memcpy (pad++, sc_array_index (prebuf, ppos), sizeof (pdata_t));
+      }
+      qud->lpend = prev;
+      qud->poctant = qboth;
+      qud->premain = qud->preceive = 0;
+    }
+    
+  } 
+   
+  sc_array_destroy_null (&iremain);
+
+  sc_array_destroy_null (&ireceive);
+  sc_array_destroy (particle_data);
+
+  particle_data = newpa;
+
+}
+
+void Global_Data::testquad(){
+
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+
+  p8est_tree_t       *tree;
+  p8est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+    tree = p8est_tree_array_index (p8est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      if(qud->preceive>0 )
+          printf("%d %d %d \n",qud->premain,qud->preceive,mpirank);
+        
+    }
+  }
+
+}
+
+
+
+
+

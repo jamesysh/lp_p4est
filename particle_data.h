@@ -29,6 +29,15 @@ typedef struct comm_prank
 }
 comm_prank_t;
 
+typedef enum comm_tag
+{
+  COMM_TAG_PART = P4EST_COMM_TAG_LAST,
+  COMM_TAG_FIXED,
+  COMM_TAG_CUSTOM,
+  COMM_TAG_LAST
+}
+comm_tag_t;
+
 class Global_Data{
 
     public:
@@ -44,6 +53,10 @@ class Global_Data{
         void prerun();
         void presearch();
         void packParticles();
+        void postsearch();
+        void communicateParticles();
+        void regroupParticles();
+        void testquad();
         void loopquad (p4est_topidx_t tt, p8est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]);
         
 
@@ -80,7 +93,7 @@ class Global_Data{
         p4est_locidx_t lpnum; //number of particles on local processor
         p4est_gloidx_t gpnum, gplost; //number of particles on all processor, number of particles on all processers which left domain
         p4est_locidx_t qremain, qreceive;
-        int flagrefine, gflagrefine;
+        int flagrefine, gflagrefine, flagstartrefine;
         sc_array_t *particle_data; //local particle data on process
         
         sc_array_t *pfound; //target process of particle

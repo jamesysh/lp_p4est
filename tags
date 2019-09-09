@@ -14,6 +14,10 @@ CC	state/makefile	/^CC     = g++$/;"	m
 CFLAGS	geometry/makefile	/^CFLAGS = -Wall -c -std=c++11 $(DEBUG) $(OMP) $(INCS)$/;"	m
 CFLAGS	makefile	/^CFLAGS = -Wall -std=c++11 -c  $(DEBUG) $(INCS) $(LIBS) $/;"	m
 CFLAGS	state/makefile	/^CFLAGS = -Wall -c -std=c++11 $(DEBUG) $(OMP) $(INCS)$/;"	m
+COMM_TAG_CUSTOM	particle_data.h	/^  COMM_TAG_CUSTOM,$/;"	e	enum:comm_tag
+COMM_TAG_FIXED	particle_data.h	/^  COMM_TAG_FIXED,$/;"	e	enum:comm_tag
+COMM_TAG_LAST	particle_data.h	/^  COMM_TAG_LAST$/;"	e	enum:comm_tag
+COMM_TAG_PART	particle_data.h	/^  COMM_TAG_PART = P4EST_COMM_TAG_LAST,$/;"	e	enum:comm_tag
 DEBUG	geometry/makefile	/^DEBUG  = -g$/;"	m
 DEBUG	makefile	/^DEBUG = -g$/;"	m
 DEBUG	state/makefile	/^DEBUG  = -g$/;"	m
@@ -98,7 +102,16 @@ adjustCoordByDomain	particle_data.cpp	/^void Global_Data:: adjustCoordByDomain( 
 bb	particle_data.h	/^        double bb[6]; \/\/ bounding box of initial fluid particles  $/;"	m	class:Global_Data
 build_octree	octree_manager.cpp	/^void Octree_Manager:: build_octree(){$/;"	f	class:Octree_Manager
 cfl_coefficient	initializer.h	/^        double cfl_coefficient;$/;"	m	class:Initializer
+cfound	particle_data.h	/^        sc_array_t *cfound;   \/**< char Flag for received particles *\/$/;"	m	class:Global_Data
 cleanUpArrays	particle_data.cpp	/^void Global_Data:: cleanUpArrays(){$/;"	f	class:Global_Data
+comm_prank	particle_data.h	/^typedef struct comm_prank$/;"	s
+comm_prank_compare	particle_data.cpp	/^comm_prank_compare (const void *v1, const void *v2)$/;"	f	file:
+comm_prank_t	particle_data.h	/^comm_prank_t;$/;"	t	typeref:struct:comm_prank
+comm_psend	particle_data.h	/^typedef struct comm_psend$/;"	s
+comm_psend_t	particle_data.h	/^comm_psend_t;$/;"	t	typeref:struct:comm_psend
+comm_tag	particle_data.h	/^typedef enum comm_tag$/;"	g
+comm_tag_t	particle_data.h	/^comm_tag_t;$/;"	t	typeref:enum:comm_tag
+communicateParticles	particle_data.cpp	/^void Global_Data::communicateParticles(){$/;"	f	class:Global_Data
 conn	particle_data.h	/^        p8est_connectivity_t *conn;$/;"	m	class:Global_Data
 createFunc	registrar.h	/^Geometry* GeometryRegistrar<Derived>::createFunc() {$/;"	f	class:GeometryRegistrar
 createFunc	registrar.h	/^State* StateRegistrar<Derived>::createFunc() {$/;"	f	class:StateRegistrar
@@ -119,7 +132,8 @@ endt	particle_data.h	/^        double endt;$/;"	m	class:Global_Data
 eos	particle_data.h	/^        EOS* eos;        $/;"	m	class:Global_Data
 eoschoice	initializer.h	/^        int eoschoice;$/;"	m	class:Initializer
 eoschoice	particle_data.h	/^        int eoschoice;$/;"	m	class:Global_Data
-flagrefine	particle_data.h	/^        int flagrefine, gflagrefine;$/;"	m	class:Global_Data
+flagrefine	particle_data.h	/^        int flagrefine, gflagrefine, flagstartrefine;$/;"	m	class:Global_Data
+flagstartrefine	particle_data.h	/^        int flagrefine, gflagrefine, flagstartrefine;$/;"	m	class:Global_Data
 gamma	initializer.h	/^        int gamma;$/;"	m	class:Initializer
 gamma	particle_data.h	/^        double gamma;$/;"	m	class:Global_Data
 gdata	lp_solver.h	/^    Global_Data * gdata; $/;"	m	class:LPSolver
@@ -134,14 +148,13 @@ getGamma	eos.h	/^    double getGamma() {return m_fGamma;}	$/;"	f	class:EOS
 getParameters	eos.h	/^	virtual void getParameters(std::vector<double>& params){params.push_back(m_fGamma);};$/;"	f	class:PolytropicGasEOS
 getSoundSpeed	eos.cpp	/^double PolytropicGasEOS::getSoundSpeed(double pressure, double density) {$/;"	f	class:PolytropicGasEOS
 getTemperature	eos.cpp	/^double PolytropicGasEOS::getTemperature(double pressure, double density) {$/;"	f	class:PolytropicGasEOS
-gflagrefine	particle_data.h	/^        int flagrefine, gflagrefine;$/;"	m	class:Global_Data
+gflagrefine	particle_data.h	/^        int flagrefine, gflagrefine, flagstartrefine;$/;"	m	class:Global_Data
 gplost	particle_data.h	/^        p4est_gloidx_t gpnum, gplost; \/\/number of particles on all processor, number of particles on all processers which left domain$/;"	m	class:Global_Data
 gpnum	particle_data.h	/^        p4est_gloidx_t gpnum, gplost; \/\/number of particles on all processor, number of particles on all processers which left domain$/;"	m	class:Global_Data
 hxyz	particle_data.h	/^        double lxyz[3],hxyz[3],dxyz[3]; \/\/boundingbox of octant$/;"	m	class:Global_Data
 id	particle_data.h	/^    p4est_gloidx_t      id;$/;"	m	struct:pdata
 ifOctantInsectBox	particle_data.cpp	/^static bool ifOctantInsectBox(double lxyz[3],double bb[6],double l) \/\/l:lenth of octant, lxyz:coord of octant$/;"	f	file:
 ifPointInsideBox	particle_data.cpp	/^static bool ifPointInsideBox(double x, double y, double z, double bb[6]) {$/;"	f	file:
-iffound	particle_data.h	/^        sc_array_t *iffound;   \/**< char Flag for received particles *\/$/;"	m	class:Global_Data
 ilh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
 initFluidParticles	particle_data.cpp	/^void Global_Data::initFluidParticles(){$/;"	f	class:Global_Data
 initlevel	initializer.h	/^        int initlevel ; \/\/init level of octree$/;"	m	class:Initializer
@@ -176,6 +189,7 @@ main	lp_main.cpp	/^int main(){$/;"	f
 mass	particle_data.h	/^    double mass;$/;"	m	struct:pdata
 maxlevel	initializer.h	/^        int maxlevel ;$/;"	m	class:Initializer
 maxlevel	particle_data.h	/^        int maxlevel;$/;"	m	class:Global_Data
+message	particle_data.h	/^  sc_array_t          message;     \/** Message data to send *\/$/;"	m	struct:comm_psend
 minlevel	initializer.h	/^        int minlevel;$/;"	m	class:Initializer
 minlevel	particle_data.h	/^        int minlevel; $/;"	m	class:Global_Data
 moveParticlesByG	lp_solver.cpp	/^void LPSolver::moveParticlesByG(double dt){$/;"	f	class:LPSolver
@@ -190,6 +204,7 @@ outerradius	geometry/geometry_pellet.h	/^	double outerradius;$/;"	m	class:Pellet
 p8est	particle_data.h	/^        p8est_t            *p8est;$/;"	m	class:Global_Data
 pa_mode	particle_data.h	/^typedef enum pa_mode$/;"	g
 pa_mode_t	particle_data.h	/^pa_mode_t;$/;"	t	typeref:enum:pa_mode
+packParticles	particle_data.cpp	/^void Global_Data::packParticles(){$/;"	f	class:Global_Data
 particle_data	particle_data.h	/^        sc_array_t *particle_data; \/\/local particle data on process$/;"	m	class:Global_Data
 partition_octree	octree_manager.cpp	/^void Octree_Manager:: partition_octree(int allow_for_coarsening,p8est_weight_t weight_fn){$/;"	f	class:Octree_Manager
 pdata	particle_data.h	/^typedef struct pdata{$/;"	s
@@ -198,6 +213,7 @@ pelletmaterial	initializer.h	/^        int pelletmaterial;$/;"	m	class:Initializ
 pelletmaterial	particle_data.h	/^        int pelletmaterial;$/;"	m	class:Global_Data
 pfound	particle_data.h	/^        sc_array_t *pfound; \/\/target process of particle$/;"	m	class:Global_Data
 poctant	particle_data.h	/^    p4est_locidx_t    poctant;$/;"	m	struct:octant_data
+postsearch	particle_data.cpp	/^void Global_Data::postsearch(){$/;"	f	class:Global_Data
 prebuf	particle_data.h	/^        sc_array_t *prebuf;  \/**< pdata_t All received particles *\/$/;"	m	class:Global_Data
 preceive	particle_data.h	/^  p4est_locidx_t      premain, preceive;$/;"	m	struct:octant_data
 premain	particle_data.h	/^  p4est_locidx_t      premain, preceive;$/;"	m	struct:octant_data
@@ -208,24 +224,33 @@ pressure	state/state_pellet.cpp	/^double PelletState::pressure(double x, double 
 psearch_point	particle_data.cpp	/^psearch_point (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 psearch_quad	particle_data.cpp	/^psearch_quad (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 psend	particle_data.h	/^        sc_hash_t  *psend;    \/**< comm_psend_t with one entry per receiver *\/$/;"	m	class:Global_Data
+psend	particle_data.h	/^  comm_psend_t       *psend;        \/**< Points to hash table entry *\/$/;"	m	struct:comm_prank
+psend_equal	particle_data.cpp	/^psend_equal (const void *v1, const void *v2, const void *u)$/;"	f	file:
+psend_hash	particle_data.cpp	/^psend_hash (const void *v, const void *u)$/;"	f	file:
 psmem	particle_data.h	/^        sc_mempool_t *psmem;    \/**< comm_psend_t to use as hash table entries *\/$/;"	m	class:Global_Data
 qreceive	particle_data.h	/^        p4est_locidx_t qremain, qreceive;$/;"	m	class:Global_Data
 qremain	particle_data.h	/^        p4est_locidx_t qremain, qreceive;$/;"	m	class:Global_Data
+rank	particle_data.h	/^  int                 rank;$/;"	m	struct:comm_prank
+rank	particle_data.h	/^  int                 rank;$/;"	m	struct:comm_psend
 recevs	particle_data.h	/^        sc_array_t *recevs;   \/**< comm_prank_t with one entry per receiver, sorted *\/$/;"	m	class:Global_Data
 recv_req	particle_data.h	/^        sc_array_t  *recv_req; \/**< sc_MPI_Request for receiving *\/$/;"	m	class:Global_Data
 refine_init	lp_main.cpp	/^refine_init (p8est_t * p8est, p4est_topidx_t which_tree,$/;"	f	file:
 refine_octree	octree_manager.cpp	/^void Octree_Manager:: refine_octree(int recursive, p8est_refine_t refine_fn, p8est_init_t init_fn, p8est_replace_t replace_fn){$/;"	f	class:Octree_Manager
 registerGeometry	geometry/geometry.cpp	/^void GeometryFactory::registerGeometry(std::string name, GeoCreateFunc func) {$/;"	f	class:GeometryFactory
 registerState	state/state.cpp	/^void StateFactory::registerState(std::string name, StateCreateFunc func) {$/;"	f	class:StateFactory
+regroupParticles	particle_data.cpp	/^void Global_Data::regroupParticles(){$/;"	f	class:Global_Data
 sc_array_index_begin	particle_data.cpp	/^void * Global_Data::sc_array_index_begin (sc_array_t * arr)$/;"	f	class:Global_Data
 sc_array_paste	particle_data.cpp	/^void Global_Data::sc_array_paste (sc_array_t * dest, sc_array_t * src)$/;"	f	class:Global_Data
 send_req	particle_data.h	/^        sc_array_t *send_req; \/**< sc_MPI_Request for sending *\/$/;"	m	class:Global_Data
 setEOS	particle_data.cpp	/^void Global_Data::setEOS(){$/;"	f	class:Global_Data
+slocal_point	particle_data.cpp	/^slocal_point (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
+slocal_quad	particle_data.cpp	/^slocal_quad (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 soundspeed	particle_data.h	/^    double soundspeed;$/;"	m	struct:pdata
 split_by_coord	particle_data.cpp	/^void Global_Data::split_by_coord ( sc_array_t * in,$/;"	f	class:Global_Data
 state	particle_data.h	/^        State* state;        $/;"	m	class:Global_Data
 stateTable	state/state.h	/^	std::unordered_map<std::string, StateCreateFunc> stateTable; \/\/\/< hash table for the (name,creatFunction) pair	$/;"	m	class:StateFactory
 temperature	particle_data.h	/^    double temperature;$/;"	m	struct:pdata
+testquad	particle_data.cpp	/^void Global_Data::testquad(){$/;"	f	class:Global_Data
 v	particle_data.h	/^    double v[3]; \/\/velocity$/;"	m	struct:pdata
 velocity	state/state_pellet.cpp	/^void PelletState::velocity(double x, double y, double z, double& vX, double& vY,double& vZ){$/;"	f	class:PelletState
 volume	particle_data.h	/^    double volume;$/;"	m	struct:pdata

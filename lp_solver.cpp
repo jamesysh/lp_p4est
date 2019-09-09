@@ -20,7 +20,7 @@ void LPSolver::moveParticlesByG(double dt){
    
 //move
        pad->xyz[0] += 0.5*dt*(pad->oldv[0]+pad->v[0]);
-       pad->xyz[1] += 0.5*dt*(pad->oldv[1]+pad->v[1]);
+       pad->xyz[1] += 4;// 0.5*dt*(pad->oldv[1]+pad->v[1]);
        pad->xyz[2] += 0.5*dt*(pad->oldv[2]+pad->v[2]);
   
        pad ++;

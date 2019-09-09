@@ -53,8 +53,13 @@ int main(){
     
     lpsolver->moveParticlesByG(lpsolver->dt);
     
-    //gdata->presearch();
-    //gdata->packParticles();
+    gdata->presearch();
+    gdata->packParticles();
+    gdata->communicateParticles();
+    gdata->postsearch();
+    //gdata->testquad();
+    octree->adapt_octree(); 
+    gdata->regroupParticles(); 
     gdata->cleanUpArrays(); 
     
     octree->destroy_octree();
