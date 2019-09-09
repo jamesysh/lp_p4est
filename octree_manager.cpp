@@ -257,6 +257,13 @@ int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,
 
 void Octree_Manager:: adapt_octree(){
 
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+
+  p8est_tree_t       *tree;
+  p8est_quadrant_t   *quad;
+  octant_data_t          *qud;
     p8est_t *p8est = gdata->p8est;
     gdata->ireindex = gdata->irvindex = 0;
     p8est_coarsen_ext (p8est, 0, 1, adapt_coarsen, NULL, adapt_replace);
@@ -266,9 +273,20 @@ void Octree_Manager:: adapt_octree(){
     gdata->ireindex = gdata->ire2 = 0;
     gdata->irvindex = gdata->irv2 = 0;
     p8est_refine_ext (p8est, 0, gdata->maxlevel, adapt_refine, NULL, adapt_replace);
-
     }
 
+  for (tt = gdata->p8est->first_local_tree; tt <= gdata->p8est->last_local_tree; ++tt) {
+    tree = p8est_tree_array_index (gdata->p8est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      if(qud->premain>0)
+      qud->premain = qud->preceive = 0;
+    }
+  }
+  sc_array_destroy_null (&gdata->iremain);
+
+  sc_array_destroy_null (&gdata->ireceive);
 }
 
 

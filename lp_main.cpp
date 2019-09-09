@@ -46,12 +46,15 @@ int main(){
     gdata->initFluidParticles();
 
     octree->adapt_octree(); 
+   
     LPSolver * lpsolver = new LPSolver(gdata);
 
   //  gdata->writeVTKFiles();
     
-   // lpsolver->moveParticlesByG(lpsolver->dt);
+    lpsolver->moveParticlesByG(lpsolver->dt);
     
+    gdata->presearch();
+    gdata->packParticles();
     gdata->cleanUpArrays(); 
     
     octree->destroy_octree();

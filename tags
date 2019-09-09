@@ -196,13 +196,17 @@ pdata	particle_data.h	/^typedef struct pdata{$/;"	s
 pdata_t	particle_data.h	/^} pdata_t;$/;"	t	typeref:struct:pdata
 pelletmaterial	initializer.h	/^        int pelletmaterial;$/;"	m	class:Initializer
 pelletmaterial	particle_data.h	/^        int pelletmaterial;$/;"	m	class:Global_Data
+pfound	particle_data.h	/^        sc_array_t *pfound; \/\/target process of particle$/;"	m	class:Global_Data
 poctant	particle_data.h	/^    p4est_locidx_t    poctant;$/;"	m	struct:octant_data
 prebuf	particle_data.h	/^        sc_array_t *prebuf;  \/**< pdata_t All received particles *\/$/;"	m	class:Global_Data
 preceive	particle_data.h	/^  p4est_locidx_t      premain, preceive;$/;"	m	struct:octant_data
 premain	particle_data.h	/^  p4est_locidx_t      premain, preceive;$/;"	m	struct:octant_data
 prerun	particle_data.cpp	/^void Global_Data::prerun(){$/;"	f	class:Global_Data
+presearch	particle_data.cpp	/^void Global_Data::presearch(){$/;"	f	class:Global_Data
 pressure	particle_data.h	/^    double pressure;$/;"	m	struct:pdata
 pressure	state/state_pellet.cpp	/^double PelletState::pressure(double x, double y, double z) {$/;"	f	class:PelletState
+psearch_point	particle_data.cpp	/^psearch_point (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
+psearch_quad	particle_data.cpp	/^psearch_quad (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 psend	particle_data.h	/^        sc_hash_t  *psend;    \/**< comm_psend_t with one entry per receiver *\/$/;"	m	class:Global_Data
 psmem	particle_data.h	/^        sc_mempool_t *psmem;    \/**< comm_psend_t to use as hash table entries *\/$/;"	m	class:Global_Data
 qreceive	particle_data.h	/^        p4est_locidx_t qremain, qreceive;$/;"	m	class:Global_Data
@@ -221,7 +225,6 @@ soundspeed	particle_data.h	/^    double soundspeed;$/;"	m	struct:pdata
 split_by_coord	particle_data.cpp	/^void Global_Data::split_by_coord ( sc_array_t * in,$/;"	f	class:Global_Data
 state	particle_data.h	/^        State* state;        $/;"	m	class:Global_Data
 stateTable	state/state.h	/^	std::unordered_map<std::string, StateCreateFunc> stateTable; \/\/\/< hash table for the (name,creatFunction) pair	$/;"	m	class:StateFactory
-target_proc	particle_data.h	/^        sc_array_t *target_proc; \/\/target process of particle$/;"	m	class:Global_Data
 temperature	particle_data.h	/^    double temperature;$/;"	m	struct:pdata
 v	particle_data.h	/^    double v[3]; \/\/velocity$/;"	m	struct:pdata
 velocity	state/state_pellet.cpp	/^void PelletState::velocity(double x, double y, double z, double& vX, double& vY,double& vZ){$/;"	f	class:PelletState

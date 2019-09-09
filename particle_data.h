@@ -14,6 +14,21 @@ typedef enum pa_mode
 pa_mode_t;
 
 
+typedef struct comm_psend
+{
+  int                 rank;
+  sc_array_t          message;     /** Message data to send */
+}
+comm_psend_t;
+
+/** Array entry for a process that we send messages to */
+typedef struct comm_prank
+{
+  int                 rank;
+  comm_psend_t       *psend;        /**< Points to hash table entry */
+}
+comm_prank_t;
+
 class Global_Data{
 
     public:
@@ -27,6 +42,8 @@ class Global_Data{
         void adjustCoordByDomain( double xyz[3]);
         void initFluidParticles();
         void prerun();
+        void presearch();
+        void packParticles();
         void loopquad (p4est_topidx_t tt, p8est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]);
         
 
@@ -66,7 +83,7 @@ class Global_Data{
         int flagrefine, gflagrefine;
         sc_array_t *particle_data; //local particle data on process
         
-        sc_array_t *target_proc; //target process of particle
+        sc_array_t *pfound; //target process of particle
         
         sc_array_t *iremain; /**< locidx_t Index into padata of stay-local particles */
 
@@ -80,7 +97,7 @@ class Global_Data{
 
         sc_array_t *prebuf;  /**< pdata_t All received particles */
 
-        sc_array_t *iffound;   /**< char Flag for received particles */
+        sc_array_t *cfound;   /**< char Flag for received particles */
 
         sc_hash_t  *psend;    /**< comm_psend_t with one entry per receiver */
       
