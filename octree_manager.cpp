@@ -214,9 +214,8 @@ int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,
   
   if(quad == quadrant)
   {  
-      if(maxp < g->elem_particles && maxp>-1)
+      if(maxp <= g->elem_particles && maxp>-1)
       { g->flagrefine = 0;
-      
       }
       else
       { 

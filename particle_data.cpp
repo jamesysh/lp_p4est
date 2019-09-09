@@ -301,9 +301,9 @@ void Global_Data:: cleanUpArrays(){
 
    sc_array_destroy_null(&particle_data);
 
-   sc_array_destroy_null(&iremain);
+//   sc_array_destroy_null(&iremain);
    
-//   sc_array_destroy_null(&ireceive);
+ //  sc_array_destroy_null(&ireceive);
 //sc_array_destroy_null(&pfound);
 
   for (int i = 0; i < 2; ++i) {
