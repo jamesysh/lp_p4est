@@ -54,8 +54,10 @@ class Global_Data{
         void presearch();
         void packParticles();
         void postsearch();
+        void resetOctantData();
         void communicateParticles();
         void regroupParticles();
+        void partitionParticles();
         void testquad();
         void loopquad (p4est_topidx_t tt, p8est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]);
         
@@ -116,6 +118,10 @@ class Global_Data{
       
         sc_mempool_t *psmem;    /**< comm_psend_t to use as hash table entries */
 
+      p4est_locidx_t      prevlp;   /**< Count local particles in partition callback */
+      p4est_locidx_t      qcount;   /**< Count local quadrants in partition callback */
+      sc_array_t         *src_fixed;        /**< int Particle counts per quadrant */
+      sc_array_t         *dest_fixed;       /**< int Particle counts per quadrant */
 
   
         p4est_locidx_t      ireindex, ire2;   /**< Running index into iremain */

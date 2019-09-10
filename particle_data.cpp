@@ -156,6 +156,22 @@ psearch_point (p8est_t * p4est, p4est_topidx_t which_tree,
 }
 
 static int
+part_weight (p8est_t * p4est,
+             p4est_topidx_t which_tree, p8est_quadrant_t * quadrant)
+{
+  p4est_locidx_t      ilem_particles;
+  Global_Data      *g = (Global_Data *) p4est->user_pointer;
+  octant_data_t          *qud = (octant_data_t *) quadrant->p.user_data;
+
+
+  ilem_particles = qud->lpend - g->prevlp;
+
+  g->prevlp = qud->lpend;
+  *(int *) sc_array_index (g->src_fixed, g->qcount++) =
+    (int) (ilem_particles * sizeof (pdata_t));
+  return 1 + ilem_particles;
+}
+static int
 comm_prank_compare (const void *v1, const void *v2)
 {
   return sc_int_compare (&((const comm_prank_t *) v1)->rank,
@@ -378,7 +394,8 @@ void Global_Data:: cleanUpArrays(){
 void Global_Data:: writeVTKFiles(){
     static bool FIRST = true;
     static int timestep = 0;
-    p4est_locidx_t li;
+    size_t lpnum = particle_data->elem_count;
+    size_t li;
     pdata_t *pad;
     string filename = "output_" +to_string(mpirank)+"_"+to_string(timestep)+".vtk";
     
@@ -542,7 +559,9 @@ void Global_Data::split_by_coord ( sc_array_t * in,
 }
 void Global_Data::prerun(){
 
-   ireceive = sc_array_new(sizeof(p4est_locidx_t));    
+   
+    ireceive = sc_array_new(sizeof(p4est_locidx_t));    
+
 
    particle_data = sc_array_new(sizeof( pdata_t ));
    iremain = sc_array_new(sizeof(p4est_locidx_t));
@@ -568,8 +587,6 @@ void Global_Data::presearch(){
 
 
 void Global_Data::packParticles(){
-
-
   int                 mpiret;
   int                 retval;
   int                *pfn;
@@ -585,9 +602,7 @@ void Global_Data::packParticles(){
 
   psend = sc_hash_new (psend_hash, psend_equal, NULL, NULL);
   recevs = sc_array_new (sizeof (comm_prank_t));
-
   lremain = lsend = llost = 0;
-
   cps = (comm_psend_t *) sc_mempool_alloc (psmem);
   cps->rank = -1;
 
@@ -604,9 +619,7 @@ void Global_Data::packParticles(){
       ++lremain;
       continue;
     }
-
     cps->rank = *pfn;
-  
     retval = sc_hash_insert_unique (psend, cps, &hfound);
   
     there = *((comm_psend_t **) hfound);
@@ -657,6 +670,7 @@ void Global_Data::packParticles(){
 
 
   sc_array_destroy_null (&pfound);
+
 }
 
 
@@ -754,10 +768,20 @@ void Global_Data::communicateParticles(){
   SC_CHECK_MPI (mpiret);
   sc_array_destroy_null (&send_req);
 
+  for (i = 0; i < num_receivers; ++i) {
+    trank = (comm_prank_t *) sc_array_index_int (recevs, i);
+    cps = trank->psend;
+    sc_array_reset (&cps->message);
+  }
+  sc_array_destroy_null (&recevs);
+  sc_hash_destroy (psend);
+
+  psend = NULL;
+  sc_mempool_destroy (psmem);
+  psmem = NULL;
 }
 
 void Global_Data::postsearch(){
-
   ireceive = sc_array_new (sizeof (p4est_locidx_t));
   cfound = sc_array_new_count (sizeof (char), prebuf->elem_count);
 
@@ -810,11 +834,13 @@ void Global_Data::regroupParticles(){
   preceive = (p4est_locidx_t *) sc_array_index_begin (ireceive);
   newpa = sc_array_new_count (sizeof (pdata_t), newnum);
   pad = (pdata_t *) sc_array_index_begin (newpa);
-
   prev = 0;
+  
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
-    tree = p8est_tree_array_index (p8est->trees, tt);
+    
+      tree = p8est_tree_array_index (p8est->trees, tt);
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
       qboth = qud->premain + qud->preceive;
@@ -825,7 +851,6 @@ void Global_Data::regroupParticles(){
         continue;
       }
       prev += qboth;
-
       for (li = 0; li < qud->premain; ++li) {
         ppos = *premain++;
         memcpy (pad++, sc_array_index (particle_data, ppos), sizeof (pdata_t));
@@ -843,15 +868,110 @@ void Global_Data::regroupParticles(){
    
   sc_array_destroy_null (&iremain);
 
+  sc_array_destroy_null (&prebuf);
   sc_array_destroy_null (&ireceive);
   sc_array_destroy (particle_data);
 
   particle_data = newpa;
+}
+
+void Global_Data:: partitionParticles(){
+
+
+  sc_array_t         *dest_data;
+  p4est_topidx_t      tt;
+  p4est_locidx_t      ldatasize, lcount;
+  p4est_locidx_t      dest_quads, src_quads;
+  p4est_locidx_t      dest_parts;
+  p4est_locidx_t      lquad, lq;
+  p4est_locidx_t      lpnum;
+  p4est_gloidx_t      gshipped;
+  p4est_gloidx_t     *src_gfq;
+  p8est_tree_t       *tree;
+  p8est_quadrant_t   *quad;
+  octant_data_t          *qud;
+   
+  if(mpisize == 1)
+  
+      return;
+
+  src_gfq = P4EST_ALLOC (p4est_gloidx_t, mpisize + 1);
+
+  memcpy (src_gfq, p8est->global_first_quadrant,
+          (mpisize + 1) * sizeof (p4est_gloidx_t));
+
+
+  src_quads = p8est->local_num_quadrants;
+
+  assert(src_quads == src_gfq[mpirank+1]-src_gfq[mpirank]);
+
+  src_fixed = sc_array_new_count (sizeof (int), src_quads);
+
+  qcount = 0;
+  prevlp = 0;
+
+  gshipped = p8est_partition_ext (p8est, 1, part_weight);
+  dest_quads = p8est->local_num_quadrants;
+
+  if (gshipped == 0) {
+    sc_array_destroy_null (&src_fixed);
+    P4EST_FREE (src_gfq);
+    return;
+  }
+
+  dest_fixed = sc_array_new_count (sizeof (int), dest_quads);
+
+  p8est_transfer_fixed (p8est->global_first_quadrant, src_gfq,
+                        mpicomm, COMM_TAG_FIXED,
+                        (int *) dest_fixed->array,
+                        (const int *) src_fixed->array, sizeof (int));
+
+  ldatasize = (p4est_locidx_t) sizeof (pdata_t);
+
+  dest_parts = 0;
+
+  for (lq = 0; lq < dest_quads; ++lq) {
+    dest_parts += *(int *) sc_array_index (dest_fixed, lq);
+  }
+  assert(dest_parts % ldatasize == 0); 
+  dest_parts /= ldatasize;
+  dest_data = sc_array_new_count (sizeof (pdata_t), dest_parts);
+  p8est_transfer_custom (p8est->global_first_quadrant, src_gfq,
+                         mpicomm, COMM_TAG_CUSTOM,
+                         (pdata_t *) dest_data->array,
+                         (const int *) dest_fixed->array,
+                         (const pdata_t *) particle_data->array,
+                         (const int *) src_fixed->array);
+
+  sc_array_destroy_null (&src_fixed);
+
+  P4EST_FREE (src_gfq);
+  sc_array_destroy (particle_data);
+  particle_data = dest_data;
+  lpnum = 0;
+  lquad = 0;
+  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+    tree = p8est_tree_array_index (p8est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      /* access quadrant */
+      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+
+      /* back out particle count in quadrant from data size */
+      lcount = *(int *) sc_array_index (dest_fixed, lquad);
+      assert (lcount % ldatasize == 0);
+      lcount /= ldatasize;
+      lpnum += lcount;
+      qud->lpend = lpnum;
+      ++lquad;
+    }
+  }
+  sc_array_destroy_null (&dest_fixed);
+
 
 }
 
 void Global_Data::testquad(){
-
     p4est_topidx_t      tt;
   
     p4est_locidx_t      lq;
@@ -864,14 +984,33 @@ void Global_Data::testquad(){
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
-      if(qud->preceive>0 )
+      if(qud->premain>0 )
           printf("%d %d %d \n",qud->premain,qud->preceive,mpirank);
-        
+        continue;      
     }
   }
 
 }
 
+
+void Global_Data::resetOctantData(){
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+
+  p8est_tree_t       *tree;
+  p8est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+    tree = p8est_tree_array_index (p8est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      qud->premain = qud->preceive = 0;
+    }
+  }
+
+}
 
 
 

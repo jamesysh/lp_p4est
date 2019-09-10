@@ -46,20 +46,50 @@ int main(){
     gdata->initFluidParticles();
 
     octree->adapt_octree(); 
-   
+    gdata->resetOctantData(); 
+   sc_array_destroy(gdata->ireceive);
+    sc_array_destroy(gdata->iremain);
     LPSolver * lpsolver = new LPSolver(gdata);
 
-  //  gdata->writeVTKFiles();
-    
+   
+    double tstart = 0;
+    double tend = 1;
+    double nextwritetime = 0;
+    while(tstart<tend)
+    {
+    tstart += lpsolver->dt;
     lpsolver->moveParticlesByG(lpsolver->dt);
-    
     gdata->presearch();
+        
     gdata->packParticles();
+    
+    if(gdata->gpnum == 0)
+        
+    {
+      sc_array_destroy_null (&gdata->recevs);
+      sc_hash_destroy_null (&gdata->psend);
+      sc_array_destroy_null(&gdata->iremain);
+
+      gdata->psend = NULL;
+      sc_mempool_destroy (gdata->psmem);
+      gdata->psmem = NULL;
+        break;
+    }
     gdata->communicateParticles();
+  
     gdata->postsearch();
-    //gdata->testquad();
     octree->adapt_octree(); 
     gdata->regroupParticles(); 
+ 
+
+    gdata->partitionParticles();
+    if(tstart  >= nextwritetime)
+    
+    {nextwritetime += 0.1;    
+       gdata->writeVTKFiles();
+    }
+    
+    }
     gdata->cleanUpArrays(); 
     
     octree->destroy_octree();

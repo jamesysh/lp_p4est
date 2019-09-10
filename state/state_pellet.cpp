@@ -17,7 +17,11 @@ void PelletState::velocity(double x, double y, double z, double& vX, double& vY,
 	double dy=y-ycen;
 	double dz=z-zcen;
 	double r=sqrt(dx*dx+dy*dy+dz*dz);
-	vX=dx/r*m_fVel;
-	vY=dy/r*m_fVel;
-	vZ=dz/r*m_fVel;
+//	vX=dx/r*m_fVel;
+//	vY=dy/r*m_fVel;
+//	vZ=dz/r*m_fVel;
+    vX = 10;
+    vY = 4;
+    vZ = 0;
+    
 }

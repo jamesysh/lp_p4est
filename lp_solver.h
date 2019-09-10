@@ -12,7 +12,7 @@ public:
     
     void moveParticlesByG(double dt);
 
-    double dt = 0.1;
+    double dt = 0.01;
     Global_Data * gdata; 
 
 };
