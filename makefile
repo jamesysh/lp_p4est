@@ -17,19 +17,21 @@ vpath %.h $(GEOMETRY_DIR) $(STATE_DIR) $(BOUNDARY_DIR)
 MAIN_OBJS = lp_main.o particle_data.o initializer.o octree_manager.o registrar.o lp_solver.o eos.o particle_viewer.o
 GEOMETRY_OBJS = geometry.o geometry_pellet.o
 STATE_OBJS = state.o state_pellet.o 
+BOUNDARY_OBJS = boundary.o boundary_pellet.o
 
-B_OBJS := $(foreach OBJ,$(BOUNDARY_OBJS),$(addprefix $(BOUNDARY_DIR),$(OBJ)))
-S_OBJS := $(foreach OBJ,$(STATE_OBJS),$(addprefix $(STATE_DIR),$(OBJ)))
-G_OBJS := $(foreach OBJ,$(GEOMETRY_OBJS),$(addprefix $(GEOMETRY_DIR),$(OBJ)))
+B_OBJS = $(foreach OBJ,$(BOUNDARY_OBJS),$(addprefix $(BOUNDARY_DIR),$(OBJ)))
+S_OBJS = $(foreach OBJ,$(STATE_OBJS),$(addprefix $(STATE_DIR),$(OBJ)))
+G_OBJS = $(foreach OBJ,$(GEOMETRY_OBJS),$(addprefix $(GEOMETRY_DIR),$(OBJ)))
 
-OBJS = $(B_OBJS) $(S_OBJS) $(G_OBJS) $(MAIN_OBJS)
 
-all: $(OBJS) lp
 
-G_OBJS:
-	cd $(GEOMETRY_DIR)&&make;
-S_OBJS:
-	cd $(STATE_DIR)&&make;
+lp: $(MAIN_OBJS) 
+	cd $(BOUNDARY_DIR)&& make
+	cd $(GEOMETRY_DIR)&& make
+	cd $(STATE_DIR)&& make
+	$(CC) $(LFLAGS) $(MAIN_OBJS) $(B_OBJS) $(S_OBJS) $(G_OBJS)  -o lp -lsc -lp4est   
+
+
 
 
 
@@ -50,13 +52,15 @@ eos.o: eos.h eos.cpp
 
 particle_viewer.o: particle_data.h particle_viewer.cpp particle_viewer.h
 	$(CC) $(CFLAGS) particle_viewer.cpp
-lp: $(OBJS)  
-	$(CC) $(LFLAGS) $(OBJS) -o lp -lsc -lp4est 
+
+
 
 
 clean:
 	
+	rm *.o
 	cd $(GEOMETRY_DIR)&&make clean; 
 	cd $(STATE_DIR)&&make clean;
-	rm *.o
+	cd $(BOUNDARY_DIR)&&make clean;
+	
 	rm lp

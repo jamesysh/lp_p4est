@@ -4,7 +4,7 @@
 #include "geometry.h"
 #include "state.h"
 #include "initializer.h"
-
+#include "boundary.h"
 
 /**
  * \class GeometryRegistrar
@@ -121,4 +121,50 @@ StateRegistrar<Derived>::StateRegistrar(std::string name) {
 
 
 
+template<typename Derived>
+class BoundaryRegistrar {
+public:
+	/**
+     * \brief  constructor 
+	 *
+	 * Registers the \e name given in the argument list.
+	 * Registration means linking \e name to a class in the Boundary family.
+	 *
+	 * \param  name a boundary name           
+	 *
+	 * Example usage: Registers \e a_name with class \e SomeBoundary
+	 * \code
+	 *         StateRegistrar<SomeBoundary> s("a_name");
+	 * \endcode
+	 */
+	BoundaryRegistrar(std::string name);
+	/**
+     * \brief   This function creates an object of the \e Derived class and returns a pointer to the Boundary class 
+	 *
+	 * \param   None   
+	 *  
+	 * \return  A Boundary * pointer that points to an object of \e Derived class  
+	 *
+	 */
+	 static Boundary* createFunc();
+
+    
+
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+// Start of StateRegistrar
+////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename Derived>
+Boundary* BoundaryRegistrar<Derived>::createFunc() {
+	return new Derived();
+}
+
+template<typename Derived>
+BoundaryRegistrar<Derived>::BoundaryRegistrar(std::string name) {
+	BoundaryFactory& factory = BoundaryFactory::instance(); // note here is the difference from the GeometryRegistrar class
+	factory.registerBoundary(name, BoundaryRegistrar<Derived>::createFunc);
+}
 #endif // __REGISTRAR_H__
