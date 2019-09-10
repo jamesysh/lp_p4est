@@ -4,6 +4,7 @@
 #include "particle_data.h"
 #include "octree_manager.h"
 #include "lp_solver.h"
+#include "particle_viewer.h"
 using namespace std;
 
 static  int
@@ -27,7 +28,7 @@ int main(){
 
     Global_Data *gdata = new Global_Data(init);
 
-
+    ParticleViewer * viewer = new ParticleViewer(gdata,"output_",4);
     int mpiret;
     mpiret = sc_MPI_Init (NULL, NULL);
 
@@ -86,7 +87,8 @@ int main(){
     if(tstart  >= nextwritetime)
     
     {nextwritetime += 0.1;    
-       gdata->writeVTKFiles();
+//       gdata->writeVTKFiles();
+        viewer->writeResult(tstart);
     }
     
     }
