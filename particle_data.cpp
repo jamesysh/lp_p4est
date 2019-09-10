@@ -660,7 +660,7 @@ void Global_Data::packParticles(){
   SC_CHECK_MPI (mpiret);
 
   P4EST_GLOBAL_ESSENTIALF
-    ("In current timestep from %lld remain %lld sent %lld lost %lld number of particles, %.3g of processers are receiving particels\n",
+    ("In current timestep from %lld remain %lld sent %lld lost %lld number of particles, each processer receives data from average of %f peers\n",
       (long long) gpnum, (long long) glolrs[0],
      (long long) glolrs[1], (long long) glolrs[2],
      glolrs[3] / (double)mpisize);

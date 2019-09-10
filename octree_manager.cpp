@@ -29,7 +29,7 @@ void Octree_Manager:: build_octree(){
 //build octree connectivity
     gdata->conn = p8est_connectivity_new_unitcube ();
 //build octree
-    gdata->p8est = p8est_new_ext (gdata->mpicomm, gdata->conn, 1,
+    gdata->p8est = p8est_new_ext (gdata->mpicomm, gdata->conn, 0,
                             0 , 1,
                             sizeof (octant_data_t), NULL, gdata);
 
