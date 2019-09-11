@@ -399,5 +399,10 @@ void Octree_Manager:: adapt_octree(){
 
 
 
+void Octree_Manager::balance_octree(p8est_init_t init_fn, p8est_replace_t replace_fn){
+
+    p8est_balance_ext(gdata->p8est,P8EST_CONNECT_FULL,init_fn,replace_fn);
+
+}
 
 

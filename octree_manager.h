@@ -34,7 +34,8 @@ class Octree_Manager{
         void partition_octree(int allow_for_coarsening,p8est_weight_t weight_fn);
         
         void refine_octree(int recursive, p8est_refine_t refine_fn, p8est_init_t init_fn, p8est_replace_t replace_fn);
-      
+     
+        void balance_octree(p8est_init_t init_fn, p8est_replace_t replace_fn);
         void adapt_octree();
         static int adapt_coarsen (p8est_t * p8est, p4est_topidx_t which_tree,
                p8est_quadrant_t * quadrants[]);
