@@ -1,6 +1,5 @@
 #include <iostream>
 #include <time.h>
-#include "initializer.h"
 #include <fstream>
 #include "sc.h"
 #include "mpi.h"
@@ -325,6 +324,7 @@ Global_Data:: Global_Data(Initializer* init){
     geometry = GeometryFactory::instance().createGeometry("pelletlayer"); 
     geometry->getBoundingBox(bb[0],bb[1],bb[2],bb[3],bb[4],bb[5]);
     state = StateFactory::instance().createState("pelletstate");
+    boundary = BoundaryFactory::instance().createBoundary("inflowboundary");
     eoschoice = init->eoschoice;
     setEOS();    
 

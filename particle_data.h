@@ -2,7 +2,7 @@
 #define __PARTICLE_DATA_H__
 
 #include "initializer.h"
-
+#include "boundary.h"
 
 
 typedef enum pa_mode
@@ -91,7 +91,7 @@ class Global_Data{
         Geometry* geometry;
         State* state;        
         EOS* eos;        
-        
+        Boundary *boundary; 
         p4est_locidx_t lpnum; //number of particles on local processor
         p4est_gloidx_t gpnum, gplost; //number of particles on all processor, number of particles on all processers which left domain
         p4est_locidx_t qremain, qreceive;

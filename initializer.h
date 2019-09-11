@@ -20,7 +20,6 @@
 
 #include "geometry.h"
 #include "state.h"
-
 #include <sc.h>
 #include <cassert>
 class Initializer {

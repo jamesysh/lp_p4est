@@ -19,20 +19,23 @@ GEOMETRY_OBJS = geometry.o geometry_pellet.o
 STATE_OBJS = state.o state_pellet.o 
 BOUNDARY_OBJS = boundary.o boundary_pellet.o
 
-B_OBJS = $(foreach OBJ,$(BOUNDARY_OBJS),$(addprefix $(BOUNDARY_DIR),$(OBJ)))
+B_OBJS = $(foreach OBJ, $(BOUNDARY_OBJS),$(addprefix $(BOUNDARY_DIR),$(OBJ)))
 S_OBJS = $(foreach OBJ,$(STATE_OBJS),$(addprefix $(STATE_DIR),$(OBJ)))
 G_OBJS = $(foreach OBJ,$(GEOMETRY_OBJS),$(addprefix $(GEOMETRY_DIR),$(OBJ)))
 
 
 
-lp: $(MAIN_OBJS) 
-	cd $(BOUNDARY_DIR)&& make
-	cd $(GEOMETRY_DIR)&& make
-	cd $(STATE_DIR)&& make
+all:  OBJS lp
+
+
+
+lp: $(B_OBJS) $(MAIN_OBJS) $(S_OBJS) $(G_OBJS)
 	$(CC) $(LFLAGS) $(MAIN_OBJS) $(B_OBJS) $(S_OBJS) $(G_OBJS)  -o lp -lsc -lp4est   
 
-
-
+OBJS:
+	cd $(BOUNDARY_DIR)&&make;
+	cd $(STATE_DIR)&&make;
+	cd $(GEOMETRY_DIR)&&make
 
 
 lp_main.o: lp_main.cpp initializer.h particle_data.h

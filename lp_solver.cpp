@@ -12,11 +12,21 @@ void LPSolver::moveParticlesByG(double dt){
      
     pad = (pdata_t *) gdata->sc_array_index_begin(gdata->particle_data);
     for(li = 0; li<lpnum; li++){
+       double x = pad->xyz[0];
+        
+       double y = pad->xyz[1];
+       double z = pad->xyz[2];
+       double r = sqrt(x*x+y*y+z*z);
+
        pad->oldv[0] = pad->v[0];
        pad->oldv[1] = pad->v[1];
        pad->oldv[2] = pad->v[2];
-       
-       pad->v[1] -= g*dt;
+        
+       pad->v[0] = 200*x;
+       pad->v[1] = 200*y;
+       pad->v[2] = 200*z;
+
+
    
 //move
        pad->xyz[0] +=  0.5*dt*(pad->oldv[0]+pad->v[0]);

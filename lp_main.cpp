@@ -54,12 +54,15 @@ int main(){
 
    
     double tstart = 0;
-    double tend = 1;
+    double tend = 0.1;
     double nextwritetime = 0;
     while(tstart<tend)
     {
     tstart += lpsolver->dt;
     lpsolver->moveParticlesByG(lpsolver->dt);
+    
+    gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
+    
     gdata->presearch();
         
     gdata->packParticles();
@@ -86,7 +89,8 @@ int main(){
     gdata->partitionParticles();
     if(tstart  >= nextwritetime)
     
-    {nextwritetime += 0.1;    
+    {
+        nextwritetime += 0.001;    
 //       gdata->writeVTKFiles();
         viewer->writeResult(tstart);
     }
