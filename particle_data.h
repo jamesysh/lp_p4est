@@ -123,11 +123,12 @@ class Global_Data{
       sc_array_t         *src_fixed;        /**< int Particle counts per quadrant */
       sc_array_t         *dest_fixed;       /**< int Particle counts per quadrant */
 
-  
-        p4est_locidx_t      ireindex, ire2;   /**< Running index into iremain */
+        int octantid;  
+        p4est_locidx_t      ireindex, ire2, ireindex2;   /**< Running index into iremain */
 
-        p4est_locidx_t      irvindex, irv2;   /**< Running index into ireceive */
-
+        p4est_locidx_t      irvindex, irv2, irvindex2;   /**< Running index into ireceive */
+        sc_array_t *irecumu;   //cumulative remain particles count
+        sc_array_t *irvcumu;
         sc_array_t *ilh[2],*jlh[2],*klh[2];
       //mesh data
         p8est_connectivity_t *conn;
@@ -163,7 +164,7 @@ typedef struct pdata{
 typedef struct octant_data
 {
  
-   
+    int octantid; 
     p4est_locidx_t    poctant;
   /** Offset into local array of all particles after this quadrant */
     p4est_locidx_t      lpend;

@@ -59,6 +59,9 @@ int main(){
     while(tstart<tend)
     {
     tstart += lpsolver->dt;
+    
+    
+    
     lpsolver->moveParticlesByG(lpsolver->dt);
     
     gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
@@ -83,6 +86,8 @@ int main(){
   
     gdata->postsearch();
     octree->adapt_octree(); 
+    p8est_balance_ext(gdata->p8est,P8EST_CONNECT_FACE,NULL,octree->balance_replace);
+ //   assert((size_t)gdata->ireindex == gdata->iremain->elem_count);
     gdata->regroupParticles(); 
  
 

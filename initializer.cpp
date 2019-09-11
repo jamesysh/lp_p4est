@@ -13,7 +13,7 @@ Initializer::Initializer(){
     minlevel = 0;
     elem_particles = 50;
     initlocalspacing = 0.02;
-    initperturbation = 0.5;
+    initperturbation = 0.;
     eoschoice = 1;
     pelletmaterial = 0;
     gamma = 1.67;

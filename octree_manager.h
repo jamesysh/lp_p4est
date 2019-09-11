@@ -45,6 +45,11 @@ class Octree_Manager{
         static void adapt_replace (p8est_t * p8est, p4est_topidx_t which_tree,
                int num_outgoing, p8est_quadrant_t * outgoing[],
                int num_incoming, p8est_quadrant_t * incoming[]);
+
+        static void balance_replace (p8est_t * p8est, p4est_topidx_t which_tree,
+               int num_outgoing, p8est_quadrant_t * outgoing[],
+               int num_incoming, p8est_quadrant_t * incoming[]);
+
 };
 
 
