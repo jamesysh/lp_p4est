@@ -35,6 +35,8 @@ class Octree_Manager{
         
         void refine_octree(int recursive, p8est_refine_t refine_fn, p8est_init_t init_fn, p8est_replace_t replace_fn);
      
+        void ghost_octree();
+        
         void balance_octree(p8est_init_t init_fn, p8est_replace_t replace_fn);
         void adapt_octree();
         static int adapt_coarsen (p8est_t * p8est, p4est_topidx_t which_tree,

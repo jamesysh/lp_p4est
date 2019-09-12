@@ -407,4 +407,16 @@ void Octree_Manager::balance_octree(p8est_init_t init_fn, p8est_replace_t replac
 
 }
 
+void Octree_Manager::ghost_octree(){
+
+
+  octant_data_t       *ghost_data;
+  p8est_ghost_t      *ghost;
+  ghost = p8est_ghost_new (gdata->p8est, P8EST_CONNECT_FULL);
+  ghost_data = P4EST_ALLOC (octant_data_t, ghost->ghosts.elem_count);
+  p8est_ghost_exchange_data (gdata->p8est, ghost, ghost_data);
+
+  P4EST_FREE (ghost_data);
+  p8est_ghost_destroy (ghost);
+}
 

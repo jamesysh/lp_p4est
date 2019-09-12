@@ -97,7 +97,13 @@ int main(){
     gdata->regroupParticles(); 
  
 
+    octree->ghost_octree(); 
+    gdata->createViewForOctant();
+    
+    
     gdata->partitionParticles();
+    gdata->cleanForTimeStep();
+    
     if(tstart  >= nextwritetime)
     
     {
@@ -105,10 +111,6 @@ int main(){
 //       gdata->writeVTKFiles();
         viewer->writeResult(tstart);
     }
-   
-    gdata->createViewForOctant();
-    gdata->cleanForTimeStep();
-    
     }
     
     
