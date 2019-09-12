@@ -8,7 +8,7 @@ Initializer::Initializer(){
 
    
 
-    initlevel = 5;
+    initlevel = 1;
     maxlevel = 18;
     minlevel = 0;
     elem_particles = 50;

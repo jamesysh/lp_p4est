@@ -321,7 +321,7 @@ Global_Data:: Global_Data(Initializer* init){
     initlocalspacing = init->initlocalspacing;
     initperturbation = init->initperturbation;
     elem_particles = init->elem_particles;
-    geometry = GeometryFactory::instance().createGeometry("pelletlayer"); 
+    geometry = GeometryFactory::instance().createGeometry("multipellet"); 
     geometry->getBoundingBox(bb[0],bb[1],bb[2],bb[3],bb[4],bb[5]);
     state = StateFactory::instance().createState("pelletstate");
     boundary = BoundaryFactory::instance().createBoundary("inflowboundary");

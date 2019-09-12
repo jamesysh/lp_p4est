@@ -31,7 +31,6 @@ int main(){
     ParticleViewer * viewer = new ParticleViewer(gdata,"output_",4);
     int mpiret;
     mpiret = sc_MPI_Init (NULL, NULL);
-
     SC_CHECK_MPI (mpiret);
 
     Octree_Manager *octree = new Octree_Manager(gdata);
@@ -46,6 +45,7 @@ int main(){
     gdata->prerun(); 
     gdata->initFluidParticles();
 
+    viewer->writeResult(0);
     octree->adapt_octree(); 
     gdata->resetOctantData(); 
    sc_array_destroy(gdata->ireceive);
