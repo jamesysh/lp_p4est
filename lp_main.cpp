@@ -47,14 +47,17 @@ int main(){
     gdata->initFluidParticles();
 
     octree->adapt_octree(); 
+    
+    gdata->cleanForTimeStep();
+    
     gdata->resetOctantData(); 
    sc_array_destroy(gdata->ireceive);
     sc_array_destroy(gdata->iremain);
     LPSolver * lpsolver = new LPSolver(gdata);
 
-   
+     
     double tstart = 0;
-    double tend = 0.1;
+    double tend = 0.01;
     double nextwritetime = 0;
     while(tstart<tend)
     {
@@ -86,6 +89,7 @@ int main(){
   
     gdata->postsearch();
     octree->adapt_octree(); 
+
     octree->balance_octree(NULL,octree->balance_replace);
   //  p8est_balance_ext(gdata->p8est,P8EST_CONNECT_FACE,NULL,octree->balance_replace);
  //   assert((size_t)gdata->ireindex == gdata->iremain->elem_count);
@@ -101,7 +105,10 @@ int main(){
         viewer->writeResult(tstart);
     }
     
+    gdata->cleanForTimeStep();
     }
+    
+    
     gdata->cleanUpArrays(); 
     
     octree->destroy_octree();

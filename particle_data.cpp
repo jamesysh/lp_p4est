@@ -984,9 +984,11 @@ void Global_Data::testquad(){
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
-      if(qud->premain>0 )
-          printf("%d %d %d \n",qud->premain,qud->preceive,mpirank);
-        continue;      
+      if(qud->particle_data_view ==NULL)
+          cout<<"yes"<<endl;
+      else
+          cout<<"no"<<endl;
+    
     }
   }
 
@@ -1013,5 +1015,44 @@ void Global_Data::resetOctantData(){
 }
 
 
+void Global_Data::createViewForOctant(){
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+    p4est_locidx_t      offset = 0;
+  p8est_tree_t       *tree;
+  p8est_quadrant_t   *quad;
+  octant_data_t          *qud;
+    
+  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+    tree = p8est_tree_array_index (p8est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      
+      qud->poctant = qud->lpend - offset;
+      if(qud->particle_data_view == NULL)
+      {    qud->particle_data_view = sc_array_new_view(particle_data,(size_t)offset,(size_t)qud->poctant);
+      
+      }
+      else{    
+          sc_array_destroy(qud->particle_data_view);
+          qud->particle_data_view = sc_array_new_view(particle_data,(size_t)offset,(size_t)qud->poctant);
+      }
+          offset = qud->lpend;
+    
+    }
+  }
+
+}
+
+
+void Global_Data::cleanForTimeStep(){
+
+    sc_array_destroy(irecumu);
+    sc_array_destroy(irvcumu);
+
+
+}
 
 

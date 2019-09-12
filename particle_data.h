@@ -58,6 +58,9 @@ class Global_Data{
         void communicateParticles();
         void regroupParticles();
         void partitionParticles();
+        
+        void createViewForOctant();
+        void cleanForTimeStep();
         void testquad();
         void loopquad (p4est_topidx_t tt, p8est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]);
         
@@ -163,7 +166,7 @@ typedef struct pdata{
 /** Data type for payload data inside each quadrant */
 typedef struct octant_data
 {
- 
+    sc_array_t* particle_data_view; 
     int octantid; 
     p4est_locidx_t    poctant;
   /** Offset into local array of all particles after this quadrant */

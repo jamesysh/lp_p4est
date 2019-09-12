@@ -390,7 +390,9 @@ void Octree_Manager:: adapt_octree(){
     sc_array_destroy(gdata->irvcumu);
     
     }
-    
+ 
+
+   
     gdata->ireindex = gdata->ire2 = 0;
     gdata->irvindex = gdata->irv2 = 0;
 
