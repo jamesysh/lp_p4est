@@ -372,6 +372,25 @@ void Global_Data::initFluidParticles(){
         (pad++)->id = gpoffset + li;
     }
 
+    domain_len = 100; 
+    MultiPelletLayer * geo = (MultiPelletLayer *) geometry;
+
+    size_t count = particle_data->elem_count;
+    sc_array_t *pd_temp = sc_array_new(sizeof(pdata_t));
+    pdata_t* pad2;
+    for(int i=0;i<geo->number;i++){  
+       for(size_t j=0;j<count;j++){ 
+    pad = (pdata_t *) sc_array_push_count(pd_temp,1);
+    pad2 = (pdata_t *) sc_array_index(particle_data,j);
+    pad->xyz[0] = pad2->xyz[0] + geo->xcen[i];
+    pad->xyz[1] = pad2->xyz[1] + geo->ycen[i];
+    pad->xyz[2] = pad2->xyz[2] + geo->zcen[i];
+       }
+    }
+    
+    gpnum = geo->number * gpnum;
+    sc_array_destroy(particle_data);
+    particle_data = pd_temp;
 }
 void Global_Data:: cleanUpArrays(){
 

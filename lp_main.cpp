@@ -46,7 +46,7 @@ int main(){
     gdata->initFluidParticles();
 
     viewer->writeResult(0);
-    octree->adapt_octree(); 
+  //  octree->adapt_octree(); 
     gdata->resetOctantData(); 
    sc_array_destroy(gdata->ireceive);
     sc_array_destroy(gdata->iremain);

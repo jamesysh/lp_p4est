@@ -45,23 +45,17 @@ MultiPelletLayer::MultiPelletLayer(){
 
 bool MultiPelletLayer::operator()(double x, double y, double z) const{
    
-	for(int i=0;i<100;i++){
-        	double r2=(x-xcen[i])*(x-xcen[i])+(y-ycen[i])*(y-ycen[i])+(z-zcen[i])*(z-zcen[i]);
-        	if(innerradius*innerradius<r2 && r2<outerradius*outerradius)
-            {
-                return true;
-            }
-	}
-	return false;
+	double r2=(x)*(x)+(y)*(y)+(z)*(z);
+	return (innerradius*innerradius<r2 && r2<outerradius*outerradius);
     
 }
 
 void MultiPelletLayer::getBoundingBox(double& xmin, double& xmax, double& ymin, double& ymax, double& zmin, double& zmax){
-	xmin = -51;
-	xmax = 51;
-	ymin = -51;
-	ymax = 51;
-	zmin = -51;
-	zmax = 51;
+	xmin = -outerradius;
+	xmax = outerradius;
+	ymin = -outerradius;
+	ymax = outerradius;
+	zmin = -outerradius;
+	zmax = outerradius;
 }
 

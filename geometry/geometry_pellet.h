@@ -21,17 +21,18 @@ private:
 
 class MultiPelletLayer: public Geometry {
 public:
-	double number = 10;
+	double number = 100;
     MultiPelletLayer();
 	virtual ~MultiPelletLayer() {}
 	virtual bool operator()(double x, double y, double z) const;
   	virtual void getBoundingBox(double& xmin, double& xmax, double& ymin, double& ymax, double& zmin, double& zmax);
-private:
+
     double xcen[100];
 	double ycen[100];
 	double zcen[100];
 	double innerradius;
 	double outerradius;
+private:
 };
 
 
