@@ -984,11 +984,7 @@ void Global_Data::testquad(){
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
-      if(qud->particle_data_view ==NULL)
-          cout<<"yes"<<endl;
-      else
-          cout<<"no"<<endl;
-    
+      qud->particle_data_view = NULL; 
     }
   }
 
@@ -1023,7 +1019,7 @@ void Global_Data::createViewForOctant(){
   p8est_tree_t       *tree;
   p8est_quadrant_t   *quad;
   octant_data_t          *qud;
-    
+  pdata_t *pads, *padd;
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
@@ -1031,14 +1027,15 @@ void Global_Data::createViewForOctant(){
       qud = (octant_data_t *) quad->p.user_data;
       
       qud->poctant = qud->lpend - offset;
-      if(qud->particle_data_view == NULL)
-      {    qud->particle_data_view = sc_array_new_view(particle_data,(size_t)offset,(size_t)qud->poctant);
+      qud->particle_data_view = sc_array_new_count(sizeof(pdata_t),(size_t)qud->poctant);
+      padd = (pdata_t *) sc_array_index_begin(qud->particle_data_view);
+      pads = (pdata_t *) sc_array_index(particle_data,(size_t)offset);
+      for(size_t i=0;i<(size_t) qud->poctant;i++){
+        copyParticle( padd, pads);
+        padd++;
+        pads++;
       
-      }
-      else{    
-          sc_array_destroy(qud->particle_data_view);
-          qud->particle_data_view = sc_array_new_view(particle_data,(size_t)offset,(size_t)qud->poctant);
-      }
+      } 
           offset = qud->lpend;
     
     }
@@ -1049,10 +1046,40 @@ void Global_Data::createViewForOctant(){
 
 void Global_Data::cleanForTimeStep(){
 
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+
+  p8est_tree_t       *tree;
+  p8est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+    tree = p8est_tree_array_index (p8est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      sc_array_destroy(qud->particle_data_view);
+    }
+  }
     sc_array_destroy(irecumu);
     sc_array_destroy(irvcumu);
 
 
 }
 
+void Global_Data::copyParticle(pdata_t *d, pdata_t *s){
+    d->xyz[0] = s->xyz[0];
+    d->xyz[1] = s->xyz[1];
+    d->xyz[2] = s->xyz[2];
+    d->v[0] = s->v[0];
+    d->v[1] = s->v[1];
+    d->v[2] = s->v[2];
+    d->pressure = s->pressure;
+    d->soundspeed = s->soundspeed;
+    d->temperature = s->temperature;
+    d->volume = s->volume;
+    d->mass = s->mass;
+    d->localspacing = s->localspacing;
+
+}
 

@@ -48,8 +48,9 @@ int main(){
 
     octree->adapt_octree(); 
     
-    gdata->cleanForTimeStep();
     
+    sc_array_destroy(gdata->irecumu);
+    sc_array_destroy(gdata->irvcumu);
     gdata->resetOctantData(); 
    sc_array_destroy(gdata->ireceive);
     sc_array_destroy(gdata->iremain);
@@ -104,8 +105,10 @@ int main(){
 //       gdata->writeVTKFiles();
         viewer->writeResult(tstart);
     }
-    
+   
+    gdata->createViewForOctant();
     gdata->cleanForTimeStep();
+    
     }
     
     

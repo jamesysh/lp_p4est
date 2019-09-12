@@ -14,6 +14,22 @@ typedef enum pa_mode
 pa_mode_t;
 
 
+typedef struct pdata{
+
+    double xyz[3]; //coordinates
+    double v[3]; //velocity
+    double oldv[3];
+    double pressure;
+    double soundspeed;
+    double temperature;
+    double volume;
+    double mass;
+    double localspacing;
+
+    p4est_gloidx_t      id;
+
+} pdata_t;
+
 typedef struct comm_psend
 {
   int                 rank;
@@ -58,7 +74,7 @@ class Global_Data{
         void communicateParticles();
         void regroupParticles();
         void partitionParticles();
-        
+        void copyParticle(pdata_t* d, pdata_t *s);
         void createViewForOctant();
         void cleanForTimeStep();
         void testquad();
@@ -144,22 +160,6 @@ class Global_Data{
 };
 
 
-
-typedef struct pdata{
-
-    double xyz[3]; //coordinates
-    double v[3]; //velocity
-    double oldv[3];
-    double pressure;
-    double soundspeed;
-    double temperature;
-    double volume;
-    double mass;
-    double localspacing;
-
-    p4est_gloidx_t      id;
-
-} pdata_t;
 
 
 

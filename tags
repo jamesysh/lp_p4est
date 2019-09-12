@@ -156,6 +156,7 @@ createFunc	registrar.h	/^State* StateRegistrar<Derived>::createFunc() {$/;"	f	cl
 createGeometry	geometry/geometry.cpp	/^Geometry* GeometryFactory::createGeometry(std::string name) {$/;"	f	class:GeometryFactory
 createParticlesInOctant	particle_data.cpp	/^static void createParticlesInOctant(p8est_iter_volume_info_t * info, void *user_data){$/;"	f	file:
 createState	state/state.cpp	/^State* StateFactory::createState(std::string name) {$/;"	f	class:StateFactory
+createViewForOctant	particle_data.cpp	/^void Global_Data::createViewForOctant(){$/;"	f	class:Global_Data
 density	state/state_pellet.cpp	/^double PelletState::density(double x, double y, double z){$/;"	f	class:PelletState
 dest_fixed	particle_data.h	/^      sc_array_t         *dest_fixed;       \/**< int Particle counts per quadrant *\/$/;"	m	class:Global_Data
 destroy_octree	octree_manager.cpp	/^void Octree_Manager:: destroy_octree(){$/;"	f	class:Octree_Manager
@@ -256,6 +257,7 @@ pa_mode_t	particle_data.h	/^pa_mode_t;$/;"	t	typeref:enum:pa_mode
 packParticles	particle_data.cpp	/^void Global_Data::packParticles(){$/;"	f	class:Global_Data
 part_weight	particle_data.cpp	/^part_weight (p8est_t * p4est,$/;"	f	file:
 particle_data	particle_data.h	/^        sc_array_t *particle_data; \/\/local particle data on process$/;"	m	class:Global_Data
+particle_data_view	particle_data.h	/^    sc_array_t* particle_data_view; $/;"	m	struct:octant_data
 partitionParticles	particle_data.cpp	/^void Global_Data:: partitionParticles(){$/;"	f	class:Global_Data
 partition_octree	octree_manager.cpp	/^void Octree_Manager:: partition_octree(int allow_for_coarsening,p8est_weight_t weight_fn){$/;"	f	class:Octree_Manager
 pdata	particle_data.h	/^typedef struct pdata{$/;"	s
