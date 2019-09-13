@@ -165,7 +165,10 @@ class Global_Data{
 
 /** Data type for payload data inside each quadrant */
 typedef struct octant_data
-{
+{   
+    int flagboundary;  //if true, octant is at cloud boundary;
+    sc_array_t *localneighbourid;
+    sc_array_t *ghostneighbourid;
     sc_array_t* particle_data_view; 
     int octantid; 
     p4est_locidx_t    poctant;

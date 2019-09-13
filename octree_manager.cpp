@@ -407,11 +407,92 @@ void Octree_Manager::balance_octree(p8est_init_t init_fn, p8est_replace_t replac
 
 }
 
-static void testfaceside( p8est_iter_edge_info_t * info, void *user_data){
+static void testfaceside( p8est_iter_face_info_t * info, void *user_data){
+
+    octant_data_t *ghost_data = (octant_data_t *)user_data;
+    sc_array_t         *sides = &(info->sides);
+    size_t sidescount = sides->elem_count;
+    p8est_iter_face_side_t *sidedest, *sidesrc; 
+    p8est_quadrant_t *qdest, *qsrc;
+    octant_data_t *ouddest, *oudsrc;
+    p4est_locidx_t quadid;
+    p4est_locidx_t *neighbourid;
+    if(sidescount == 0)
+        return;
+    for(size_t i = 0;i<sidescount;i++){
+       sidedest = p8est_iter_fside_array_index_int(sides,i); 
+       if(sidedest->is_hanging){
+       
+           for(int j=0;j<P8EST_HALF;j++){
+                if(sidedest->is.hanging.is_ghost[j])          // is ghost
+                    continue;
+                qdest = sidedest->is.hanging.quad[j];
+                ouddest = (octant_data_t *)qdest->p.user_data;
+                if(ouddest->poctant == 0)          //no particles
+                    continue;
+                
+                for(size_t k=0;k<sidescount;k++){
+                    if(k == i)
+                        continue;
+                    sidesrc = p8est_iter_fside_array_index_int(sides,i); 
+                    if(sidesrc->is_hanging){
+                        
+                        for(int l=0;l<P8EST_HALF;l++){
+                            
+                            
+                            if(sidesrc->is.hanging.is_ghost[l]){
+                                oudsrc = &ghost_data[sidesrc->is.hanging.quadid[l]];
+                                if(oudsrc->poctant == 0){
+                                    ouddest->flagboundary = 1;
+                                    continue;
+                                }
+                                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->ghostneighbourid,1);
+                                *neighbourid = sidesrc->is.hanging.quadid[l];
+                            }
+                            else{
+
+                                qsrc = sidesrc->is.hanging.quad[l];
+                                oudsrc = (octant_data_t *)qsrc->p.user_data;
+                                if(oudsrc->poctant == 0){
+                                    ouddest->flagboundary = 1;
+                                    continue;
+                                }
+                                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->localneighbourid,1);
+                                *neighbourid = sidesrc->is.hanging.quadid[l];
+                            }
+
+                        }
+                    
+                    }
+                } 
+                
+           }
+       
+       }
+    
+    }
+
+}
+
+static void testedgeside( p8est_iter_edge_info_t * info, void *user_data){
 
 
 sc_array_t         *sides = &(info->sides);
-printf("side%d %d\n",sides->elem_count,(int)info->tree_boundary);
+}
+
+static void testcornerside( p8est_iter_corner_info_t * info, void *user_data){
+
+
+sc_array_t         *sides = &(info->sides);
+}
+
+static void initNeighbourArray(p8est_iter_volume_info_t *info, void*user_data){
+
+    p8est_quadrant_t   *q = info->quad;
+    octant_data_t       *oud = (octant_data_t *) q->p.user_data;
+    oud->localneighbourid = sc_array_new(sizeof(p4est_locidx_t));
+    oud->ghostneighbourid = sc_array_new(sizeof(p4est_locidx_t));
+
 }
 
 void Octree_Manager::ghost_octree(){
@@ -422,7 +503,7 @@ void Octree_Manager::ghost_octree(){
   ghost = p8est_ghost_new (gdata->p8est, P8EST_CONNECT_FULL);
   ghost_data = P4EST_ALLOC (octant_data_t, ghost->ghosts.elem_count);
   p8est_ghost_exchange_data (gdata->p8est, ghost, ghost_data);
-  p8est_iterate(gdata->p8est,ghost,(void*)ghost_data,NULL,NULL,testfaceside,NULL);
+  p8est_iterate(gdata->p8est,ghost,(void*)ghost_data,initNeighbourArray,testfaceside,NULL,NULL);
   P4EST_FREE (ghost_data);
   p8est_ghost_destroy (ghost);
 }

@@ -1025,7 +1025,7 @@ void Global_Data::createViewForOctant(){
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
-      
+      qud->flagboundary = 0;  
       qud->poctant = qud->lpend - offset;
       qud->particle_data_view = sc_array_new_count(sizeof(pdata_t),(size_t)qud->poctant);
       padd = (pdata_t *) sc_array_index_begin(qud->particle_data_view);
@@ -1059,6 +1059,8 @@ void Global_Data::cleanForTimeStep(){
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
       sc_array_destroy(qud->particle_data_view);
+      sc_array_destroy(qud->localneighbourid);
+      sc_array_destroy(qud->ghostneighbourid);
     }
   }
     sc_array_destroy(irecumu);
