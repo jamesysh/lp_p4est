@@ -91,18 +91,16 @@ int main(){
     gdata->postsearch();
     octree->adapt_octree(); 
 
-    octree->balance_octree(NULL,octree->balance_replace);
-  //  p8est_balance_ext(gdata->p8est,P8EST_CONNECT_FACE,NULL,octree->balance_replace);
- //   assert((size_t)gdata->ireindex == gdata->iremain->elem_count);
+   // octree->balance_octree(NULL,octree->balance_replace);
     gdata->regroupParticles(); 
  
 
-    octree->ghost_octree(); 
     gdata->createViewForOctant();
     
+    octree->ghost_octree(); 
     
-    gdata->partitionParticles();
     gdata->cleanForTimeStep();
+    gdata->partitionParticles();
     
     if(tstart  >= nextwritetime)
     
@@ -111,6 +109,7 @@ int main(){
 //       gdata->writeVTKFiles();
         viewer->writeResult(tstart);
     }
+    
     }
     
     
