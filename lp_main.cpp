@@ -91,13 +91,14 @@ int main(){
     gdata->postsearch();
     octree->adapt_octree(); 
 
-   // octree->balance_octree(NULL,octree->balance_replace);
+    octree->balance_octree(NULL,octree->balance_replace);
     gdata->regroupParticles(); 
  
 
     gdata->createViewForOctant();
     
     octree->ghost_octree(); 
+
     gdata->testquad(); 
 
     gdata->cleanForTimeStep();

@@ -149,6 +149,7 @@ comm_tag	particle_data.h	/^typedef enum comm_tag$/;"	g
 comm_tag_t	particle_data.h	/^comm_tag_t;$/;"	t	typeref:enum:comm_tag
 communicateParticles	particle_data.cpp	/^void Global_Data::communicateParticles(){$/;"	f	class:Global_Data
 conn	particle_data.h	/^        p8est_connectivity_t *conn;$/;"	m	class:Global_Data
+copyParticle	particle_data.cpp	/^void Global_Data::copyParticle(pdata_t *d, pdata_t *s){$/;"	f	class:Global_Data
 createBoundary	boundary/boundary.cpp	/^Boundary* BoundaryFactory::createBoundary(std::string name) {$/;"	f	class:BoundaryFactory
 createFunc	registrar.h	/^Boundary* BoundaryRegistrar<Derived>::createFunc() {$/;"	f	class:BoundaryRegistrar
 createFunc	registrar.h	/^Geometry* GeometryRegistrar<Derived>::createFunc() {$/;"	f	class:GeometryRegistrar
@@ -172,6 +173,8 @@ endt	particle_data.h	/^        double endt;$/;"	m	class:Global_Data
 eos	particle_data.h	/^        EOS* eos;        $/;"	m	class:Global_Data
 eoschoice	initializer.h	/^        int eoschoice;$/;"	m	class:Initializer
 eoschoice	particle_data.h	/^        int eoschoice;$/;"	m	class:Global_Data
+flagboundary	particle_data.h	/^    double flagboundary;$/;"	m	struct:pdata
+flagboundary	particle_data.h	/^    int flagboundary;  \/\/if true, octant is at cloud boundary;$/;"	m	struct:octant_data
 flagrefine	particle_data.h	/^        int flagrefine, gflagrefine, flagstartrefine;$/;"	m	class:Global_Data
 flagstartrefine	particle_data.h	/^        int flagrefine, gflagrefine, flagstartrefine;$/;"	m	class:Global_Data
 gamma	initializer.h	/^        int gamma;$/;"	m	class:Initializer
@@ -190,6 +193,8 @@ getParameters	eos.h	/^	virtual void getParameters(std::vector<double>& params){p
 getSoundSpeed	eos.cpp	/^double PolytropicGasEOS::getSoundSpeed(double pressure, double density) {$/;"	f	class:PolytropicGasEOS
 getTemperature	eos.cpp	/^double PolytropicGasEOS::getTemperature(double pressure, double density) {$/;"	f	class:PolytropicGasEOS
 gflagrefine	particle_data.h	/^        int flagrefine, gflagrefine, flagstartrefine;$/;"	m	class:Global_Data
+ghost_octree	octree_manager.cpp	/^void Octree_Manager::ghost_octree(){$/;"	f	class:Octree_Manager
+ghostneighbourid	particle_data.h	/^    sc_array_t *ghostneighbourid;$/;"	m	struct:octant_data
 gplost	particle_data.h	/^        p4est_gloidx_t gpnum, gplost; \/\/number of particles on all processor, number of particles on all processers which left domain$/;"	m	class:Global_Data
 gpnum	particle_data.h	/^        p4est_gloidx_t gpnum, gplost; \/\/number of particles on all processor, number of particles on all processers which left domain$/;"	m	class:Global_Data
 hxyz	particle_data.h	/^        double lxyz[3],hxyz[3],dxyz[3]; \/\/boundingbox of octant$/;"	m	class:Global_Data
@@ -198,6 +203,7 @@ ifOctantInsectBox	particle_data.cpp	/^static bool ifOctantInsectBox(double lxyz[
 ifPointInsideBox	particle_data.cpp	/^static bool ifPointInsideBox(double x, double y, double z, double bb[6]) {$/;"	f	file:
 ilh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
 initFluidParticles	particle_data.cpp	/^void Global_Data::initFluidParticles(){$/;"	f	class:Global_Data
+initNeighbourArray	octree_manager.cpp	/^static void initNeighbourArray(p8est_iter_volume_info_t *info, void*user_data){$/;"	f	file:
 initlevel	initializer.h	/^        int initlevel ; \/\/init level of octree$/;"	m	class:Initializer
 initlevel	particle_data.h	/^        int initlevel;$/;"	m	class:Global_Data
 initlocalspacing	initializer.h	/^        double initlocalspacing;$/;"	m	class:Initializer
@@ -220,6 +226,7 @@ irvindex	particle_data.h	/^        p4est_locidx_t      irvindex, irv2, irvindex2
 irvindex2	particle_data.h	/^        p4est_locidx_t      irvindex, irv2, irvindex2;   \/**< Running index into ireceive *\/$/;"	m	class:Global_Data
 jlh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
 klh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
+localneighbourid	particle_data.h	/^    sc_array_t *localneighbourid;$/;"	m	struct:octant_data
 localspacing	particle_data.h	/^    double localspacing;$/;"	m	struct:pdata
 loopquad	particle_data.cpp	/^void Global_Data::loopquad (p4est_topidx_t tt, p8est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]){$/;"	f	class:Global_Data
 lpend	particle_data.h	/^    p4est_locidx_t      lpend;$/;"	m	struct:octant_data
@@ -241,12 +248,13 @@ minlevel	particle_data.h	/^        int minlevel; $/;"	m	class:Global_Data
 moveParticlesByG	lp_solver.cpp	/^void LPSolver::moveParticlesByG(double dt){$/;"	f	class:LPSolver
 mpicomm	particle_data.h	/^        sc_MPI_Comm mpicomm;$/;"	m	class:Global_Data
 mpirank	particle_data.h	/^        int mpisize,mpirank;$/;"	m	class:Global_Data
+mpirank	particle_data.h	/^    int mpirank;$/;"	m	struct:octant_data
 mpisize	particle_data.h	/^        int mpisize,mpirank;$/;"	m	class:Global_Data
 numdigit	particle_viewer.h	/^	int numdigit;\/\/\/< The number of digits for the indexing of output file name $/;"	m	class:ParticleViewer
 octant_data	particle_data.h	/^typedef struct octant_data$/;"	s
 octant_data_t	particle_data.h	/^octant_data_t;$/;"	t	typeref:struct:octant_data
 octantid	particle_data.h	/^        int octantid;  $/;"	m	class:Global_Data
-octantid	particle_data.h	/^    int octantid; $/;"	m	struct:octant_data
+octantid	particle_data.h	/^    int octantid;$/;"	m	struct:octant_data
 oldv	particle_data.h	/^    double oldv[3];$/;"	m	struct:pdata
 operator ()	geometry/geometry_pellet.cpp	/^bool PelletLayer::operator()(double x, double y, double z) const{$/;"	f	class:PelletLayer
 outerradius	geometry/geometry_pellet.h	/^	double outerradius;$/;"	m	class:PelletLayer
@@ -309,6 +317,9 @@ src_fixed	particle_data.h	/^      sc_array_t         *src_fixed;        \/**< in
 state	particle_data.h	/^        State* state;        $/;"	m	class:Global_Data
 stateTable	state/state.h	/^	std::unordered_map<std::string, StateCreateFunc> stateTable; \/\/\/< hash table for the (name,creatFunction) pair	$/;"	m	class:StateFactory
 temperature	particle_data.h	/^    double temperature;$/;"	m	struct:pdata
+testcornerside	octree_manager.cpp	/^static void testcornerside( p8est_iter_corner_info_t * info, void *user_data){$/;"	f	file:
+testedgeside	octree_manager.cpp	/^static void testedgeside( p8est_iter_edge_info_t * info, void *user_data){$/;"	f	file:
+testfaceside	octree_manager.cpp	/^static void testfaceside( p8est_iter_face_info_t * info, void *user_data){$/;"	f	file:
 testquad	particle_data.cpp	/^void Global_Data::testquad(){$/;"	f	class:Global_Data
 v	particle_data.h	/^    double v[3]; \/\/velocity$/;"	m	struct:pdata
 velocity	state/state_pellet.cpp	/^void PelletState::velocity(double x, double y, double z, double& vX, double& vY,double& vZ){$/;"	f	class:PelletState

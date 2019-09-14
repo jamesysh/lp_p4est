@@ -170,7 +170,8 @@ typedef struct octant_data
     sc_array_t *localneighbourid;
     sc_array_t *ghostneighbourid;
     sc_array_t* particle_data_view; 
-    int octantid; 
+    int octantid;
+    int mpirank;
     p4est_locidx_t    poctant;
   /** Offset into local array of all particles after this quadrant */
     p4est_locidx_t      lpend;
