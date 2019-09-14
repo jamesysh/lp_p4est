@@ -827,7 +827,7 @@ void Octree_Manager::ghost_octree(){
   ghost = p8est_ghost_new (gdata->p8est, P8EST_CONNECT_FULL);
   ghost_data = P4EST_ALLOC (octant_data_t, ghost->ghosts.elem_count);
   p8est_ghost_exchange_data (gdata->p8est, ghost, ghost_data);
-  p8est_iterate(gdata->p8est,ghost,(void*)ghost_data,initNeighbourArray,NULL,testedgeside,testcornerside);
+  p8est_iterate(gdata->p8est,ghost,(void*)ghost_data,initNeighbourArray,testfaceside,testedgeside,testcornerside);
   P4EST_FREE (ghost_data);
   p8est_ghost_destroy (ghost);
 }

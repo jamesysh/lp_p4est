@@ -977,8 +977,8 @@ void Global_Data::testquad(){
     p4est_locidx_t      lq;
 
   p8est_tree_t       *tree;
-  p8est_quadrant_t   *quad;
-  octant_data_t          *qud;
+  p8est_quadrant_t   *quad, *quad2;
+  octant_data_t          *qud,*qud2;
   p4est_locidx_t   offset = 0,lpend;
   pdata_t * pad;
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
@@ -986,7 +986,30 @@ void Global_Data::testquad(){
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
-      lpend = qud->lpend;
+      if(qud->poctant){
+          qud->flagboundary = 2000;
+        size_t cc = qud->localneighbourid->elem_count;
+        for(size_t i=0;i<cc;i++){
+            p4est_locidx_t* qid = (p4est_locidx_t *)sc_array_index(qud->localneighbourid,i);
+            if(*qid == lq)
+                continue;
+            quad2 = p8est_quadrant_array_index(&tree->quadrants,*qid);
+            
+            qud2 = (octant_data_t *) quad2->p.user_data;
+            qud2->flagboundary = 1000;
+        }
+        break;
+      }
+
+    }
+  }
+
+  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+    tree = p8est_tree_array_index (p8est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+    lpend = qud->lpend;
       for(int i=offset;i<lpend;i++){
         pad = (pdata_t *)sc_array_index(particle_data,i);
         pad->flagboundary = (double)qud->flagboundary;
