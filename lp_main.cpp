@@ -58,7 +58,7 @@ int main(){
 
      
     double tstart = 0;
-    double tend = 0.1;
+    double tend = 0.05;
     double nextwritetime = 0;
     while(tstart<tend)
     {

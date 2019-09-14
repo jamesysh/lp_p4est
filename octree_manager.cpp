@@ -761,8 +761,53 @@ static void testedgeside( p8est_iter_edge_info_t * info, void *user_data){
 
 static void testcornerside( p8est_iter_corner_info_t * info, void *user_data){
 
+    octant_data_t *ghost_data = (octant_data_t *)user_data;
+    sc_array_t         *sides = &(info->sides);
+    size_t sidescount = sides->elem_count;
+    p8est_iter_corner_side_t *sidedest, *sidesrc; 
+    p8est_quadrant_t *qdest, *qsrc;
+    octant_data_t *ouddest, *oudsrc;
+    p4est_locidx_t quadid;
+    p4est_locidx_t *neighbourid;
+    for(size_t i=0;i<sidescount;i++){
+    
+       sidedest = p8est_iter_cside_array_index_int(sides,i); 
+       if(sidedest->is_ghost)
+           continue;
+       qdest = sidedest->quad;
+       ouddest = (octant_data_t *)qdest->p.user_data;
+       for(size_t j=0;j<sidescount;j++){
+       
+           sidesrc = p8est_iter_cside_array_index_int(sides,j); 
+           if(sidesrc->is_ghost){
+                oudsrc = &ghost_data[sidesrc->quadid]; 
+                if(oudsrc->poctant == 0){
+                    ouddest->flagboundary = 1;
+                    continue;
+                }
+                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->ghostneighbourid,1);
+                *neighbourid = sidesrc->quadid;
 
-sc_array_t         *sides = &(info->sides);
+           }
+
+           else{
+           
+                qsrc = sidesrc->quad;
+                oudsrc = (octant_data_t *)qsrc->p.user_data;
+                if(oudsrc->poctant == 0){
+                    ouddest->flagboundary = 1;
+                    continue;
+                }
+                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->localneighbourid,1);
+                *neighbourid = sidesrc->quadid;
+           
+           }
+       
+       
+       }
+
+    }
+
 }
 
 static void initNeighbourArray(p8est_iter_volume_info_t *info, void*user_data){
@@ -776,13 +821,13 @@ static void initNeighbourArray(p8est_iter_volume_info_t *info, void*user_data){
 
 void Octree_Manager::ghost_octree(){
 
-
+  gdata->domain_len = 100;
   octant_data_t       *ghost_data;
   p8est_ghost_t      *ghost;
   ghost = p8est_ghost_new (gdata->p8est, P8EST_CONNECT_FULL);
   ghost_data = P4EST_ALLOC (octant_data_t, ghost->ghosts.elem_count);
   p8est_ghost_exchange_data (gdata->p8est, ghost, ghost_data);
-  p8est_iterate(gdata->p8est,ghost,(void*)ghost_data,initNeighbourArray,NULL,testedgeside,NULL);
+  p8est_iterate(gdata->p8est,ghost,(void*)ghost_data,initNeighbourArray,NULL,testedgeside,testcornerside);
   P4EST_FREE (ghost_data);
   p8est_ghost_destroy (ghost);
 }
