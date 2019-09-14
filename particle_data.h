@@ -25,7 +25,7 @@ typedef struct pdata{
     double volume;
     double mass;
     double localspacing;
-
+    double flagboundary;
     p4est_gloidx_t      id;
 
 } pdata_t;

@@ -417,7 +417,7 @@ static void testfaceside( p8est_iter_face_info_t * info, void *user_data){
     octant_data_t *ouddest, *oudsrc;
     p4est_locidx_t quadid;
     p4est_locidx_t *neighbourid;
-    if(sidescount == 0)
+    if(sidescount <= 1)   //todo   domain boundary set to falgboundary
         return;
     for(size_t i = 0;i<sidescount;i++){
        sidedest = p8est_iter_fside_array_index_int(sides,i); 
@@ -432,9 +432,9 @@ static void testfaceside( p8est_iter_face_info_t * info, void *user_data){
                     continue;
                 
                 for(size_t k=0;k<sidescount;k++){
-                    if(k == i)
-                        continue;
-                    sidesrc = p8est_iter_fside_array_index_int(sides,i); 
+                  //  if(k == i)
+                  //      continue;
+                    sidesrc = p8est_iter_fside_array_index_int(sides,k); 
                     if(sidesrc->is_hanging){
                         
                         for(int l=0;l<P8EST_HALF;l++){
@@ -464,9 +464,114 @@ static void testfaceside( p8est_iter_face_info_t * info, void *user_data){
                         }
                     
                     }
+                    else{                        //sidesrc is not hanging
+
+                        if(sidesrc->is.full.is_ghost){
+                        
+                                oudsrc = &ghost_data[sidesrc->is.full.quadid];
+                                if(oudsrc->poctant == 0){
+                                    ouddest->flagboundary = 1;
+                                    continue;
+                                }
+                                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->ghostneighbourid,1);
+                                *neighbourid = sidesrc->is.full.quadid;
+                        
+                        }
+                        else{
+                        
+                                qsrc = sidesrc->is.full.quad;
+                                oudsrc = (octant_data_t *)qsrc->p.user_data;
+                                if(oudsrc->poctant == 0){
+                                    ouddest->flagboundary = 1;
+                                    continue;
+                                }
+                                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->localneighbourid,1);
+                                *neighbourid = sidesrc->is.full.quadid;
+                        
+                        }
+                    
+                    
+                    }
                 } 
                 
            }
+       
+       }
+       else{   //sidedest is full
+       
+       
+                if(sidedest->is.full.is_ghost)          // is ghost
+                    continue;
+                qdest = sidedest->is.full.quad;
+                ouddest = (octant_data_t *)qdest->p.user_data;
+                if(ouddest->poctant == 0)          //no particles
+                    continue;
+                
+                for(size_t k=0;k<sidescount;k++){
+                    if(k == i)
+                        continue;
+                    sidesrc = p8est_iter_fside_array_index_int(sides,k); 
+                    if(sidesrc->is_hanging){
+                        
+                        for(int l=0;l<P8EST_HALF;l++){
+                            
+                            
+                            if(sidesrc->is.hanging.is_ghost[l]){
+                                oudsrc = &ghost_data[sidesrc->is.hanging.quadid[l]];
+                                if(oudsrc->poctant == 0){
+                                    ouddest->flagboundary = 1;
+                                    continue;
+                                }
+                                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->ghostneighbourid,1);
+                                *neighbourid = sidesrc->is.hanging.quadid[l];
+                            }
+                            else{
+
+                                qsrc = sidesrc->is.hanging.quad[l];
+                                oudsrc = (octant_data_t *)qsrc->p.user_data;
+                                if(oudsrc->poctant == 0){
+                                    ouddest->flagboundary = 1;
+                                    continue;
+                                }
+                                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->localneighbourid,1);
+                                *neighbourid = sidesrc->is.hanging.quadid[l];
+                            }
+
+                        }
+                    
+                    }
+                    else{                        //sidesrc is not hanging
+
+                        if(sidesrc->is.full.is_ghost){
+                        
+                                oudsrc = &ghost_data[sidesrc->is.full.quadid];
+                                if(oudsrc->poctant == 0){
+                                    ouddest->flagboundary = 1;
+                                    continue;
+                                }
+                                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->ghostneighbourid,1);
+                                *neighbourid = sidesrc->is.full.quadid;
+                        
+                        }
+                        else{
+                        
+                                qsrc = sidesrc->is.full.quad;
+                                oudsrc = (octant_data_t *)qsrc->p.user_data;
+                                if(oudsrc->poctant == 0){
+                                    ouddest->flagboundary = 1;
+                                    continue;
+                                }
+                                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->localneighbourid,1);
+                                *neighbourid = sidesrc->is.full.quadid;
+                        
+                        }
+                    
+                    
+                    }
+                } 
+                
+           
+       
        
        }
     

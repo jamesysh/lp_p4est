@@ -979,12 +979,20 @@ void Global_Data::testquad(){
   p8est_tree_t       *tree;
   p8est_quadrant_t   *quad;
   octant_data_t          *qud;
+  p4est_locidx_t   offset = 0,lpend;
+  pdata_t * pad;
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
-      qud->particle_data_view = NULL; 
+      lpend = qud->lpend;
+      for(int i=offset;i<lpend;i++){
+        pad = (pdata_t *)sc_array_index(particle_data,i);
+        pad->flagboundary = (double)qud->flagboundary;
+            
+      }
+       offset = lpend;  
     }
   }
 
@@ -1025,7 +1033,7 @@ void Global_Data::createViewForOctant(){
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
-      qud->flagboundary = 0;  
+      qud->flagboundary = 10;  
       qud->poctant = qud->lpend - offset;
       qud->particle_data_view = sc_array_new_count(sizeof(pdata_t),(size_t)qud->poctant);
       padd = (pdata_t *) sc_array_index_begin(qud->particle_data_view);
