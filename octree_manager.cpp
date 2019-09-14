@@ -417,8 +417,8 @@ static void testfaceside( p8est_iter_face_info_t * info, void *user_data){
     octant_data_t *ouddest, *oudsrc;
     p4est_locidx_t quadid;
     p4est_locidx_t *neighbourid;
-    if(sidescount <= 1)   //todo   domain boundary set to falgboundary
-        return;
+    //todo   domain boundary set to falgboundary
+      
     for(size_t i = 0;i<sidescount;i++){
        sidedest = p8est_iter_fside_array_index_int(sides,i); 
        if(sidedest->is_hanging){
@@ -448,6 +448,7 @@ static void testfaceside( p8est_iter_face_info_t * info, void *user_data){
                                 }
                                 neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->ghostneighbourid,1);
                                 *neighbourid = sidesrc->is.hanging.quadid[l];
+                            
                             }
                             else{
 
@@ -459,6 +460,7 @@ static void testfaceside( p8est_iter_face_info_t * info, void *user_data){
                                 }
                                 neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->localneighbourid,1);
                                 *neighbourid = sidesrc->is.hanging.quadid[l];
+                            
                             }
 
                         }
@@ -508,8 +510,8 @@ static void testfaceside( p8est_iter_face_info_t * info, void *user_data){
                     continue;
                 
                 for(size_t k=0;k<sidescount;k++){
-                    if(k == i)
-                        continue;
+                   // if(k == i)
+                    //    continue;
                     sidesrc = p8est_iter_fside_array_index_int(sides,k); 
                     if(sidesrc->is_hanging){
                         
@@ -524,6 +526,7 @@ static void testfaceside( p8est_iter_face_info_t * info, void *user_data){
                                 }
                                 neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->ghostneighbourid,1);
                                 *neighbourid = sidesrc->is.hanging.quadid[l];
+                            
                             }
                             else{
 
@@ -535,6 +538,7 @@ static void testfaceside( p8est_iter_face_info_t * info, void *user_data){
                                 }
                                 neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->localneighbourid,1);
                                 *neighbourid = sidesrc->is.hanging.quadid[l];
+                           
                             }
 
                         }
@@ -582,7 +586,177 @@ static void testfaceside( p8est_iter_face_info_t * info, void *user_data){
 static void testedgeside( p8est_iter_edge_info_t * info, void *user_data){
 
 
-sc_array_t         *sides = &(info->sides);
+    sc_array_t         *sides = &(info->sides);
+    octant_data_t *ghost_data = (octant_data_t *)user_data;
+    size_t sidescount = sides->elem_count;
+    p8est_iter_edge_side_t *sidedest, *sidesrc; 
+    p8est_quadrant_t *qdest, *qsrc;
+    octant_data_t *ouddest, *oudsrc;
+    p4est_locidx_t quadid;
+    p4est_locidx_t *neighbourid;
+    
+    for(size_t i = 0;i<sidescount;i++){
+        sidedest = p8est_iter_eside_array_index_int(sides,i); 
+        
+        if(sidedest->is_hanging){
+  
+
+           for(int j=0;j<2;j++){
+                if(sidedest->is.hanging.is_ghost[j])          // is ghost
+                    continue;
+                qdest = sidedest->is.hanging.quad[j];
+                ouddest = (octant_data_t *)qdest->p.user_data;
+                if(ouddest->poctant == 0)          //no particles
+                    continue;
+                
+                for(size_t k=0;k<sidescount;k++){
+                  //  if(k == i)
+                  //      continue;
+                    sidesrc = p8est_iter_eside_array_index_int(sides,k); 
+                    if(sidesrc->is_hanging){
+                        
+                        for(int l=0;l<2;l++){
+                            
+                            
+                            if(sidesrc->is.hanging.is_ghost[l]){
+                                oudsrc = &ghost_data[sidesrc->is.hanging.quadid[l]];
+                                if(oudsrc->poctant == 0){
+                                    ouddest->flagboundary = 1;
+                                    continue;
+                                }
+                                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->ghostneighbourid,1);
+                                *neighbourid = sidesrc->is.hanging.quadid[l];
+                                  
+                            }
+                            else{
+
+                                qsrc = sidesrc->is.hanging.quad[l];
+                                oudsrc = (octant_data_t *)qsrc->p.user_data;
+                                if(oudsrc->poctant == 0){
+                                    ouddest->flagboundary = 1;
+                                    continue;
+                                }
+                                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->localneighbourid,1);
+                                *neighbourid = sidesrc->is.hanging.quadid[l];
+                            
+                            }
+
+                        }
+                    
+                    }
+                    else{                        //sidesrc is not hanging
+
+                        if(sidesrc->is.full.is_ghost){
+                        
+                                oudsrc = &ghost_data[sidesrc->is.full.quadid];
+                                if(oudsrc->poctant == 0){
+                                    ouddest->flagboundary = 1;
+                                    continue;
+                                }
+                                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->ghostneighbourid,1);
+                                *neighbourid = sidesrc->is.full.quadid;
+                        
+                        }
+                        else{
+                        
+                                qsrc = sidesrc->is.full.quad;
+                                oudsrc = (octant_data_t *)qsrc->p.user_data;
+                                if(oudsrc->poctant == 0){
+                                    ouddest->flagboundary = 1;
+                                    continue;
+                                }
+                                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->localneighbourid,1);
+                                *neighbourid = sidesrc->is.full.quadid;
+                        }
+                    
+                    
+                    }
+                } 
+                
+           }
+
+        }
+        
+       else{   //sidedest is full
+       
+       
+                if(sidedest->is.full.is_ghost)          // is ghost
+                    continue;
+                qdest = sidedest->is.full.quad;
+                ouddest = (octant_data_t *)qdest->p.user_data;
+                if(ouddest->poctant == 0)          //no particles
+                    continue;
+                
+                for(size_t k=0;k<sidescount;k++){
+                   // if(k == i)
+                    //    continue;
+                    sidesrc = p8est_iter_eside_array_index_int(sides,k); 
+                    if(sidesrc->is_hanging){
+                        
+                        for(int l=0;l<2;l++){
+                            
+                            
+                            if(sidesrc->is.hanging.is_ghost[l]){
+                                oudsrc = &ghost_data[sidesrc->is.hanging.quadid[l]];
+                                if(oudsrc->poctant == 0){
+                                    ouddest->flagboundary = 1;
+                                    continue;
+                                }
+                                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->ghostneighbourid,1);
+                                *neighbourid = sidesrc->is.hanging.quadid[l];
+                            
+                            }
+                            else{
+
+                                qsrc = sidesrc->is.hanging.quad[l];
+                                oudsrc = (octant_data_t *)qsrc->p.user_data;
+                                if(oudsrc->poctant == 0){
+                                    ouddest->flagboundary = 1;
+                                    continue;
+                                }
+                                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->localneighbourid,1);
+                                *neighbourid = sidesrc->is.hanging.quadid[l];
+                           
+                            }
+
+                        }
+                    
+                    }
+                    else{                        //sidesrc is not hanging
+
+                        if(sidesrc->is.full.is_ghost){
+                        
+                                oudsrc = &ghost_data[sidesrc->is.full.quadid];
+                                if(oudsrc->poctant == 0){
+                                    ouddest->flagboundary = 1;
+                                    continue;
+                                }
+                                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->ghostneighbourid,1);
+                                *neighbourid = sidesrc->is.full.quadid;
+                        
+                        }
+                        else{
+                        
+                                qsrc = sidesrc->is.full.quad;
+                                oudsrc = (octant_data_t *)qsrc->p.user_data;
+                                if(oudsrc->poctant == 0){
+                                    ouddest->flagboundary = 1;
+                                    continue;
+                                }
+                                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->localneighbourid,1);
+                                *neighbourid = sidesrc->is.full.quadid;
+                        
+                        }
+                    
+                    
+                    }
+                } 
+       
+       }
+    
+    }
+    
+    
 }
 
 static void testcornerside( p8est_iter_corner_info_t * info, void *user_data){
@@ -608,7 +782,7 @@ void Octree_Manager::ghost_octree(){
   ghost = p8est_ghost_new (gdata->p8est, P8EST_CONNECT_FULL);
   ghost_data = P4EST_ALLOC (octant_data_t, ghost->ghosts.elem_count);
   p8est_ghost_exchange_data (gdata->p8est, ghost, ghost_data);
-  p8est_iterate(gdata->p8est,ghost,(void*)ghost_data,initNeighbourArray,testfaceside,NULL,NULL);
+  p8est_iterate(gdata->p8est,ghost,(void*)ghost_data,initNeighbourArray,NULL,testedgeside,NULL);
   P4EST_FREE (ghost_data);
   p8est_ghost_destroy (ghost);
 }
