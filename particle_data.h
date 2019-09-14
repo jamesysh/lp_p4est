@@ -13,6 +13,13 @@ typedef enum pa_mode
 }
 pa_mode_t;
 
+typedef struct remoteneighbour{
+
+    int mpirank;
+    int octantid;
+
+} remoteneighbour_t;
+
 
 typedef struct pdata{
 
@@ -26,6 +33,9 @@ typedef struct pdata{
     double mass;
     double localspacing;
     double flagboundary;
+    sc_array_t * localneighbour;
+    sc_array_t * ghostneighbour;  // tpye of remoteneighbour
+    
     p4est_gloidx_t      id;
 
 } pdata_t;
@@ -74,6 +84,8 @@ class Global_Data{
         void communicateParticles();
         void regroupParticles();
         void partitionParticles();
+        
+        void initParticleNeighbour();
         void copyParticle(pdata_t* d, pdata_t *s);
         void createViewForOctant();
         void cleanForTimeStep();
@@ -91,6 +103,7 @@ class Global_Data{
         sc_MPI_Comm mpicomm;
         int mpisize,mpirank;
         int initlevel;
+        double timesearchingradius;
         int maxlevel;
         int minlevel; 
         int elem_particles; //max number of particles per octant

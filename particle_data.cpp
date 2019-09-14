@@ -84,6 +84,64 @@ psearch_quad (p8est_t * p4est, p4est_topidx_t which_tree,
 }
 
 
+inline bool is_node_intersect_search_region(const double min_x, const double max_x, const double min_y, const double max_y, const double min_z, const double max_z, const double& search_x, const double& search_y, const double& search_z, const double& radius) {
+  //The following calculation has been fashioned such that:
+  //if final value of squared_dmin == 0 then the point lies inside the node. 
+  //if final value of squared_dmin !=0  then the point lies outside the node, AND 
+  //             tells the SQUARE of the minimum distance of the point to the points on the node boundary(surface).
+
+
+  double squared_dmin = 0.0;
+  double temp; //Used as a temporary variable to store some intermediate results.
+ 
+  //Process the x cooridinates
+  if( search_x < min_x ) { 
+    temp = search_x - min_x; 
+    squared_dmin += temp*temp;
+  } else if( search_x > max_x )	{ 
+    temp         = search_x - max_x ; 
+    squared_dmin += temp*temp                  ;
+  }   
+
+
+  //Process the Y-coorindtaes
+  if( search_y < min_y ) { 
+    temp = search_y - min_y ; 
+    squared_dmin += temp*temp;
+  } else if( search_y > max_y ) { 
+    temp = search_y - max_y ; 
+    squared_dmin += temp*temp;
+  }   
+
+  //Process the Z-coorindtaes
+  if( search_z < min_z ) 
+  { 
+    temp          = search_z - min_z; 
+    squared_dmin += temp*temp;
+  } else if( search_z > max_z ) { 
+    temp          = search_z - max_z; 
+    squared_dmin += temp*temp;
+  }   
+
+  if (squared_dmin <= radius*radius) return true;
+  else return false;
+
+}
+
+static int neighboursearch_point (p8est_t * p4est, p4est_topidx_t which_tree,
+               p8est_quadrant_t * quadrant, int pfirst, int plast,
+               p4est_locidx_t local_num, void *point){
+
+    pdata_t *pad = (pdata_t*) point;
+    double *x = pad->xyz;
+  
+    Global_Data      *g = (Global_Data *) p4est->user_pointer;
+    double timeradius = g->timesearchingradius;
+    double ls  = pad->localspacing;
+    if(!is_node_intersect_search_region(g->lxyz[0],g->lxyz[1], g->lxyz[2], g->hxyz[0],g->hxyz[1], g->hxyz[2], x[0],x[1], x[2], ls*timeradius) ){
+        return 0;
+    }
+}
 static int
 psearch_point (p8est_t * p4est, p4est_topidx_t which_tree,
                p8est_quadrant_t * quadrant, int pfirst, int plast,
@@ -316,6 +374,7 @@ Global_Data:: Global_Data(Initializer* init){
     gplost = 0; 
     flagrefine = 1;
     initlevel = init->initlevel;
+    timesearchingradius = init->timesearchingradius;
     maxlevel = init->maxlevel;
     minlevel = init->minlevel; 
     initlocalspacing = init->initlocalspacing;
@@ -1084,6 +1143,9 @@ void Global_Data::cleanForTimeStep(){
   p8est_tree_t       *tree;
   p8est_quadrant_t   *quad;
   octant_data_t          *qud;
+
+  p4est_locidx_t   offset = 0,lpend;
+  pdata_t * pad;
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
@@ -1092,6 +1154,15 @@ void Global_Data::cleanForTimeStep(){
       sc_array_destroy(qud->particle_data_view);
       sc_array_destroy(qud->localneighbourid);
       sc_array_destroy(qud->ghostneighbourid);
+    
+      lpend = qud->lpend;
+      for(int i=offset;i<lpend;i++){
+        pad = (pdata_t *)sc_array_index(particle_data,i);
+        sc_array_destroy(pad->localneighbour);
+        sc_array_destroy(pad->ghostneighbour);
+      }
+       offset = lpend;  
+    
     }
   }
     sc_array_destroy(irecumu);
@@ -1116,4 +1187,32 @@ void Global_Data::copyParticle(pdata_t *d, pdata_t *s){
 
 }
 
+void Global_Data::initParticleNeighbour(){
 
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+
+  p8est_tree_t       *tree;
+  p8est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  p4est_locidx_t   offset = 0,lpend;
+  pdata_t * pad;
+
+  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+    tree = p8est_tree_array_index (p8est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+    lpend = qud->lpend;
+      for(int i=offset;i<lpend;i++){
+        pad = (pdata_t *)sc_array_index(particle_data,i);
+        pad->localneighbour = sc_array_new(sizeof(p4est_locidx_t));
+        pad->ghostneighbour = sc_array_new(sizeof(remoteneighbour_t));
+      }
+       offset = lpend;  
+    }
+  }
+
+
+}

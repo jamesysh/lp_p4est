@@ -821,7 +821,6 @@ static void initNeighbourArray(p8est_iter_volume_info_t *info, void*user_data){
 
 void Octree_Manager::ghost_octree(){
 
-  gdata->domain_len = 100;
   octant_data_t       *ghost_data;
   p8est_ghost_t      *ghost;
   ghost = p8est_ghost_new (gdata->p8est, P8EST_CONNECT_FULL);

@@ -41,7 +41,7 @@ class Initializer {
         int eoschoice;
         int pelletmaterial;
         int gamma;
-
+        double timesearchingradius;
 };
 
 #endif // __INITIALIZER_H__

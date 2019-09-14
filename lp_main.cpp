@@ -58,7 +58,7 @@ int main(){
 
      
     double tstart = 0;
-    double tend = 0.05;
+    double tend = 0.005;
     double nextwritetime = 0;
     while(tstart<tend)
     {
@@ -97,9 +97,12 @@ int main(){
 
     gdata->createViewForOctant();
     
-    octree->ghost_octree(); 
+    gdata->initParticleNeighbour();
 
-    gdata->testquad(); 
+    octree->ghost_octree(); 
+    
+
+    //gdata->testquad(); 
 
     gdata->cleanForTimeStep();
     gdata->partitionParticles();
