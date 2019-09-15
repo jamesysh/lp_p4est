@@ -1039,12 +1039,12 @@ void Global_Data::testquad(){
   octant_data_t          *qud,*qud2;
   p4est_locidx_t   offset = 0,lpend;
   pdata_t * pad;
- /* for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
-      if(qud->poctant){
+      if(qud->poctant && lq>4000){
           qud->flagboundary = 2000;
         size_t cc = qud->localneighbourid->elem_count;
         for(size_t i=0;i<cc;i++){
@@ -1061,7 +1061,7 @@ void Global_Data::testquad(){
 
     }
   }
-*/
+
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {

@@ -93,7 +93,7 @@ int main(){
     octree->balance_octree(NULL,octree->balance_replace);
     gdata->regroupParticles(); 
  
-
+    
     gdata->createViewForOctant();
     
     gdata->initParticleNeighbour();
@@ -103,6 +103,7 @@ int main(){
     //gdata->testquad(); 
 
 
+    
     gdata->cleanForTimeStep();
     gdata->partitionParticles();
     
