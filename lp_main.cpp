@@ -23,7 +23,6 @@ refine_init (p8est_t * p8est, p4est_topidx_t which_tree,
 
 
 int main(){
-
     Initializer *init = new Initializer();
 
     Global_Data *gdata = new Global_Data(init);
@@ -58,7 +57,7 @@ int main(){
 
      
     double tstart = 0;
-    double tend = 0.005;
+    double tend = 0.01;
     double nextwritetime = 0;
     while(tstart<tend)
     {
@@ -101,8 +100,8 @@ int main(){
 
     octree->ghost_octree(); 
     
-
     //gdata->testquad(); 
+
 
     gdata->cleanForTimeStep();
     gdata->partitionParticles();

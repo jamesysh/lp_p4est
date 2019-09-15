@@ -194,16 +194,15 @@ psearch_point (p8est_t * p4est, p4est_topidx_t which_tree,
       /* continue recursion for local branch quadrant */
       return 1;
     }
+    
     /* found particle on a remote process */
     zp = sc_array_position (g->particle_data, point);
     pfn = (int *) sc_array_index (g->pfound, zp);
     /* only count match if it has not been found locally or on lower rank */
     if (*pfn < 0 || (*pfn != g->mpirank && pfirst < *pfn)) {
-      *pfn = pfirst;
+        *pfn = pfirst;
     }
 
-    if(*pfn != g->mpirank && pfirst < *pfn)
-        printf("case happened\n");
     /* return value will have no effect, but we must return */
     return 0;
   }
@@ -1040,7 +1039,7 @@ void Global_Data::testquad(){
   octant_data_t          *qud,*qud2;
   p4est_locidx_t   offset = 0,lpend;
   pdata_t * pad;
-  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+ /* for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
@@ -1062,14 +1061,14 @@ void Global_Data::testquad(){
 
     }
   }
-
+*/
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
     lpend = qud->lpend;
-      for(int i=offset;i<lpend;i++){
+    for(int i=offset;i<lpend;i++){
         pad = (pdata_t *)sc_array_index(particle_data,i);
         pad->flagboundary = (double)qud->flagboundary;
             

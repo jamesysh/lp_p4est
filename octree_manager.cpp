@@ -117,7 +117,7 @@ void Octree_Manager:: balance_replace (p8est_t * p8est, p4est_topidx_t which_tre
   int                 wx, wy, wz;
   double              lxyz[3], hxyz[3], dxyz[3];
   sc_array_t          iview, *arr;
-  p4est_locidx_t      irem, ibeg;
+  p4est_locidx_t      irem, ibeg, offset, *newoffset;
   p8est_quadrant_t  **pchild, *outoctant;
   octant_data_t          *oud, *iud;
   Global_Data      *g = (Global_Data *) p8est->user_pointer;
@@ -145,7 +145,9 @@ void Octree_Manager:: balance_replace (p8est_t * p8est, p4est_topidx_t which_tre
     // recover window onto remaining particles for the new family 
     
     irem = iud->premain ;//sc_array_index(g->irecumu,octantid);
+    
     ibeg = *(p4est_locidx_t *) sc_array_index(g->irecumu,octantid) - irem;
+    offset = ibeg;
     sc_array_init_view (&iview, g->iremain, ibeg, irem);
 
     // sort remaining particles into the children 
@@ -165,14 +167,20 @@ void Octree_Manager:: balance_replace (p8est_t * p8est, p4est_topidx_t which_tre
         oud = (octant_data_t *) (*pchild++)->p.user_data;
         ibeg += (oud->premain = (p4est_locidx_t) arr->elem_count);
         oud->poctant = oud->premain;
+        oud->octantid = g->octantid;
+        g->octantid ++;
+        newoffset = (p4est_locidx_t *)sc_array_push(g->irecumu);
+        *newoffset = offset + oud->premain;
+        offset = offset + oud->premain;
+
       }
     }
     }
-
     // recover window onto received particles for the new family 
     
     irem = iud->preceive ;//sc_array_index(g->irecumu,octantid);
     ibeg = *(p4est_locidx_t *) sc_array_index(g->irvcumu,octantid) - irem;
+    offset = ibeg;
     P4EST_ASSERT (irem >= 0);
     sc_array_init_view (&iview, g->ireceive, ibeg, irem);
     P4EST_ASSERT (qod->preceive == irem);
@@ -190,13 +198,14 @@ void Octree_Manager:: balance_replace (p8est_t * p8est, p4est_topidx_t which_tre
         sc_array_init_view (&iview, g->ireceive, ibeg, arr->elem_count);
         g->sc_array_paste (&iview, arr);
         oud = (octant_data_t *) (*pchild++)->p.user_data;
-        P4EST_ASSERT (oud->u.lpend == -1);
         ibeg += (oud->preceive = (p4est_locidx_t) arr->elem_count);
         oud->poctant += oud->preceive;
+        newoffset = (p4est_locidx_t *)sc_array_push(g->irvcumu);
+        *newoffset = offset + oud->preceive;
+        offset += oud->preceive;
       }
     }
     }
-    P4EST_ASSERT (ibeg == g->irvindex);
     P4EST_ASSERT (pchild == incoming + P4EST_CHILDREN);
 
   }
@@ -278,7 +287,7 @@ void Octree_Manager:: adapt_replace (p8est_t * p8est, p4est_topidx_t which_tree,
       }
     }
     }
-    P4EST_ASSERT (ibeg == g->irvindex);
+    assert (ibeg == g->irvindex);
     P4EST_ASSERT (pchild == incoming + P4EST_CHILDREN);
 
   }
@@ -390,13 +399,9 @@ void Octree_Manager:: adapt_octree(){
     sc_array_destroy(gdata->irvcumu);
     
     }
- 
+    size_t cc = gdata->irvcumu->elem_count;
 
    
-    gdata->ireindex = gdata->ire2 = 0;
-    gdata->irvindex = gdata->irv2 = 0;
-
-    gdata->ireindex2 = gdata->irvindex2 = 0;
 }
 
 
