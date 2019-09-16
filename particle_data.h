@@ -5,6 +5,24 @@
 #include "boundary.h"
 
 
+/** Data type for payload data inside each quadrant */
+typedef struct octant_data
+{   
+    int flagboundary;  //if true, octant is at cloud boundary;
+    sc_array_t *localneighbourid;
+    sc_array_t *ghostneighbourid;
+    sc_array_t* particle_data_view; 
+    int octantid;
+    int mpirank;
+    p4est_locidx_t    poctant;
+  /** Offset into local array of all particles after this quadrant */
+    p4est_locidx_t      lpend;
+
+  /** counts of local particles remaining on this quadrant and recieved ones */
+  p4est_locidx_t      premain, preceive;
+}
+octant_data_t;
+
 typedef enum pa_mode
 {
   PA_MODE_REMAIN,
@@ -84,7 +102,7 @@ class Global_Data{
         void communicateParticles();
         void regroupParticles();
         void partitionParticles();
-        
+        void searchNeighbourOctant(); 
         void initParticleNeighbour();
         void copyParticle(pdata_t* d, pdata_t *s);
         void createViewForOctant();
@@ -128,6 +146,8 @@ class Global_Data{
         p4est_gloidx_t gpnum, gplost; //number of particles on all processor, number of particles on all processers which left domain
         p4est_locidx_t qremain, qreceive;
         int flagrefine, gflagrefine, flagstartrefine;
+        octant_data_t *ghost_data; 
+        p8est_ghost_t *ghost;
         sc_array_t *particle_data; //local particle data on process
         
         sc_array_t *pfound; //target process of particle
@@ -175,24 +195,6 @@ class Global_Data{
 
 
 
-
-/** Data type for payload data inside each quadrant */
-typedef struct octant_data
-{   
-    int flagboundary;  //if true, octant is at cloud boundary;
-    sc_array_t *localneighbourid;
-    sc_array_t *ghostneighbourid;
-    sc_array_t* particle_data_view; 
-    int octantid;
-    int mpirank;
-    p4est_locidx_t    poctant;
-  /** Offset into local array of all particles after this quadrant */
-    p4est_locidx_t      lpend;
-
-  /** counts of local particles remaining on this quadrant and recieved ones */
-  p4est_locidx_t      premain, preceive;
-}
-octant_data_t;
 
 
 #endif

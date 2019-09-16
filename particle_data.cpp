@@ -8,6 +8,66 @@
 #include "sc_notify.h"
 using namespace std;
 
+static void testcornerside( p8est_iter_corner_info_t * info, void *user_data){
+
+    octant_data_t *ghost_data = (octant_data_t *)user_data;
+    sc_array_t         *sides = &(info->sides);
+    size_t sidescount = sides->elem_count;
+    p8est_iter_corner_side_t *sidedest, *sidesrc; 
+    p8est_quadrant_t *qdest, *qsrc;
+    octant_data_t *ouddest, *oudsrc;
+    p4est_locidx_t quadid;
+    p4est_locidx_t *neighbourid;
+    for(size_t i=0;i<sidescount;i++){
+    
+       sidedest = p8est_iter_cside_array_index_int(sides,i); 
+       if(sidedest->is_ghost)
+           continue;
+       qdest = sidedest->quad;
+       ouddest = (octant_data_t *)qdest->p.user_data;
+       for(size_t j=0;j<sidescount;j++){
+       
+           sidesrc = p8est_iter_cside_array_index_int(sides,j); 
+           if(sidesrc->is_ghost){
+                oudsrc = &ghost_data[sidesrc->quadid]; 
+                if(oudsrc->poctant == 0){
+                    ouddest->flagboundary = 1;
+                    continue;
+                }
+                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->ghostneighbourid,1);
+                *neighbourid = sidesrc->quadid;
+
+           }
+
+           else{
+           
+                qsrc = sidesrc->quad;
+                oudsrc = (octant_data_t *)qsrc->p.user_data;
+                if(oudsrc->poctant == 0){
+                    ouddest->flagboundary = 1;
+                    continue;
+                }
+                neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->localneighbourid,1);
+                *neighbourid = sidesrc->quadid;
+           
+           }
+       
+       
+       }
+
+    }
+
+}
+
+static void initNeighbourArray(p8est_iter_volume_info_t *info, void*user_data){
+
+    p8est_quadrant_t   *q = info->quad;
+    octant_data_t       *oud = (octant_data_t *) q->p.user_data;
+    oud->localneighbourid = sc_array_new(sizeof(p4est_locidx_t));
+    oud->ghostneighbourid = sc_array_new(sizeof(p4est_locidx_t));
+
+}
+
 static int
 slocal_quad (p8est_t * p4est, p4est_topidx_t which_tree,
              p8est_quadrant_t * quadrant, p4est_locidx_t local_num,
@@ -1044,7 +1104,7 @@ void Global_Data::testquad(){
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
-      if(qud->poctant && lq>4000){
+      if(qud->poctant && lq>2000){
           qud->flagboundary = 2000;
         size_t cc = qud->localneighbourid->elem_count;
         for(size_t i=0;i<cc;i++){
@@ -1167,7 +1227,10 @@ void Global_Data::cleanForTimeStep(){
     sc_array_destroy(irecumu);
     sc_array_destroy(irvcumu);
 
-
+    p8est_ghost_destroy (ghost);
+    P4EST_FREE (ghost_data);
+    ghost = NULL;
+    ghost_data = NULL;
 }
 
 void Global_Data::copyParticle(pdata_t *d, pdata_t *s){
@@ -1185,6 +1248,16 @@ void Global_Data::copyParticle(pdata_t *d, pdata_t *s){
     d->localspacing = s->localspacing;
 
 }
+
+void Global_Data::searchNeighbourOctant(){
+
+  ghost = p8est_ghost_new (p8est, P8EST_CONNECT_FULL);
+  ghost_data = P4EST_ALLOC (octant_data_t, ghost->ghosts.elem_count);
+  p8est_ghost_exchange_data (p8est, ghost, ghost_data);
+  p8est_iterate(p8est,ghost,(void*)ghost_data,initNeighbourArray,NULL,NULL,testcornerside);
+
+
+    }
 
 void Global_Data::initParticleNeighbour(){
 

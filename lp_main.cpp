@@ -98,9 +98,9 @@ int main(){
     
     gdata->initParticleNeighbour();
 
-    octree->ghost_octree(); 
+    gdata->searchNeighbourOctant();
     
-    //gdata->testquad(); 
+    gdata->testquad(); 
 
 
     

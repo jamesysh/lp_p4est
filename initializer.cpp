@@ -11,7 +11,7 @@ Initializer::Initializer(){
     initlevel = 5;
     maxlevel = 18;
     minlevel = 0;
-    elem_particles = 100;
+    elem_particles = 200;
 
     initlocalspacing = 0.01;
     timesearchingradius = 4.0;
