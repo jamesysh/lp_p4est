@@ -1065,15 +1065,13 @@ void Global_Data::testquad(){
 
     }
   }
-
+/*
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
     lpend = qud->lpend;
-    if(lq<2000)
-        continue;
     for(int i=offset;i<lpend;i++){
         pad = (pdata_t *)sc_array_index(particle_data,i);
 
@@ -1093,10 +1091,11 @@ void Global_Data::testquad(){
       //  pad->flagboundary = (double)qud->flagboundary;
        return;      
       }
+
        offset = lpend;  
     }
   }
-
+*/
 }
 
 

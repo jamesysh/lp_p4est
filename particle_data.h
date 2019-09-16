@@ -17,7 +17,7 @@ typedef struct octant_data
     p4est_locidx_t    poctant;
   /** Offset into local array of all particles after this quadrant */
     p4est_locidx_t      lpend;
-    double a[3];
+//    p4est_locidx_t ghostneighbourid[300];
   /** counts of local particles remaining on this quadrant and recieved ones */
   p4est_locidx_t      premain, preceive;
 }
