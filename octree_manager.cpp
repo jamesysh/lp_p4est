@@ -399,7 +399,6 @@ void Octree_Manager:: adapt_octree(){
     sc_array_destroy(gdata->irvcumu);
     
     }
-    size_t cc = gdata->irvcumu->elem_count;
 
    
 }

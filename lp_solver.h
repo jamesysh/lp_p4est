@@ -14,6 +14,8 @@ public:
 
     double dt = 0.0001;
     Global_Data * gdata; 
+    
+    
 
 };
 

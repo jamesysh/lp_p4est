@@ -31,13 +31,6 @@ typedef enum pa_mode
 }
 pa_mode_t;
 
-typedef struct remoteneighbour{
-
-    int mpirank;
-    int octantid;
-
-} remoteneighbour_t;
-
 
 typedef struct pdata{
 
@@ -51,12 +44,22 @@ typedef struct pdata{
     double mass;
     double localspacing;
     double flagboundary;
-    sc_array_t * localneighbour;
-    sc_array_t * ghostneighbour;  // tpye of remoteneighbour
+    sc_array_t * neighbourparticle;
     
     p4est_gloidx_t      id;
 
 } pdata_t;
+
+typedef struct neighbour_info{
+    
+    size_t quadid;
+    size_t parid;
+    bool ifghost;        // if the particle is in ghost layer
+
+    double distance;
+    double phi;          //in spherical coordinates
+    double theta;
+} neighbour_info_t;
 
 typedef struct comm_psend
 {
@@ -103,6 +106,7 @@ class Global_Data{
         void regroupParticles();
         void partitionParticles();
         void searchNeighbourOctant(); 
+        void searchNeighbourParticle();
         void initParticleNeighbour();
         void copyParticle(pdata_t* d, pdata_t *s);
         void createViewForOctant();
