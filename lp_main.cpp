@@ -97,12 +97,13 @@ int main(){
     gdata->createViewForOctant();
     
 
-    gdata->testquad(); 
+
     gdata->searchNeighbourOctant();
     
 
     gdata->searchNeighbourParticle();
     
+    gdata->testquad(); 
     gdata->cleanForTimeStep();
     gdata->partitionParticles();
     

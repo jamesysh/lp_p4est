@@ -7,6 +7,7 @@
 #include "geometry_pellet.h"
 #include "sc_notify.h"
 #include <math.h>
+#include <cassert>
 using namespace std;
 
 static void testcornerside( p8est_iter_corner_info_t * info, void *user_data){
@@ -1135,12 +1136,17 @@ void Global_Data::createViewForOctant(){
       qud = (octant_data_t *) quad->p.user_data;
       qud->flagboundary = 0;  
       qud->poctant = qud->lpend - offset;
-      qud->particle_data_view = sc_array_new_count(sizeof(pdata_t),(size_t)qud->poctant);
-      padd = (pdata_t *) sc_array_index_begin(qud->particle_data_view);
+        if(qud->poctant >= 250){
+            printf("This octant has more than 250 particles, please enlarge size of localparticle!!\n");
+            assert(false);
+        }
+//      qud->particle_data_view = sc_array_new_count(sizeof(pdata_t),(size_t)qud->poctant);
+//      padd = (pdata_t *) sc_array_index_begin(qud->particle_data_view);
+      
       pads = (pdata_t *) sc_array_index(particle_data,(size_t)offset);
       for(size_t i=0;i<(size_t) qud->poctant;i++){
+        padd = &qud->localparticle[i];
         copyParticle( padd, pads);
-        padd++;
         pads++;
       
       } 
@@ -1169,7 +1175,6 @@ void Global_Data::cleanForTimeStep(){
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
-      sc_array_destroy(qud->particle_data_view);
       sc_array_destroy(qud->localneighbourid);
       sc_array_destroy(qud->ghostneighbourid);
     
@@ -1251,7 +1256,6 @@ void Global_Data::searchNeighbourOctant(){
 
 
 void Global_Data:: searchNeighbourParticle(){
-        
     p4est_topidx_t      tt;
   
     p4est_locidx_t      lq;
@@ -1284,13 +1288,15 @@ void Global_Data:: searchNeighbourParticle(){
         x = position[0];
         y = position[1];
         z = position[2];
+        
+       // printf("end%f %f %f\n",x,y,z);
         for(size_t i=0; i<localsize; i++){ //iterate through local neighbour octants
             localneiid = (p4est_locidx_t *)sc_array_index(qud->localneighbourid,i);
             quadnei = p8est_quadrant_array_index(&tree->quadrants,*localneiid);
             qudnei = (octant_data_t *) quadnei->p.user_data;
-            size_t nump = qudnei->particle_data_view->elem_count;
+            size_t nump = qudnei->poctant;
             for(size_t pid = 0;pid<nump; pid++){
-                padnei = (pdata_t *) sc_array_index(qudnei->particle_data_view,pid);
+                padnei = &qudnei->localparticle[pid];
                 x0 = padnei->xyz[0]; 
                 y0 = padnei->xyz[1]; 
                 z0 = padnei->xyz[2]; 
@@ -1298,8 +1304,8 @@ void Global_Data:: searchNeighbourParticle(){
                 dy = y-y0;
                 dz = z-z0;
                 dissquared = dx*dx + dy*dy + dz*dz;
-                if(dissquared == 0)
-                    continue;   // the neighbour is itslef
+                if(dissquared == 0){
+                    continue;  } // the neighbour is itslef
                 if(dissquared <= radius*radius){
                     nei_info = (neighbour_info_t *) sc_array_push(pad->neighbourparticle);
                     nei_info->ifghost = false;
@@ -1308,19 +1314,21 @@ void Global_Data:: searchNeighbourParticle(){
                     nei_info->distance = sqrt(dissquared);
                     nei_info->phi = atan2(dy,dx);
                     nei_info->theta = acos(dz/sqrt(dissquared));
+                  
+                    //printf("%f %f %f\n",x0,y0,z0);
                 }
 
             
             }  
         }
-//        cout<<pad->neighbourparticle->elem_count<<"b"<<endl; 
+        
         for(size_t i=0; i<ghostsize; i++){ //iterate through local neighbour octants
             ghostneiid = (p4est_locidx_t *)sc_array_index(qud->ghostneighbourid,i);
           //  quadnei = p8est_quadrant_array_index(&tree->quadrants,*localneiid);
             qudnei = &ghost_data[*ghostneiid];
-            //            size_t nump = qudnei->particle_data_view->elem_count;
-/*            for(size_t pid = 0;pid<nump; pid++){
-                padnei = (pdata_t *) sc_array_index(qudnei->particle_data_view,pid);
+            size_t nump = qudnei->poctant;
+            for(size_t pid = 0;pid<nump; pid++){
+                padnei = &qudnei->localparticle[pid];
                 x0 = padnei->xyz[0]; 
                 y0 = padnei->xyz[1]; 
                 z0 = padnei->xyz[2]; 
@@ -1338,13 +1346,13 @@ void Global_Data:: searchNeighbourParticle(){
                     nei_info->distance = sqrt(dissquared);
                     nei_info->phi = atan2(dy,dx);
                     nei_info->theta = acos(dz/sqrt(dissquared));
+                 // printf("%f %f %f\n",x0,y0,z0);
                 }
 
            
-            }  */
+            }  
         }
     
-//        cout<<pad->neighbourparticle->elem_count<<"a"<<endl; 
     }
        offset = lpend;  
     }

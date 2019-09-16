@@ -5,13 +5,32 @@
 #include "boundary.h"
 
 
+
+typedef struct pdata{
+
+    double xyz[3]; //coordinates
+    double v[3]; //velocity
+    double oldv[3];
+    double pressure;
+    double soundspeed;
+    double temperature;
+    double volume;
+    double mass;
+    double localspacing;
+    double flagboundary;
+    sc_array_t * neighbourparticle;
+    
+    p4est_gloidx_t      id;
+
+} pdata_t;
 /** Data type for payload data inside each quadrant */
 typedef struct octant_data
 {   
     int flagboundary;  //if true, octant is at cloud boundary;
     sc_array_t *localneighbourid;
     sc_array_t *ghostneighbourid;
-    sc_array_t* particle_data_view; 
+   // sc_array_t* particle_data_view; 
+    pdata_t localparticle[250];
     int octantid;
     int mpirank;
     p4est_locidx_t    poctant;
@@ -31,24 +50,6 @@ typedef enum pa_mode
 }
 pa_mode_t;
 
-
-typedef struct pdata{
-
-    double xyz[3]; //coordinates
-    double v[3]; //velocity
-    double oldv[3];
-    double pressure;
-    double soundspeed;
-    double temperature;
-    double volume;
-    double mass;
-    double localspacing;
-    double flagboundary;
-    sc_array_t * neighbourparticle;
-    
-    p4est_gloidx_t      id;
-
-} pdata_t;
 
 typedef struct neighbour_info{
     
