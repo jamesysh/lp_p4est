@@ -1041,7 +1041,8 @@ void Global_Data::testquad(){
   p8est_quadrant_t   *quad, *quad2;
   octant_data_t          *qud,*qud2;
   p4est_locidx_t   offset = 0,lpend;
-  pdata_t * pad;
+  pdata_t * pad, *pad2;
+  neighbour_info_t * ninfo;
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
@@ -1071,10 +1072,26 @@ void Global_Data::testquad(){
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
     lpend = qud->lpend;
+    if(lq<2000)
+        continue;
     for(int i=offset;i<lpend;i++){
         pad = (pdata_t *)sc_array_index(particle_data,i);
-        pad->flagboundary = (double)qud->flagboundary;
-            
+
+       // printf("dest%f %f %f\n",pad->xyz[0],pad->xyz[1],pad->xyz[2]);
+       // pad->flagboundary = 100;
+        size_t cc = pad->neighbourparticle->elem_count;
+        for(size_t i=0;i<cc;i++){
+            ninfo = (neighbour_info_t *)sc_array_index(pad->neighbourparticle,i);
+            int qid = ninfo->quadid;
+            int pid = ninfo->parid;
+            quad2 = p8est_quadrant_array_index(&tree->quadrants,qid);
+            qud2= (octant_data_t *)quad2->p.user_data;
+            pad2 = (pdata_t *) sc_array_index(qud2->particle_data_view, pid);
+           // pad2->flagboundary = 10000;
+            //printf("%f %f %f\n",pad2->xyz[0],pad2->xyz[1],pad2->xyz[2]);
+        }
+      //  pad->flagboundary = (double)qud->flagboundary;
+       return;      
       }
        offset = lpend;  
     }
@@ -1297,8 +1314,39 @@ void Global_Data:: searchNeighbourParticle(){
             
             }  
         }
-        //     cout<<pad->neighbourparticle->elem_count<<endl;
-      }
+//        cout<<pad->neighbourparticle->elem_count<<"b"<<endl; 
+        for(size_t i=0; i<ghostsize; i++){ //iterate through local neighbour octants
+            ghostneiid = (p4est_locidx_t *)sc_array_index(qud->ghostneighbourid,i);
+          //  quadnei = p8est_quadrant_array_index(&tree->quadrants,*localneiid);
+            qudnei = &ghost_data[*ghostneiid];
+            //            size_t nump = qudnei->particle_data_view->elem_count;
+/*            for(size_t pid = 0;pid<nump; pid++){
+                padnei = (pdata_t *) sc_array_index(qudnei->particle_data_view,pid);
+                x0 = padnei->xyz[0]; 
+                y0 = padnei->xyz[1]; 
+                z0 = padnei->xyz[2]; 
+                dx = x-x0;
+                dy = y-y0;
+                dz = z-z0;
+                dissquared = dx*dx + dy*dy + dz*dz;
+                if(dissquared == 0)
+                    continue;   // the neighbour is itslef
+                if(dissquared <= radius*radius){
+                    nei_info = (neighbour_info_t *) sc_array_push(pad->neighbourparticle);
+                    nei_info->ifghost = true;
+                    nei_info->quadid = *localneiid;
+                    nei_info->parid = pid;
+                    nei_info->distance = sqrt(dissquared);
+                    nei_info->phi = atan2(dy,dx);
+                    nei_info->theta = acos(dz/sqrt(dissquared));
+                }
+
+           
+            }  */
+        }
+    
+//        cout<<pad->neighbourparticle->elem_count<<"a"<<endl; 
+    }
        offset = lpend;  
     }
   }

@@ -99,10 +99,10 @@ int main(){
 
     gdata->searchNeighbourOctant();
     
-   // gdata->testquad(); 
 
     gdata->searchNeighbourParticle();
     
+    gdata->testquad(); 
     gdata->cleanForTimeStep();
     gdata->partitionParticles();
     
