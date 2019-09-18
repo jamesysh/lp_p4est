@@ -18,6 +18,7 @@ typedef struct pdata{
     double mass;
     double localspacing;
     double flagboundary;
+    sc_array_t * ghostneighbour;
     sc_array_t * neighbourparticle;
       
     sc_array_t * neighbourupparticle;
@@ -77,8 +78,8 @@ typedef struct neighbour_info{
     
     size_t quadid;
     size_t parid;
-    bool ifremote;        // if the particle is in ghost layer
-
+    bool ifremote;        // if the particle is in remote processer
+    bool ifghost;        // if the particle is a ghost particle       
     double distance;
     double phi;         //right and left
     double theta;          //up and down
@@ -134,6 +135,8 @@ class Global_Data{
         void searchUpwindNeighbourParticle();
         void initParticleNeighbour();
         void copyParticle(pdata_copy_t* d, pdata_t *s);
+        void generateGhostParticle();
+        void fillArrayWithGhostParticle(sc_array_t * array, pdata_t * pad, int count,int dir);
         void createViewForOctant();
         void cleanForTimeStep();
         void testquad();

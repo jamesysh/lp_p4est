@@ -1212,6 +1212,7 @@ void Global_Data::cleanForTimeStep(){
 static void copyNeighbourInfo(neighbour_info_t * d, neighbour_info_t *s){
     d->ifremote = s->ifremote;
     d->distance = s->distance;
+    d->ifghost = d->ifghost;
     d->theta = s->theta;
     d->phi = s->phi;
     d->sigma = s->sigma;
@@ -1346,6 +1347,7 @@ void Global_Data:: searchNeighbourParticle(){
                 if(dissquared <= radius*radius){
                     nei_info = (neighbour_info_t *) sc_array_push(pad->neighbourparticle);
                     nei_info->ifremote = false;
+                    nei_info->ifghost = false;
                     nei_info->quadid = *localneiid;
                     nei_info->parid = pid;
                     nei_info->distance = sqrt(dissquared);
@@ -1379,6 +1381,7 @@ void Global_Data:: searchNeighbourParticle(){
                 if(dissquared <= radius*radius){
                     nei_info = (neighbour_info_t *) sc_array_push(pad->neighbourparticle);
                     nei_info->ifremote = true;
+                    nei_info->ifghost =false;
                     nei_info->quadid = *localneiid;
                     nei_info->parid = pid;
                     nei_info->distance = sqrt(dissquared);
@@ -1484,4 +1487,90 @@ void Global_Data::searchUpwindNeighbourParticle(){
   
   }
 }
+
+void Global_Data::generateGhostParticle(){
+
+
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+
+  p8est_tree_t       *tree;
+  p8est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  p4est_locidx_t   offset = 0,lpend;
+  pdata_t * pad;
+
+  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+    tree = p8est_tree_array_index (p8est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      lpend = qud->lpend;
+    for(int i=offset;i<lpend;i++){
+        pad = (pdata_t *)sc_array_index(particle_data,i);
+        pad->ghostneighbour =  sc_array_new(sizeof(pdata_copy_t));
+
+        }
+  
+    
+    offset = lpend; 
+    
+    
+    }
+    
+  
+  
+  }
+
+}
+
+//dir: 1 up 2 down 3 right 4 left 5 front 6 back
+void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t * pad, int count, int dir){
+    
+      double radius = timesearchingradius * pad->localspacing;
+      double r;
+      double angle;
+      double dx, dy, dz;
+      double rxy;
+      pdata_copy_t * ghostnei;
+      neighbour_info_t *ghostnei_info;
+      size_t ghostid;
+      for(int i = 0;i<count;i++){
+        r = rand()/(double)RAND_MAX * radius;
+        if(dir == 1 || dir == 3 || dir == 5){
+            angle = 2.19 + rand()/(double)RAND_MAX *(M_PI-2.19);
+            if(dir == 1){
+                dz = cos(angle)*r;
+                rxy = r*r - dz*dz;
+                dx = sqrt(rand()/(double)RAND_MAX * rxy) * (2*(rand()%2)-1);
+                dy = sqrt(rxy - dx*dx) * (2*(rand()%2)-1);
+                ghostnei_info = (neighbour_info_t *)sc_array_push(neighbourlist);
+                ghostid = pad->ghostneighbour->elem_count;
+                ghostnei = (pdata_copy_t *) sc_array_push(pad->ghostneighbour);
+
+            }
+
+        } 
+
+      
+      }
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
