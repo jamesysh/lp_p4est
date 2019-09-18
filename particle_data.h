@@ -19,10 +19,32 @@ typedef struct pdata{
     double localspacing;
     double flagboundary;
     sc_array_t * neighbourparticle;
-    
+      
+    sc_array_t * neighbourupparticle;
+    sc_array_t * neighbourdownparticle;
+    sc_array_t * neighbourrightparticle;
+    sc_array_t * neighbourleftparticle;
+    sc_array_t * neighbourfrontparticle;
+    sc_array_t * neighbourbackparticle;
     p4est_gloidx_t      id;
 
 } pdata_t;
+
+typedef struct pdata_copy{
+
+    double xyz[3]; //coordinates
+    double v[3]; //velocity
+    double pressure;
+    double soundspeed;
+    double temperature;
+    double volume;
+    double mass;
+    double localspacing;
+    double flagboundary;
+    
+
+} pdata_copy_t;
+
 /** Data type for payload data inside each quadrant */
 typedef struct octant_data
 {   
@@ -30,7 +52,7 @@ typedef struct octant_data
     sc_array_t *localneighbourid;
     sc_array_t *ghostneighbourid;
    // sc_array_t* particle_data_view; 
-    pdata_t localparticle[250];
+    pdata_copy_t localparticle[250];
     int octantid;
     int mpirank;
     p4est_locidx_t    poctant;
@@ -55,12 +77,13 @@ typedef struct neighbour_info{
     
     size_t quadid;
     size_t parid;
-    bool ifghost;        // if the particle is in ghost layer
+    bool ifremote;        // if the particle is in ghost layer
 
     double distance;
-    double phi;          //in spherical coordinates
-    double theta;
-} neighbour_info_t;
+    double phi;         //right and left
+    double theta;          //up and down
+    double sigma; //front and back
+} neighbour_info_t;       
 
 typedef struct comm_psend
 {
@@ -108,8 +131,9 @@ class Global_Data{
         void partitionParticles();
         void searchNeighbourOctant(); 
         void searchNeighbourParticle();
+        void searchUpwindNeighbourParticle();
         void initParticleNeighbour();
-        void copyParticle(pdata_t* d, pdata_t *s);
+        void copyParticle(pdata_copy_t* d, pdata_t *s);
         void createViewForOctant();
         void cleanForTimeStep();
         void testquad();

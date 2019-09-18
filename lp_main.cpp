@@ -97,14 +97,16 @@ int main(){
     gdata->createViewForOctant();
     
 
-
     gdata->searchNeighbourOctant();
     
 
     gdata->searchNeighbourParticle();
     
-    gdata->testquad(); 
+    gdata->searchUpwindNeighbourParticle(); 
+    
+    //gdata->testquad(); 
     gdata->cleanForTimeStep();
+   
     gdata->partitionParticles();
     
     if(tstart  >= nextwritetime)

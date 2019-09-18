@@ -148,8 +148,11 @@ comm_psend_t	particle_data.h	/^comm_psend_t;$/;"	t	typeref:struct:comm_psend
 comm_tag	particle_data.h	/^typedef enum comm_tag$/;"	g
 comm_tag_t	particle_data.h	/^comm_tag_t;$/;"	t	typeref:enum:comm_tag
 communicateParticles	particle_data.cpp	/^void Global_Data::communicateParticles(){$/;"	f	class:Global_Data
+compareneighbour_info	particle_data.cpp	/^static int compareneighbour_info(const void *p1,const void *p2)$/;"	f	file:
+compareoctant	particle_data.cpp	/^compareoctant (const void *p1, const void *p2)$/;"	f	file:
 conn	particle_data.h	/^        p8est_connectivity_t *conn;$/;"	m	class:Global_Data
-copyParticle	particle_data.cpp	/^void Global_Data::copyParticle(pdata_t *d, pdata_t *s){$/;"	f	class:Global_Data
+copyNeighbourInfo	particle_data.cpp	/^static void copyNeighbourInfo(neighbour_info_t * d, neighbour_info_t *s){$/;"	f	file:
+copyParticle	particle_data.cpp	/^void Global_Data::copyParticle(pdata_copy_t *d, pdata_t *s){$/;"	f	class:Global_Data
 createBoundary	boundary/boundary.cpp	/^Boundary* BoundaryFactory::createBoundary(std::string name) {$/;"	f	class:BoundaryFactory
 createFunc	registrar.h	/^Boundary* BoundaryRegistrar<Derived>::createFunc() {$/;"	f	class:BoundaryRegistrar
 createFunc	registrar.h	/^Geometry* GeometryRegistrar<Derived>::createFunc() {$/;"	f	class:GeometryRegistrar
@@ -175,6 +178,7 @@ eos	particle_data.h	/^        EOS* eos;        $/;"	m	class:Global_Data
 eoschoice	initializer.h	/^        int eoschoice;$/;"	m	class:Initializer
 eoschoice	particle_data.h	/^        int eoschoice;$/;"	m	class:Global_Data
 flagboundary	particle_data.h	/^    double flagboundary;$/;"	m	struct:pdata
+flagboundary	particle_data.h	/^    double flagboundary;$/;"	m	struct:pdata_copy
 flagboundary	particle_data.h	/^    int flagboundary;  \/\/if true, octant is at cloud boundary;$/;"	m	struct:octant_data
 flagrefine	particle_data.h	/^        int flagrefine, gflagrefine, flagstartrefine;$/;"	m	class:Global_Data
 flagstartrefine	particle_data.h	/^        int flagrefine, gflagrefine, flagstartrefine;$/;"	m	class:Global_Data
@@ -203,7 +207,7 @@ hxyz	particle_data.h	/^        double lxyz[3],hxyz[3],dxyz[3]; \/\/boundingbox o
 id	particle_data.h	/^    p4est_gloidx_t      id;$/;"	m	struct:pdata
 ifOctantInsectBox	particle_data.cpp	/^static bool ifOctantInsectBox(double lxyz[3],double bb[6],double l) \/\/l:lenth of octant, lxyz:coord of octant$/;"	f	file:
 ifPointInsideBox	particle_data.cpp	/^static bool ifPointInsideBox(double x, double y, double z, double bb[6]) {$/;"	f	file:
-ifghost	particle_data.h	/^    bool ifghost;        \/\/ if the particle is in ghost layer$/;"	m	struct:neighbour_info
+ifremote	particle_data.h	/^    bool ifremote;        \/\/ if the particle is in ghost layer$/;"	m	struct:neighbour_info
 ilh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
 initFluidParticles	particle_data.cpp	/^void Global_Data::initFluidParticles(){$/;"	f	class:Global_Data
 initNeighbourArray	particle_data.cpp	/^static void initNeighbourArray(p8est_iter_volume_info_t *info, void*user_data){$/;"	f	file:
@@ -230,7 +234,9 @@ irvindex2	particle_data.h	/^        p4est_locidx_t      irvindex, irv2, irvindex
 jlh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
 klh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
 localneighbourid	particle_data.h	/^    sc_array_t *localneighbourid;$/;"	m	struct:octant_data
+localparticle	particle_data.h	/^    pdata_copy_t localparticle[250];$/;"	m	struct:octant_data
 localspacing	particle_data.h	/^    double localspacing;$/;"	m	struct:pdata
+localspacing	particle_data.h	/^    double localspacing;$/;"	m	struct:pdata_copy
 loopquad	particle_data.cpp	/^void Global_Data::loopquad (p4est_topidx_t tt, p8est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]){$/;"	f	class:Global_Data
 lpend	particle_data.h	/^    p4est_locidx_t      lpend;$/;"	m	struct:octant_data
 lpnum	particle_data.h	/^        p4est_locidx_t lpnum; \/\/number of particles on local processor$/;"	m	class:Global_Data
@@ -243,6 +249,7 @@ m_iEOSChoice	eos.h	/^    int m_iEOSChoice; \/\/\/< The eos choice: 1=Polytropic 
 m_iPelletMaterial	eos.h	/^    int m_iPelletMaterial;$/;"	m	class:PolytropicGasEOS
 main	lp_main.cpp	/^int main(){$/;"	f
 mass	particle_data.h	/^    double mass;$/;"	m	struct:pdata
+mass	particle_data.h	/^    double mass;$/;"	m	struct:pdata_copy
 maxlevel	initializer.h	/^        int maxlevel ;$/;"	m	class:Initializer
 maxlevel	particle_data.h	/^        int maxlevel;$/;"	m	class:Global_Data
 message	particle_data.h	/^  sc_array_t          message;     \/** Message data to send *\/$/;"	m	struct:comm_psend
@@ -254,8 +261,14 @@ mpirank	particle_data.h	/^        int mpisize,mpirank;$/;"	m	class:Global_Data
 mpirank	particle_data.h	/^    int mpirank;$/;"	m	struct:octant_data
 mpisize	particle_data.h	/^        int mpisize,mpirank;$/;"	m	class:Global_Data
 neighbour_info	particle_data.h	/^typedef struct neighbour_info{$/;"	s
-neighbour_info_t	particle_data.h	/^} neighbour_info_t;$/;"	t	typeref:struct:neighbour_info
+neighbour_info_t	particle_data.h	/^} neighbour_info_t;       $/;"	t	typeref:struct:neighbour_info
+neighbourbackparticle	particle_data.h	/^    sc_array_t * neighbourbackparticle;$/;"	m	struct:pdata
+neighbourdownparticle	particle_data.h	/^    sc_array_t * neighbourdownparticle;$/;"	m	struct:pdata
+neighbourfrontparticle	particle_data.h	/^    sc_array_t * neighbourfrontparticle;$/;"	m	struct:pdata
+neighbourleftparticle	particle_data.h	/^    sc_array_t * neighbourleftparticle;$/;"	m	struct:pdata
 neighbourparticle	particle_data.h	/^    sc_array_t * neighbourparticle;$/;"	m	struct:pdata
+neighbourrightparticle	particle_data.h	/^    sc_array_t * neighbourrightparticle;$/;"	m	struct:pdata
+neighbourupparticle	particle_data.h	/^    sc_array_t * neighbourupparticle;$/;"	m	struct:pdata
 numdigit	particle_viewer.h	/^	int numdigit;\/\/\/< The number of digits for the indexing of output file name $/;"	m	class:ParticleViewer
 octant_data	particle_data.h	/^typedef struct octant_data$/;"	s
 octant_data_t	particle_data.h	/^octant_data_t;$/;"	t	typeref:struct:octant_data
@@ -272,15 +285,16 @@ packParticles	particle_data.cpp	/^void Global_Data::packParticles(){$/;"	f	class
 parid	particle_data.h	/^    size_t parid;$/;"	m	struct:neighbour_info
 part_weight	particle_data.cpp	/^part_weight (p8est_t * p4est,$/;"	f	file:
 particle_data	particle_data.h	/^        sc_array_t *particle_data; \/\/local particle data on process$/;"	m	class:Global_Data
-particle_data_view	particle_data.h	/^    sc_array_t* particle_data_view; $/;"	m	struct:octant_data
 partitionParticles	particle_data.cpp	/^void Global_Data:: partitionParticles(){$/;"	f	class:Global_Data
 partition_octree	octree_manager.cpp	/^void Octree_Manager:: partition_octree(int allow_for_coarsening,p8est_weight_t weight_fn){$/;"	f	class:Octree_Manager
 pdata	particle_data.h	/^typedef struct pdata{$/;"	s
+pdata_copy	particle_data.h	/^typedef struct pdata_copy{$/;"	s
+pdata_copy_t	particle_data.h	/^} pdata_copy_t;$/;"	t	typeref:struct:pdata_copy
 pdata_t	particle_data.h	/^} pdata_t;$/;"	t	typeref:struct:pdata
 pelletmaterial	initializer.h	/^        int pelletmaterial;$/;"	m	class:Initializer
 pelletmaterial	particle_data.h	/^        int pelletmaterial;$/;"	m	class:Global_Data
 pfound	particle_data.h	/^        sc_array_t *pfound; \/\/target process of particle$/;"	m	class:Global_Data
-phi	particle_data.h	/^    double phi;          \/\/in spherical coordinates$/;"	m	struct:neighbour_info
+phi	particle_data.h	/^    double phi;         \/\/right and left$/;"	m	struct:neighbour_info
 poctant	particle_data.h	/^    p4est_locidx_t    poctant;$/;"	m	struct:octant_data
 postsearch	particle_data.cpp	/^void Global_Data::postsearch(){$/;"	f	class:Global_Data
 prebuf	particle_data.h	/^        sc_array_t *prebuf;  \/**< pdata_t All received particles *\/$/;"	m	class:Global_Data
@@ -289,6 +303,7 @@ premain	particle_data.h	/^  p4est_locidx_t      premain, preceive;$/;"	m	struct:
 prerun	particle_data.cpp	/^void Global_Data::prerun(){$/;"	f	class:Global_Data
 presearch	particle_data.cpp	/^void Global_Data::presearch(){$/;"	f	class:Global_Data
 pressure	particle_data.h	/^    double pressure;$/;"	m	struct:pdata
+pressure	particle_data.h	/^    double pressure;$/;"	m	struct:pdata_copy
 pressure	state/state_pellet.cpp	/^double PelletState::pressure(double x, double y, double z) {$/;"	f	class:PelletState
 prevlp	particle_data.h	/^      p4est_locidx_t      prevlp;   \/**< Count local particles in partition callback *\/$/;"	m	class:Global_Data
 psearch_point	particle_data.cpp	/^psearch_point (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
@@ -318,32 +333,39 @@ sc_array_index_begin	particle_data.cpp	/^void * Global_Data::sc_array_index_begi
 sc_array_paste	particle_data.cpp	/^void Global_Data::sc_array_paste (sc_array_t * dest, sc_array_t * src)$/;"	f	class:Global_Data
 searchNeighbourOctant	particle_data.cpp	/^void Global_Data::searchNeighbourOctant(){$/;"	f	class:Global_Data
 searchNeighbourParticle	particle_data.cpp	/^void Global_Data:: searchNeighbourParticle(){$/;"	f	class:Global_Data
+searchUpwindNeighbourParticle	particle_data.cpp	/^void Global_Data::searchUpwindNeighbourParticle(){$/;"	f	class:Global_Data
 send_req	particle_data.h	/^        sc_array_t *send_req; \/**< sc_MPI_Request for sending *\/$/;"	m	class:Global_Data
 setEOS	particle_data.cpp	/^void Global_Data::setEOS(){$/;"	f	class:Global_Data
+sigma	particle_data.h	/^    double sigma; \/\/front and back$/;"	m	struct:neighbour_info
 slocal_point	particle_data.cpp	/^slocal_point (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 slocal_quad	particle_data.cpp	/^slocal_quad (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 soundspeed	particle_data.h	/^    double soundspeed;$/;"	m	struct:pdata
+soundspeed	particle_data.h	/^    double soundspeed;$/;"	m	struct:pdata_copy
 split_by_coord	particle_data.cpp	/^void Global_Data::split_by_coord ( sc_array_t * in,$/;"	f	class:Global_Data
 src_fixed	particle_data.h	/^      sc_array_t         *src_fixed;        \/**< int Particle counts per quadrant *\/$/;"	m	class:Global_Data
 state	particle_data.h	/^        State* state;        $/;"	m	class:Global_Data
 stateTable	state/state.h	/^	std::unordered_map<std::string, StateCreateFunc> stateTable; \/\/\/< hash table for the (name,creatFunction) pair	$/;"	m	class:StateFactory
 temperature	particle_data.h	/^    double temperature;$/;"	m	struct:pdata
+temperature	particle_data.h	/^    double temperature;$/;"	m	struct:pdata_copy
 testcornerside	particle_data.cpp	/^static void testcornerside( p8est_iter_corner_info_t * info, void *user_data){$/;"	f	file:
 testedgeside	octree_manager.cpp	/^static void testedgeside( p8est_iter_edge_info_t * info, void *user_data){$/;"	f	file:
 testfaceside	octree_manager.cpp	/^static void testfaceside( p8est_iter_face_info_t * info, void *user_data){$/;"	f	file:
 testquad	particle_data.cpp	/^void Global_Data::testquad(){$/;"	f	class:Global_Data
-theta	particle_data.h	/^    double theta;$/;"	m	struct:neighbour_info
+theta	particle_data.h	/^    double theta;          \/\/up and down$/;"	m	struct:neighbour_info
 timesearchingradius	initializer.h	/^        double timesearchingradius;$/;"	m	class:Initializer
 timesearchingradius	particle_data.h	/^        double timesearchingradius;$/;"	m	class:Global_Data
 v	particle_data.h	/^    double v[3]; \/\/velocity$/;"	m	struct:pdata
+v	particle_data.h	/^    double v[3]; \/\/velocity$/;"	m	struct:pdata_copy
 velocity	state/state_pellet.cpp	/^void PelletState::velocity(double x, double y, double z, double& vX, double& vY,double& vZ){$/;"	f	class:PelletState
 volume	particle_data.h	/^    double volume;$/;"	m	struct:pdata
+volume	particle_data.h	/^    double volume;$/;"	m	struct:pdata_copy
 writeResult	particle_viewer.cpp	/^void ParticleViewer:: writeResult(double t){$/;"	f	class:ParticleViewer
 writeVTKFiles	particle_data.cpp	/^void Global_Data:: writeVTKFiles(){$/;"	f	class:Global_Data
 writestep	particle_viewer.h	/^    int writestep;$/;"	m	class:ParticleViewer
 xcen	geometry/geometry_pellet.h	/^	double xcen;$/;"	m	class:PelletLayer
 xcen	state/state_pellet.h	/^	double xcen;$/;"	m	class:PelletState
 xyz	particle_data.h	/^    double xyz[3]; \/\/coordinates$/;"	m	struct:pdata
+xyz	particle_data.h	/^    double xyz[3]; \/\/coordinates$/;"	m	struct:pdata_copy
 ycen	geometry/geometry_pellet.h	/^	double ycen;$/;"	m	class:PelletLayer
 ycen	state/state_pellet.h	/^	double ycen;$/;"	m	class:PelletState
 zcen	geometry/geometry_pellet.h	/^	double zcen;$/;"	m	class:PelletLayer

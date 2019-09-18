@@ -1042,7 +1042,8 @@ void Global_Data::testquad(){
   p8est_quadrant_t   *quad, *quad2;
   octant_data_t          *qud,*qud2;
   p4est_locidx_t   offset = 0,lpend;
-  pdata_t * pad, *pad2;
+  pdata_t * pad;
+  pdata_copy_t *pad2;
   neighbour_info_t * ninfo;
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
@@ -1066,37 +1067,40 @@ void Global_Data::testquad(){
 
     }
   }
-/*
+
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
     lpend = qud->lpend;
+    if(lq>2000){
     for(int i=offset;i<lpend;i++){
         pad = (pdata_t *)sc_array_index(particle_data,i);
 
-       // printf("dest%f %f %f\n",pad->xyz[0],pad->xyz[1],pad->xyz[2]);
+        printf("dest%f %f %f\n",pad->xyz[0],pad->xyz[1],pad->xyz[2]);
        // pad->flagboundary = 100;
-        size_t cc = pad->neighbourparticle->elem_count;
+        size_t cc = pad->neighbourleftparticle->elem_count;
+        cout<<cc<<endl;
         for(size_t i=0;i<cc;i++){
-            ninfo = (neighbour_info_t *)sc_array_index(pad->neighbourparticle,i);
+            ninfo = (neighbour_info_t *)sc_array_index(pad->neighbourleftparticle,i);
             int qid = ninfo->quadid;
             int pid = ninfo->parid;
             quad2 = p8est_quadrant_array_index(&tree->quadrants,qid);
             qud2= (octant_data_t *)quad2->p.user_data;
-            pad2 = (pdata_t *) sc_array_index(qud2->particle_data_view, pid);
+            pad2 = &qud2->localparticle[pid];
            // pad2->flagboundary = 10000;
-            //printf("%f %f %f\n",pad2->xyz[0],pad2->xyz[1],pad2->xyz[2]);
+            printf("%f %f %f %f\n",pad2->xyz[0],pad2->xyz[1],pad2->xyz[2], ninfo->distance);
         }
       //  pad->flagboundary = (double)qud->flagboundary;
        return;      
       }
-
+    }
        offset = lpend;  
+    
     }
   }
-*/
+
 }
 
 
@@ -1128,7 +1132,8 @@ void Global_Data::createViewForOctant(){
   p8est_tree_t       *tree;
   p8est_quadrant_t   *quad;
   octant_data_t          *qud;
-  pdata_t *pads, *padd;
+  pdata_t *pads;
+  pdata_copy_t *padd;
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
@@ -1182,7 +1187,16 @@ void Global_Data::cleanForTimeStep(){
       for(int i=offset;i<lpend;i++){
          pad = (pdata_t *)sc_array_index(particle_data,i);
          sc_array_destroy(pad->neighbourparticle);
-      }
+
+ 
+         sc_array_destroy(pad->neighbourupparticle);
+         sc_array_destroy(pad->neighbourdownparticle);
+         sc_array_destroy(pad->neighbourrightparticle);
+         sc_array_destroy(pad->neighbourleftparticle);
+         sc_array_destroy(pad->neighbourfrontparticle);
+         sc_array_destroy(pad->neighbourbackparticle);
+      
+         }
        offset = lpend;  
     
     }
@@ -1195,8 +1209,18 @@ void Global_Data::cleanForTimeStep(){
     ghost = NULL;
     ghost_data = NULL;
 }
+static void copyNeighbourInfo(neighbour_info_t * d, neighbour_info_t *s){
+    d->ifremote = s->ifremote;
+    d->distance = s->distance;
+    d->theta = s->theta;
+    d->phi = s->phi;
+    d->sigma = s->sigma;
+    d->parid = s->parid;
+    d->quadid = s->quadid;
 
-void Global_Data::copyParticle(pdata_t *d, pdata_t *s){
+}
+
+void Global_Data::copyParticle(pdata_copy_t *d, pdata_t *s){
     d->xyz[0] = s->xyz[0];
     d->xyz[1] = s->xyz[1];
     d->xyz[2] = s->xyz[2];
@@ -1220,6 +1244,18 @@ compareoctant (const void *p1, const void *p2)
   p4est_locidx_t                 i2 = *(p4est_locidx_t *) p2;
 
   return i1 - i2;
+}
+static int compareneighbour_info(const void *p1,const void *p2)
+{
+    neighbour_info_t         *  i1 = (neighbour_info_t *)p1;
+
+    neighbour_info_t         *  i2 = (neighbour_info_t *)p2;
+    double d1 = i1->distance;
+    double d2 = i2->distance;
+    if(d1 >d2)
+        return 1;
+    else
+        return 0;
 }
 
 void Global_Data::searchNeighbourOctant(){
@@ -1265,7 +1301,8 @@ void Global_Data:: searchNeighbourParticle(){
   octant_data_t          *qud,*qudnei;
   p4est_locidx_t   offset = 0,lpend;
   p4est_locidx_t   *localneiid, *ghostneiid;
-  pdata_t * pad, *padnei;
+  pdata_t * pad;
+  pdata_copy_t *padnei;
   size_t localsize, ghostsize;
   double *position ;
   double x,y,z,x0,y0,z0,dx,dy,dz;
@@ -1308,13 +1345,14 @@ void Global_Data:: searchNeighbourParticle(){
                     continue;  } // the neighbour is itslef
                 if(dissquared <= radius*radius){
                     nei_info = (neighbour_info_t *) sc_array_push(pad->neighbourparticle);
-                    nei_info->ifghost = false;
+                    nei_info->ifremote = false;
                     nei_info->quadid = *localneiid;
                     nei_info->parid = pid;
                     nei_info->distance = sqrt(dissquared);
-                    nei_info->phi = atan2(dy,dx);
+
+                    nei_info->phi = acos(dy/sqrt(dissquared));
                     nei_info->theta = acos(dz/sqrt(dissquared));
-                  
+                    nei_info->sigma = acos(dx/sqrt(dissquared));
                     //printf("%f %f %f\n",x0,y0,z0);
                 }
 
@@ -1332,27 +1370,28 @@ void Global_Data:: searchNeighbourParticle(){
                 x0 = padnei->xyz[0]; 
                 y0 = padnei->xyz[1]; 
                 z0 = padnei->xyz[2]; 
-                dx = x-x0;
-                dy = y-y0;
-                dz = z-z0;
+                dx = x0-x;
+                dy = y0-y;
+                dz = z0-z;
                 dissquared = dx*dx + dy*dy + dz*dz;
                 if(dissquared == 0)
                     continue;   // the neighbour is itslef
                 if(dissquared <= radius*radius){
                     nei_info = (neighbour_info_t *) sc_array_push(pad->neighbourparticle);
-                    nei_info->ifghost = true;
+                    nei_info->ifremote = true;
                     nei_info->quadid = *localneiid;
                     nei_info->parid = pid;
                     nei_info->distance = sqrt(dissquared);
-                    nei_info->phi = atan2(dy,dx);
+                    nei_info->phi = acos(dy/sqrt(dissquared));
                     nei_info->theta = acos(dz/sqrt(dissquared));
-                 // printf("%f %f %f\n",x0,y0,z0);
+                    nei_info->sigma = acos(dx/sqrt(dissquared));
+                    // printf("%f %f %f\n",x0,y0,z0);
                 }
 
            
             }  
         }
-    
+        sc_array_sort(pad->neighbourparticle,compareneighbour_info); 
     }
        offset = lpend;  
     }
@@ -1360,4 +1399,89 @@ void Global_Data:: searchNeighbourParticle(){
 
 }
 
+
+void Global_Data::searchUpwindNeighbourParticle(){
+
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+
+  p8est_tree_t       *tree;
+  p8est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  p4est_locidx_t   offset = 0,lpend;
+  pdata_t * pad;
+  neighbour_info_t * nei_info, *nei_info2;
+  double theta, phi, sigma;
+  size_t numnei, neiid;
+
+  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+    tree = p8est_tree_array_index (p8est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      lpend = qud->lpend;
+    for(int i=offset;i<lpend;i++){
+        pad = (pdata_t *)sc_array_index(particle_data,i);
+        pad->neighbourupparticle = sc_array_new(sizeof(neighbour_info_t));
+        pad->neighbourdownparticle = sc_array_new(sizeof(neighbour_info_t));
+        pad->neighbourrightparticle = sc_array_new(sizeof(neighbour_info_t));
+        pad->neighbourleftparticle = sc_array_new(sizeof(neighbour_info_t));
+        pad->neighbourfrontparticle = sc_array_new(sizeof(neighbour_info_t));
+        pad->neighbourbackparticle = sc_array_new(sizeof(neighbour_info_t));
+        
+        numnei = pad->neighbourparticle->elem_count;
+        for(neiid = 0; neiid<numnei; neiid++){
+            nei_info = (neighbour_info_t *)sc_array_index(pad->neighbourparticle,neiid); 
+            theta = nei_info->theta;
+            phi = nei_info->phi;
+            sigma = nei_info->sigma;
+            if(theta >= 0 && theta <=0.96){
+                nei_info2 = (neighbour_info_t *)sc_array_push(pad->neighbourdownparticle);
+                copyNeighbourInfo(nei_info2,nei_info);
+            }
+
+            if(theta >= 2.19 && theta <=M_PI){
+                nei_info2 = (neighbour_info_t *)sc_array_push(pad->neighbourupparticle);
+                copyNeighbourInfo(nei_info2,nei_info);
+            }
+        
+        
+            if(phi >= 0 && phi <= 0.96){
+                nei_info2 = (neighbour_info_t *)sc_array_push(pad->neighbourleftparticle);
+                copyNeighbourInfo(nei_info2,nei_info);
+            }
+            if(phi >= 2.19 && phi <=M_PI){
+                nei_info2 = (neighbour_info_t *)sc_array_push(pad->neighbourrightparticle);
+                copyNeighbourInfo(nei_info2,nei_info);
+            }
+        
+            if(sigma >= 0 && sigma <= 0.96){
+                nei_info2 = (neighbour_info_t *)sc_array_push(pad->neighbourbackparticle);
+                copyNeighbourInfo(nei_info2,nei_info);
+            }
+            if(sigma >= 2.19 && sigma <=M_PI){
+                nei_info2 = (neighbour_info_t *)sc_array_push(pad->neighbourfrontparticle);
+                copyNeighbourInfo(nei_info2,nei_info);
+            }
+        }
+/*
+    int c1 = pad->neighbourupparticle->elem_count;
+    int c2 = pad->neighbourdownparticle->elem_count;
+    int c3 = pad->neighbourleftparticle->elem_count;;
+    int c4 = pad->neighbourrightparticle->elem_count;
+    int c5 = pad->neighbourfrontparticle->elem_count;
+    int c6 = pad->neighbourbackparticle->elem_count;
+    int c7 = c1+c2+c3+c4+c5+c6;
+    printf("%d %d %d %d %d %d %d %d\n",pad->neighbourparticle->elem_count,c1,c2,c3,c4,c5,c6,c7); 
+    if(c7<pad->neighbourparticle->elem_count)
+        assert(false);
+    */
+    }
+  
+    offset = lpend; 
+    }
+  
+  }
+}
 
