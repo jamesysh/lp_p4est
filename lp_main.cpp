@@ -103,7 +103,7 @@ int main(){
     gdata->searchNeighbourParticle();
     
     gdata->searchUpwindNeighbourParticle(); 
-    
+    gdata->generateGhostParticle();
     //gdata->testquad(); 
     gdata->cleanForTimeStep();
    

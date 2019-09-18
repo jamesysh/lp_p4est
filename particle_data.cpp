@@ -381,6 +381,7 @@ Global_Data:: Global_Data(Initializer* init){
     maxlevel = init->maxlevel;
     minlevel = init->minlevel; 
     initlocalspacing = init->initlocalspacing;
+    numrow1st = 8;
     initperturbation = init->initperturbation;
     elem_particles = init->elem_particles;
     geometry = GeometryFactory::instance().createGeometry("pelletlayer"); 
@@ -1195,7 +1196,7 @@ void Global_Data::cleanForTimeStep(){
          sc_array_destroy(pad->neighbourleftparticle);
          sc_array_destroy(pad->neighbourfrontparticle);
          sc_array_destroy(pad->neighbourbackparticle);
-      
+         sc_array_destroy(pad->ghostneighbour); 
          }
        offset = lpend;  
     
@@ -1435,6 +1436,7 @@ void Global_Data::searchUpwindNeighbourParticle(){
         
         numnei = pad->neighbourparticle->elem_count;
         for(neiid = 0; neiid<numnei; neiid++){
+            
             nei_info = (neighbour_info_t *)sc_array_index(pad->neighbourparticle,neiid); 
             theta = nei_info->theta;
             phi = nei_info->phi;
@@ -1500,7 +1502,7 @@ void Global_Data::generateGhostParticle(){
   octant_data_t          *qud;
   p4est_locidx_t   offset = 0,lpend;
   pdata_t * pad;
-
+  size_t count;
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
@@ -1510,6 +1512,31 @@ void Global_Data::generateGhostParticle(){
     for(int i=offset;i<lpend;i++){
         pad = (pdata_t *)sc_array_index(particle_data,i);
         pad->ghostneighbour =  sc_array_new(sizeof(pdata_copy_t));
+        pad->ifhasghostneighbour = false;
+
+        count = pad->neighbourupparticle->elem_count;
+        if(count<numrow1st)
+            fillArrayWithGhostParticle(pad->neighbourupparticle,pad,numrow1st-count,1);
+
+        count = pad->neighbourdownparticle->elem_count;
+        if(count<numrow1st)
+            fillArrayWithGhostParticle(pad->neighbourdownparticle,pad,numrow1st-count,2);
+
+        count = pad->neighbourrightparticle->elem_count;
+        if(count<numrow1st)
+            fillArrayWithGhostParticle(pad->neighbourrightparticle,pad,numrow1st-count,3);
+
+        count = pad->neighbourleftparticle->elem_count;
+        if(count<numrow1st)
+            fillArrayWithGhostParticle(pad->neighbourleftparticle,pad,numrow1st-count,4);
+
+        count = pad->neighbourfrontparticle->elem_count;
+        if(count<numrow1st)
+            fillArrayWithGhostParticle(pad->neighbourfrontparticle,pad,numrow1st-count,5);
+
+        count = pad->neighbourbackparticle->elem_count;
+        if(count<numrow1st)
+            fillArrayWithGhostParticle(pad->neighbourbackparticle,pad,numrow1st-count,6);
 
         }
   
@@ -1536,6 +1563,7 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
       pdata_copy_t * ghostnei;
       neighbour_info_t *ghostnei_info;
       size_t ghostid;
+      pad->ifhasghostneighbour = true;
       for(int i = 0;i<count;i++){
         r = rand()/(double)RAND_MAX * radius;
         if(dir == 1 || dir == 3 || dir == 5){
@@ -1548,11 +1576,153 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei_info = (neighbour_info_t *)sc_array_push(neighbourlist);
                 ghostid = pad->ghostneighbour->elem_count;
                 ghostnei = (pdata_copy_t *) sc_array_push(pad->ghostneighbour);
-
+                ghostnei_info->parid = ghostid;
+                ghostnei_info->ifremote = false;
+                ghostnei_info->ifghost = true;
+                ghostnei_info->distance = sqrt(dx*dx+dy*dy+dz*dz);
+                ghostnei->xyz[0] = pad->xyz[0] + dx; 
+                ghostnei->xyz[1] = pad->xyz[1] + dy; 
+                ghostnei->xyz[2] = pad->xyz[2] + dz; 
+                ghostnei->v[0] = pad->v[0];
+                ghostnei->v[1] = pad->v[1];
+                ghostnei->v[2] = pad->v[2];
+                ghostnei->pressure = pad->pressure; 
+                ghostnei->volume = 1.0e6; 
+                ghostnei->soundspeed = pad->soundspeed; 
+                ghostnei->mass = 0; 
+                ghostnei->localspacing = pad->localspacing; 
             }
 
+            if(dir == 3){
+                dy = cos(angle)*r;
+                rxy = r*r - dz*dz;
+                dz = sqrt(rand()/(double)RAND_MAX * rxy) * (2*(rand()%2)-1);
+                dx = sqrt(rxy - dx*dx) * (2*(rand()%2)-1);
+                ghostnei_info = (neighbour_info_t *)sc_array_push(neighbourlist);
+                ghostid = pad->ghostneighbour->elem_count;
+                ghostnei = (pdata_copy_t *) sc_array_push(pad->ghostneighbour);
+                ghostnei_info->parid = ghostid;
+                ghostnei_info->ifremote = false;
+                ghostnei_info->ifghost = true;
+                ghostnei_info->distance = sqrt(dx*dx+dy*dy+dz*dz);
+                ghostnei->xyz[0] = pad->xyz[0] + dx; 
+                ghostnei->xyz[1] = pad->xyz[1] + dy; 
+                ghostnei->xyz[2] = pad->xyz[2] + dz; 
+                ghostnei->v[0] = pad->v[0];
+                ghostnei->v[1] = pad->v[1];
+                ghostnei->v[2] = pad->v[2];
+                ghostnei->pressure = pad->pressure; 
+                ghostnei->volume = 1.0e6; 
+                ghostnei->soundspeed = pad->soundspeed; 
+                ghostnei->mass = 0; 
+                ghostnei->localspacing = pad->localspacing; 
+            }
+            if(dir == 5){
+                dx = cos(angle)*r;
+                rxy = r*r - dz*dz;
+                dy = sqrt(rand()/(double)RAND_MAX * rxy) * (2*(rand()%2)-1);
+                dz = sqrt(rxy - dx*dx) * (2*(rand()%2)-1);
+                ghostnei_info = (neighbour_info_t *)sc_array_push(neighbourlist);
+                ghostid = pad->ghostneighbour->elem_count;
+                ghostnei = (pdata_copy_t *) sc_array_push(pad->ghostneighbour);
+                ghostnei_info->parid = ghostid;
+                ghostnei_info->ifremote = false;
+                ghostnei_info->ifghost = true;
+                ghostnei_info->distance = sqrt(dx*dx+dy*dy+dz*dz);
+                ghostnei->xyz[0] = pad->xyz[0] + dx; 
+                ghostnei->xyz[1] = pad->xyz[1] + dy; 
+                ghostnei->xyz[2] = pad->xyz[2] + dz; 
+                ghostnei->v[0] = pad->v[0];
+                ghostnei->v[1] = pad->v[1];
+                ghostnei->v[2] = pad->v[2];
+                ghostnei->pressure = pad->pressure; 
+                ghostnei->volume = 1.0e6; 
+                ghostnei->soundspeed = pad->soundspeed; 
+                ghostnei->mass = 0; 
+                ghostnei->localspacing = pad->localspacing; 
+            }
+        
+        
         } 
 
+        if(dir == 2 || dir == 4 || dir == 6){
+            angle =  rand()/(double)RAND_MAX *0.96;
+            if(dir == 2){
+                dz = cos(angle)*r;
+                rxy = r*r - dz*dz;
+                dx = sqrt(rand()/(double)RAND_MAX * rxy) * (2*(rand()%2)-1);
+                dy = sqrt(rxy - dx*dx) * (2*(rand()%2)-1);
+                ghostnei_info = (neighbour_info_t *)sc_array_push(neighbourlist);
+                ghostid = pad->ghostneighbour->elem_count;
+                ghostnei = (pdata_copy_t *) sc_array_push(pad->ghostneighbour);
+                ghostnei_info->parid = ghostid;
+                ghostnei_info->ifremote = false;
+                ghostnei_info->ifghost = true;
+                ghostnei_info->distance = sqrt(dx*dx+dy*dy+dz*dz);
+                ghostnei->xyz[0] = pad->xyz[0] + dx; 
+                ghostnei->xyz[1] = pad->xyz[1] + dy; 
+                ghostnei->xyz[2] = pad->xyz[2] + dz; 
+                ghostnei->v[0] = pad->v[0];
+                ghostnei->v[1] = pad->v[1];
+                ghostnei->v[2] = pad->v[2];
+                ghostnei->pressure = pad->pressure; 
+                ghostnei->volume = 1.0e6; 
+                ghostnei->soundspeed = pad->soundspeed; 
+                ghostnei->mass = 0; 
+                ghostnei->localspacing = pad->localspacing; 
+            }
+
+            if(dir == 4){
+                dy = cos(angle)*r;
+                rxy = r*r - dz*dz;
+                dz = sqrt(rand()/(double)RAND_MAX * rxy) * (2*(rand()%2)-1);
+                dx = sqrt(rxy - dx*dx) * (2*(rand()%2)-1);
+                ghostnei_info = (neighbour_info_t *)sc_array_push(neighbourlist);
+                ghostid = pad->ghostneighbour->elem_count;
+                ghostnei = (pdata_copy_t *) sc_array_push(pad->ghostneighbour);
+                ghostnei_info->parid = ghostid;
+                ghostnei_info->ifremote = false;
+                ghostnei_info->ifghost = true;
+                ghostnei_info->distance = sqrt(dx*dx+dy*dy+dz*dz);
+                ghostnei->xyz[0] = pad->xyz[0] + dx; 
+                ghostnei->xyz[1] = pad->xyz[1] + dy; 
+                ghostnei->xyz[2] = pad->xyz[2] + dz; 
+                ghostnei->v[0] = pad->v[0];
+                ghostnei->v[1] = pad->v[1];
+                ghostnei->v[2] = pad->v[2];
+                ghostnei->pressure = pad->pressure; 
+                ghostnei->volume = 1.0e6; 
+                ghostnei->soundspeed = pad->soundspeed; 
+                ghostnei->mass = 0; 
+                ghostnei->localspacing = pad->localspacing; 
+            }
+            if(dir == 6){
+                dx = cos(angle)*r;
+                rxy = r*r - dz*dz;
+                dy = sqrt(rand()/(double)RAND_MAX * rxy) * (2*(rand()%2)-1);
+                dz = sqrt(rxy - dx*dx) * (2*(rand()%2)-1);
+                ghostnei_info = (neighbour_info_t *)sc_array_push(neighbourlist);
+                ghostid = pad->ghostneighbour->elem_count;
+                ghostnei = (pdata_copy_t *) sc_array_push(pad->ghostneighbour);
+                ghostnei_info->parid = ghostid;
+                ghostnei_info->ifremote = false;
+                ghostnei_info->ifghost = true;
+                ghostnei_info->distance = sqrt(dx*dx+dy*dy+dz*dz);
+                ghostnei->xyz[0] = pad->xyz[0] + dx; 
+                ghostnei->xyz[1] = pad->xyz[1] + dy; 
+                ghostnei->xyz[2] = pad->xyz[2] + dz; 
+                ghostnei->v[0] = pad->v[0];
+                ghostnei->v[1] = pad->v[1];
+                ghostnei->v[2] = pad->v[2];
+                ghostnei->pressure = pad->pressure; 
+                ghostnei->volume = 1.0e6; 
+                ghostnei->soundspeed = pad->soundspeed; 
+                ghostnei->mass = 0; 
+                ghostnei->localspacing = pad->localspacing; 
+            }
+        
+        
+        } 
       
       }
 

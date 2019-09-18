@@ -177,6 +177,7 @@ endt	particle_data.h	/^        double endt;$/;"	m	class:Global_Data
 eos	particle_data.h	/^        EOS* eos;        $/;"	m	class:Global_Data
 eoschoice	initializer.h	/^        int eoschoice;$/;"	m	class:Initializer
 eoschoice	particle_data.h	/^        int eoschoice;$/;"	m	class:Global_Data
+fillArrayWithGhostParticle	particle_data.cpp	/^void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t * pad, int count, int dir){$/;"	f	class:Global_Data
 flagboundary	particle_data.h	/^    double flagboundary;$/;"	m	struct:pdata
 flagboundary	particle_data.h	/^    double flagboundary;$/;"	m	struct:pdata_copy
 flagboundary	particle_data.h	/^    int flagboundary;  \/\/if true, octant is at cloud boundary;$/;"	m	struct:octant_data
@@ -187,6 +188,7 @@ gamma	particle_data.h	/^        double gamma;$/;"	m	class:Global_Data
 gdata	lp_solver.h	/^    Global_Data * gdata; $/;"	m	class:LPSolver
 gdata	octree_manager.h	/^        Global_Data *gdata;$/;"	m	class:Octree_Manager
 gdata	particle_viewer.h	/^     Global_Data *gdata;$/;"	m	class:ParticleViewer
+generateGhostParticle	particle_data.cpp	/^void Global_Data::generateGhostParticle(){$/;"	f	class:Global_Data
 geoTable	geometry/geometry.h	/^	std::unordered_map<std::string,GeoCreateFunc> geoTable; \/\/\/< hash table for the (name,creatFunction) pair$/;"	m	class:GeometryFactory
 geometry	particle_data.h	/^        Geometry* geometry;$/;"	m	class:Global_Data
 getBoundingBox	geometry/geometry_pellet.cpp	/^void PelletLayer::getBoundingBox(double& xmin, double& xmax, double& ymin, double& ymax, double& zmin, double& zmax){$/;"	f	class:PelletLayer
@@ -200,6 +202,7 @@ getTemperature	eos.cpp	/^double PolytropicGasEOS::getTemperature(double pressure
 gflagrefine	particle_data.h	/^        int flagrefine, gflagrefine, flagstartrefine;$/;"	m	class:Global_Data
 ghost	particle_data.h	/^        p8est_ghost_t *ghost;$/;"	m	class:Global_Data
 ghost_data	particle_data.h	/^        octant_data_t *ghost_data; $/;"	m	class:Global_Data
+ghostneighbour	particle_data.h	/^    sc_array_t * ghostneighbour;$/;"	m	struct:pdata
 ghostneighbourid	particle_data.h	/^    sc_array_t *ghostneighbourid;$/;"	m	struct:octant_data
 gplost	particle_data.h	/^        p4est_gloidx_t gpnum, gplost; \/\/number of particles on all processor, number of particles on all processers which left domain$/;"	m	class:Global_Data
 gpnum	particle_data.h	/^        p4est_gloidx_t gpnum, gplost; \/\/number of particles on all processor, number of particles on all processers which left domain$/;"	m	class:Global_Data
@@ -207,7 +210,9 @@ hxyz	particle_data.h	/^        double lxyz[3],hxyz[3],dxyz[3]; \/\/boundingbox o
 id	particle_data.h	/^    p4est_gloidx_t      id;$/;"	m	struct:pdata
 ifOctantInsectBox	particle_data.cpp	/^static bool ifOctantInsectBox(double lxyz[3],double bb[6],double l) \/\/l:lenth of octant, lxyz:coord of octant$/;"	f	file:
 ifPointInsideBox	particle_data.cpp	/^static bool ifPointInsideBox(double x, double y, double z, double bb[6]) {$/;"	f	file:
-ifremote	particle_data.h	/^    bool ifremote;        \/\/ if the particle is in ghost layer$/;"	m	struct:neighbour_info
+ifghost	particle_data.h	/^    bool ifghost;        \/\/ if the particle is a ghost particle       $/;"	m	struct:neighbour_info
+ifhasghostneighbour	particle_data.h	/^    bool ifhasghostneighbour;$/;"	m	struct:pdata
+ifremote	particle_data.h	/^    bool ifremote;        \/\/ if the particle is in remote processer$/;"	m	struct:neighbour_info
 ilh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
 initFluidParticles	particle_data.cpp	/^void Global_Data::initFluidParticles(){$/;"	f	class:Global_Data
 initNeighbourArray	particle_data.cpp	/^static void initNeighbourArray(p8est_iter_volume_info_t *info, void*user_data){$/;"	f	file:
@@ -270,6 +275,7 @@ neighbourparticle	particle_data.h	/^    sc_array_t * neighbourparticle;$/;"	m	st
 neighbourrightparticle	particle_data.h	/^    sc_array_t * neighbourrightparticle;$/;"	m	struct:pdata
 neighbourupparticle	particle_data.h	/^    sc_array_t * neighbourupparticle;$/;"	m	struct:pdata
 numdigit	particle_viewer.h	/^	int numdigit;\/\/\/< The number of digits for the indexing of output file name $/;"	m	class:ParticleViewer
+numrow1st	particle_data.h	/^        int numrow1st;$/;"	m	class:Global_Data
 octant_data	particle_data.h	/^typedef struct octant_data$/;"	s
 octant_data_t	particle_data.h	/^octant_data_t;$/;"	t	typeref:struct:octant_data
 octantid	particle_data.h	/^        int octantid;  $/;"	m	class:Global_Data

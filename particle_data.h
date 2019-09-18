@@ -18,6 +18,7 @@ typedef struct pdata{
     double mass;
     double localspacing;
     double flagboundary;
+    bool ifhasghostneighbour;
     sc_array_t * ghostneighbour;
     sc_array_t * neighbourparticle;
       
@@ -163,7 +164,8 @@ class Global_Data{
         
         double initlocalspacing;
         double initperturbation;
-        
+        size_t numrow1st;
+
         double dt;
         double endt;
         double domain_len = 16; 
