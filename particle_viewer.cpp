@@ -33,6 +33,7 @@ void ParticleViewer:: writeGhost(double t){
     
    static bool FIRST = true;
    size_t lpnum = gdata->particle_data->elem_count;
+   size_t ghostn = gdata->lghostnum;
    size_t ghostnum;
    size_t li;
    int mpirank = gdata->mpirank;
@@ -51,7 +52,7 @@ void ParticleViewer:: writeGhost(double t){
 	fprintf(outfile,"ASCII\n");
 	fprintf(outfile,"DATASET POLYDATA\n");
 	
-	fprintf(outfile,"POINTS %ld double\n",(long int)lpnum);
+	fprintf(outfile,"POINTS %ld double\n",(long int)ghostn);
     
     pad = (pdata_t *)gdata->particle_data->array;
     //pad = (pdata_t *)sc_array_index_begin(particle_data);
@@ -64,8 +65,8 @@ void ParticleViewer:: writeGhost(double t){
         }
     pad++ ;
     }
-  
-    fprintf(outfile,"POINT_DATA %ld\n",(long int)lpnum);
+    
+    fprintf(outfile,"POINT_DATA %ld\n",(long int)ghostn);
 
 	fprintf(outfile,"VECTORS Velocity double\n");
     

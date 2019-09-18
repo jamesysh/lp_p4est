@@ -111,8 +111,8 @@ int main(){
     
     {
         nextwritetime += 0.001;    
-       gdata->writeVTKFiles();
-  //      viewer->writeGhost(tstart);
+ //      gdata->writeVTKFiles();
+        viewer->writeGhost(tstart);
     }
     gdata->cleanForTimeStep();
    

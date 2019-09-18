@@ -1503,6 +1503,8 @@ void Global_Data::generateGhostParticle(){
   p4est_locidx_t   offset = 0,lpend;
   pdata_t * pad;
   size_t count;
+    
+  lghostnum = 0;
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
@@ -1549,6 +1551,12 @@ void Global_Data::generateGhostParticle(){
   
   
   }
+    p4est_gloidx_t lgn = (p4est_gloidx_t) lghostnum;
+    gghostnum = 0;
+    int mpiret = sc_MPI_Allreduce (&lgn, &gghostnum, 1, P4EST_MPI_GLOIDX, sc_MPI_SUM, mpicomm);
+    SC_CHECK_MPI (mpiret);
+
+    P4EST_GLOBAL_ESSENTIALF ("Created %lld Ghost Particles \n",   (long long) gghostnum);
 
 }
 
@@ -1564,6 +1572,8 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
       neighbour_info_t *ghostnei_info;
       size_t ghostid;
       pad->ifhasghostneighbour = true;
+      
+      lghostnum += count;
       for(int i = 0;i<count;i++){
         r = rand()/(double)RAND_MAX * radius;
         if(dir == 1 || dir == 3 || dir == 5){
@@ -1586,7 +1596,7 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei->v[0] = pad->v[0];
                 ghostnei->v[1] = pad->v[1];
                 ghostnei->v[2] = pad->v[2];
-                ghostnei->pressure = pad->pressure; 
+                ghostnei->pressure = 0.64;//pad->pressure; 
                 ghostnei->volume = 1.0e6; 
                 ghostnei->soundspeed = pad->soundspeed; 
                 ghostnei->mass = 0; 
@@ -1612,7 +1622,7 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei->v[0] = pad->v[0];
                 ghostnei->v[1] = pad->v[1];
                 ghostnei->v[2] = pad->v[2];
-                ghostnei->pressure = pad->pressure; 
+                ghostnei->pressure = 0.64;//pad->pressure; 
                 ghostnei->volume = 1.0e6; 
                 ghostnei->soundspeed = pad->soundspeed; 
                 ghostnei->mass = 0; 
@@ -1636,7 +1646,7 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei->v[0] = pad->v[0];
                 ghostnei->v[1] = pad->v[1];
                 ghostnei->v[2] = pad->v[2];
-                ghostnei->pressure = pad->pressure; 
+                ghostnei->pressure = 0.64;//pad->pressure; 
                 ghostnei->volume = 1.0e6; 
                 ghostnei->soundspeed = pad->soundspeed; 
                 ghostnei->mass = 0; 
@@ -1666,7 +1676,7 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei->v[0] = pad->v[0];
                 ghostnei->v[1] = pad->v[1];
                 ghostnei->v[2] = pad->v[2];
-                ghostnei->pressure = pad->pressure; 
+                ghostnei->pressure = 0.64;//pad->pressure; 
                 ghostnei->volume = 1.0e6; 
                 ghostnei->soundspeed = pad->soundspeed; 
                 ghostnei->mass = 0; 
@@ -1691,7 +1701,7 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei->v[0] = pad->v[0];
                 ghostnei->v[1] = pad->v[1];
                 ghostnei->v[2] = pad->v[2];
-                ghostnei->pressure = pad->pressure; 
+                ghostnei->pressure = 0.64;//pad->pressure; 
                 ghostnei->volume = 1.0e6; 
                 ghostnei->soundspeed = pad->soundspeed; 
                 ghostnei->mass = 0; 
@@ -1715,7 +1725,7 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei->v[0] = pad->v[0];
                 ghostnei->v[1] = pad->v[1];
                 ghostnei->v[2] = pad->v[2];
-                ghostnei->pressure = pad->pressure; 
+                ghostnei->pressure = 0.64;//pad->pressure; 
                 ghostnei->volume = 1.0e6; 
                 ghostnei->soundspeed = pad->soundspeed; 
                 ghostnei->mass = 0; 
