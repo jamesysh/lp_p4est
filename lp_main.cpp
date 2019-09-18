@@ -105,17 +105,18 @@ int main(){
     gdata->searchUpwindNeighbourParticle(); 
     gdata->generateGhostParticle();
     //gdata->testquad(); 
-    gdata->cleanForTimeStep();
-   
-    gdata->partitionParticles();
+    
     
     if(tstart  >= nextwritetime)
     
     {
         nextwritetime += 0.001;    
-//       gdata->writeVTKFiles();
-        viewer->writeResult(tstart);
+       gdata->writeVTKFiles();
+  //      viewer->writeGhost(tstart);
     }
+    gdata->cleanForTimeStep();
+   
+    gdata->partitionParticles();
     
     }
     

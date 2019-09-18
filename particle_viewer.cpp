@@ -28,6 +28,102 @@ string ParticleViewer::rightFlush(size_t numDigits) {
 
 }
 
+
+void ParticleViewer:: writeGhost(double t){
+    
+   static bool FIRST = true;
+   size_t lpnum = gdata->particle_data->elem_count;
+   size_t ghostnum;
+   size_t li;
+   int mpirank = gdata->mpirank;
+   string filename_t = outputfilename + rightFlush(numdigit)+"_";
+   string filename = filename_t + to_string(mpirank) + ".vtk";
+    pdata_t *pad;
+    pdata_copy_t * padd;
+	FILE *outfile;
+	outfile = fopen(filename.c_str(), "w");
+	if(outfile==nullptr) {
+		printf("Unable to open file: %s\n",filename.c_str()); 
+		return;
+	}
+	fprintf(outfile,"# vtk DataFile Version 3.0\n");
+	fprintf(outfile,"The actual time is %.16g\n",0.0);
+	fprintf(outfile,"ASCII\n");
+	fprintf(outfile,"DATASET POLYDATA\n");
+	
+	fprintf(outfile,"POINTS %ld double\n",(long int)lpnum);
+    
+    pad = (pdata_t *)gdata->particle_data->array;
+    //pad = (pdata_t *)sc_array_index_begin(particle_data);
+    for(li = 0; li<lpnum; li++){
+        ghostnum = pad->ghostneighbour->elem_count;
+        padd = (pdata_copy_t *)pad->ghostneighbour->array; 
+        for(size_t j=0;j<ghostnum;j++){
+         fprintf(outfile,"%.16g %.16g %.16g\n",padd->xyz[0],padd->xyz[1],padd->xyz[2]);
+         padd++;
+        }
+    pad++ ;
+    }
+  
+    fprintf(outfile,"POINT_DATA %ld\n",(long int)lpnum);
+
+	fprintf(outfile,"VECTORS Velocity double\n");
+    
+    pad = (pdata_t *)gdata->particle_data->array;
+    //pad = (pdata_t *)sc_array_index_begin(particle_data);
+   
+    for(li = 0; li<lpnum; li++){
+        ghostnum = pad->ghostneighbour->elem_count;
+        padd = (pdata_copy_t *)pad->ghostneighbour->array; 
+        for(size_t j=0; j<ghostnum;j++){
+         fprintf(outfile,"%.16g %.16g %.16g\n",padd->v[0],padd->v[1],padd->v[2]);
+         padd++;
+        }
+    pad++ ;
+    }
+ 
+
+	fprintf(outfile,"SCALARS pressure double\n");
+	fprintf(outfile,"LOOKUP_TABLE default\n");
+    
+    pad = (pdata_t *)gdata->particle_data->array;
+    
+    for(li = 0; li<lpnum; li++){
+        ghostnum = pad->ghostneighbour->elem_count;
+        padd = (pdata_copy_t *)pad->ghostneighbour->array; 
+        for(size_t j=0;j<ghostnum;j++){
+         fprintf(outfile,"%.16g\n",padd->pressure);
+         padd++;
+        }
+    pad++ ;
+    }
+ 
+    fclose(outfile);
+    if(mpirank == 0){
+    FILE *visitfile;
+    string fname = "output_data.visit";
+    visitfile = fopen(fname.c_str(),"a");
+   
+	if(visitfile==nullptr) {
+		printf("Unable to open file: %s\n",fname.c_str()); 
+		return;
+	}
+    if(FIRST){
+        FIRST = false;
+        fprintf(visitfile,"!NBLOCKS %d\n",gdata->mpisize);
+    
+        }
+        for(int i=0;i<gdata->mpisize;i++){
+            string name  = filename_t +to_string(i) + ".vtk\n";
+            fprintf(visitfile,name.c_str());
+            
+            }
+    
+    fclose(visitfile);
+    }   
+    writestep ++;
+
+}
 void ParticleViewer:: writeResult(double t){
     
    static bool FIRST = true;

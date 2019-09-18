@@ -30,7 +30,7 @@ public:
 	 * \return               0 if output success; 1 otherwise
 	 */
      void writeResult(double time);
-
+     void writeGhost(double time);
      
      Global_Data *gdata;
 
