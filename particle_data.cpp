@@ -1373,9 +1373,9 @@ void Global_Data:: searchNeighbourParticle(){
                 x0 = padnei->xyz[0]; 
                 y0 = padnei->xyz[1]; 
                 z0 = padnei->xyz[2]; 
-                dx = x0-x;
-                dy = y0-y;
-                dz = z0-z;
+                dx = x-x0;
+                dy = y-y0;
+                dz = z-z0;
                 dissquared = dx*dx + dy*dy + dz*dz;
                 if(dissquared == 0)
                     continue;   // the neighbour is itslef
