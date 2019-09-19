@@ -4,7 +4,14 @@
 using namespace std;
 LPSolver::LPSolver(Global_Data *g){
     gdata = g;
-
+    splitorder = 0;
+    m_vDirSplitTable = vector<vector<int> >
+    ({{0,1,2},
+      {0,2,1},
+      {1,0,2},
+      {1,2,0},
+      {2,0,1},
+      {2,1,0}});
 }
 
 void LPSolver::moveParticlesByG(double dt){
@@ -43,8 +50,10 @@ void LPSolver::moveParticlesByG(double dt){
 
 //dir: 0 x, 1 y, 2 z
 void LPSolver::solve_upwind(int phase){
+    
+    const int dir = m_vDirSplitTable[splitorder][phase];
+    sc_array_t *neighbourlist0;
     sc_array_t *neighbourlist1;
-    sc_array_t *neighbourlist2;
     double *inpressure, *outpressure;
     double *involume, *outvolume;
     double *invelocity, *outvelocity;
@@ -72,7 +81,9 @@ void LPSolver::solve_upwind(int phase){
          if(pad->ifboundary)
              continue;
          setInAndOutPointer(pad, &inpressure, &outpressure, &involume, &outvolume,
-                  &invelocity, &outvelocity, &insoundspeed, &outsoundspeed, 0, 0);
+                  &invelocity, &outvelocity, &insoundspeed, &outsoundspeed, dir, phase);
+      
+         setNeighbourListPointer(pad, &neighbourlist0, &neighbourlist1,dir);
       }
        offset = lpend;  
     
@@ -93,5 +104,70 @@ void LPSolver::setInAndOutPointer(pdata_t *pad, double **inpressure, double **ou
         *outsoundspeed = &pad->soundspeedT1;
      }
 
+     if(phase == 1){
+        *inpressure = &pad->pressureT1;
+        *outpressure = &pad->pressureT2;
+        *involume = &pad->volumeT1;
+        *outvolume = &pad->volumeT2;
+        *insoundspeed = &pad->soundspeedT1;
+        *outsoundspeed = &pad->soundspeedT2;
+     }
+
+     if(phase == 2){
+        *inpressure = &pad->pressureT2;
+        *outpressure = &pad->pressureT1;
+        *involume = &pad->volumeT2;
+        *outvolume = &pad->volumeT1;
+        *insoundspeed = &pad->soundspeedT2;
+        *outsoundspeed = &pad->soundspeedT1;
+     }
+    
+     if(dir == 0){
+        *invelocity = &pad->v[0];
+        *outvelocity = &pad->oldv[0];
+     
+     }
+     if(dir = 1){
+     
+        *invelocity = &pad->v[1];
+        *outvelocity = &pad->oldv[1];
+     }
+
+     if(dir = 2){
+     
+        *invelocity = &pad->v[2];
+        *outvelocity = &pad->oldv[2];
+     }
 
 }
+
+void LPSolver::setNeighbourListPointer(pdata_t *pad, sc_array_t** neilist0, sc_array_t **neilist1,int dir){
+    if(dir == 0){
+        *neilist0 = pad->neighbourfrontparticle;
+        *neilist0 = pad->neighbourbackparticle;
+    }
+    else if(dir == 1){
+    
+        *neilist0 = pad->neighbourrightparticle;
+        *neilist0 = pad->neighbourleftparticle;
+    }
+    else if(dir == 2){
+    
+        *neilist0 = pad->neighbourupparticle;
+        *neilist0 = pad->neighbourdownparticle;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

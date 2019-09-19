@@ -352,7 +352,7 @@ searchNeighbourParticle	particle_data.cpp	/^void Global_Data:: searchNeighbourPa
 searchUpwindNeighbourParticle	particle_data.cpp	/^void Global_Data::searchUpwindNeighbourParticle(){$/;"	f	class:Global_Data
 send_req	particle_data.h	/^        sc_array_t *send_req; \/**< sc_MPI_Request for sending *\/$/;"	m	class:Global_Data
 setEOS	particle_data.cpp	/^void Global_Data::setEOS(){$/;"	f	class:Global_Data
-setInAndOutPointer	lp_solver.cpp	/^void LPSolver::setInAndOutPointer(pdata_t *pad, double *inpressure, double *outpressure, double *involume, double *outvolume,$/;"	f	class:LPSolver
+setInAndOutPointer	lp_solver.cpp	/^void LPSolver::setInAndOutPointer(pdata_t *pad, double **inpressure, double **outpressure, double **involume, double **outvolume,$/;"	f	class:LPSolver
 sigma	particle_data.h	/^    double sigma; \/\/front and back$/;"	m	struct:neighbour_info
 slocal_point	particle_data.cpp	/^slocal_point (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 slocal_quad	particle_data.cpp	/^slocal_quad (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
