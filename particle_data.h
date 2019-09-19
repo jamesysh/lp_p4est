@@ -181,6 +181,8 @@ class Global_Data{
         p4est_gloidx_t gpnum, gplost; //number of particles on all processor, number of particles on all processers which left domain
         p4est_locidx_t lghostnum;
         p4est_gloidx_t gghostnum;
+        p4est_locidx_t lfluidnum;
+        p4est_gloidx_t gfluidnum;
         p4est_locidx_t qremain, qreceive;
         int flagrefine, gflagrefine, flagstartrefine;
         octant_data_t *ghost_data; 

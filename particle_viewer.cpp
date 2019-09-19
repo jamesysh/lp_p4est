@@ -136,7 +136,21 @@ void ParticleViewer:: writeResult(double t){
     pdata_t *pad;
     
 	FILE *outfile;
-	outfile = fopen(filename.c_str(), "w");
+
+    gdata->lfluidnum = gdata->gfluidnum = 0;
+    //pad = (pdata_t *)sc_array_index_begin(particle_data);
+    for(li = 0; li<lpnum; li++){
+    pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+    if(!pad->ifboundary){
+        gdata->lfluidnum ++;
+    }
+
+    }
+    p4est_gloidx_t lfn = (p4est_gloidx_t) gdata->lfluidnum; 
+    int mpiret = sc_MPI_Allreduce (&lfn, &gdata->gfluidnum, 1, P4EST_MPI_GLOIDX, sc_MPI_SUM, gdata->mpicomm);
+    SC_CHECK_MPI (mpiret);
+    
+    outfile = fopen(filename.c_str(), "w");
 	if(outfile==nullptr) {
 		printf("Unable to open file: %s\n",filename.c_str()); 
 		return;

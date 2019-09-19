@@ -178,8 +178,8 @@ eos	particle_data.h	/^        EOS* eos;        $/;"	m	class:Global_Data
 eoschoice	initializer.h	/^        int eoschoice;$/;"	m	class:Initializer
 eoschoice	particle_data.h	/^        int eoschoice;$/;"	m	class:Global_Data
 fillArrayWithGhostParticle	particle_data.cpp	/^void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t * pad, int count, int dir){$/;"	f	class:Global_Data
+flagboundary	particle_data.h	/^    bool flagboundary;$/;"	m	struct:pdata_copy
 flagboundary	particle_data.h	/^    double flagboundary;$/;"	m	struct:pdata
-flagboundary	particle_data.h	/^    double flagboundary;$/;"	m	struct:pdata_copy
 flagboundary	particle_data.h	/^    int flagboundary;  \/\/if true, octant is at cloud boundary;$/;"	m	struct:octant_data
 flagrefine	particle_data.h	/^        int flagrefine, gflagrefine, flagstartrefine;$/;"	m	class:Global_Data
 flagstartrefine	particle_data.h	/^        int flagrefine, gflagrefine, flagstartrefine;$/;"	m	class:Global_Data
@@ -188,6 +188,8 @@ gamma	particle_data.h	/^        double gamma;$/;"	m	class:Global_Data
 gdata	lp_solver.h	/^    Global_Data * gdata; $/;"	m	class:LPSolver
 gdata	octree_manager.h	/^        Global_Data *gdata;$/;"	m	class:Octree_Manager
 gdata	particle_viewer.h	/^     Global_Data *gdata;$/;"	m	class:ParticleViewer
+generateBoundaryParticle	boundary/boundary.h	/^    virtual void generateBoundaryParticle(Global_Data *gdata, EOS* m_pEOS, double m_fInitParticleSpacing)  {return ;}  $/;"	f	class:Boundary
+generateBoundaryParticle	boundary/boundary_pellet.cpp	/^void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx){$/;"	f	class:PelletInflowBoundary
 generateGhostParticle	particle_data.cpp	/^void Global_Data::generateGhostParticle(){$/;"	f	class:Global_Data
 geoTable	geometry/geometry.h	/^	std::unordered_map<std::string,GeoCreateFunc> geoTable; \/\/\/< hash table for the (name,creatFunction) pair$/;"	m	class:GeometryFactory
 geometry	particle_data.h	/^        Geometry* geometry;$/;"	m	class:Global_Data
@@ -200,6 +202,8 @@ getParameters	eos.h	/^	virtual void getParameters(std::vector<double>& params){p
 getSoundSpeed	eos.cpp	/^double PolytropicGasEOS::getSoundSpeed(double pressure, double density) {$/;"	f	class:PolytropicGasEOS
 getTemperature	eos.cpp	/^double PolytropicGasEOS::getTemperature(double pressure, double density) {$/;"	f	class:PolytropicGasEOS
 gflagrefine	particle_data.h	/^        int flagrefine, gflagrefine, flagstartrefine;$/;"	m	class:Global_Data
+gfluidnum	particle_data.h	/^        p4est_gloidx_t gfluidnum;$/;"	m	class:Global_Data
+gghostnum	particle_data.h	/^        p4est_gloidx_t gghostnum;$/;"	m	class:Global_Data
 ghost	particle_data.h	/^        p8est_ghost_t *ghost;$/;"	m	class:Global_Data
 ghost_data	particle_data.h	/^        octant_data_t *ghost_data; $/;"	m	class:Global_Data
 ghostneighbour	particle_data.h	/^    sc_array_t * ghostneighbour;$/;"	m	struct:pdata
@@ -210,6 +214,8 @@ hxyz	particle_data.h	/^        double lxyz[3],hxyz[3],dxyz[3]; \/\/boundingbox o
 id	particle_data.h	/^    p4est_gloidx_t      id;$/;"	m	struct:pdata
 ifOctantInsectBox	particle_data.cpp	/^static bool ifOctantInsectBox(double lxyz[3],double bb[6],double l) \/\/l:lenth of octant, lxyz:coord of octant$/;"	f	file:
 ifPointInsideBox	particle_data.cpp	/^static bool ifPointInsideBox(double x, double y, double z, double bb[6]) {$/;"	f	file:
+ifboundary	particle_data.h	/^    bool ifboundary;   \/\/if a boundary particle$/;"	m	struct:pdata
+ifboundary	particle_data.h	/^    bool ifboundary; $/;"	m	struct:pdata_copy
 ifghost	particle_data.h	/^    bool ifghost;        \/\/ if the particle is a ghost particle       $/;"	m	struct:neighbour_info
 ifhasghostneighbour	particle_data.h	/^    bool ifhasghostneighbour;$/;"	m	struct:pdata
 ifremote	particle_data.h	/^    bool ifremote;        \/\/ if the particle is in remote processer$/;"	m	struct:neighbour_info
@@ -238,6 +244,8 @@ irvindex	particle_data.h	/^        p4est_locidx_t      irvindex, irv2, irvindex2
 irvindex2	particle_data.h	/^        p4est_locidx_t      irvindex, irv2, irvindex2;   \/**< Running index into ireceive *\/$/;"	m	class:Global_Data
 jlh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
 klh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
+lfluidnum	particle_data.h	/^        p4est_locidx_t lfluidnum;$/;"	m	class:Global_Data
+lghostnum	particle_data.h	/^        p4est_locidx_t lghostnum;$/;"	m	class:Global_Data
 localneighbourid	particle_data.h	/^    sc_array_t *localneighbourid;$/;"	m	struct:octant_data
 localparticle	particle_data.h	/^    pdata_copy_t localparticle[250];$/;"	m	struct:octant_data
 localspacing	particle_data.h	/^    double localspacing;$/;"	m	struct:pdata
@@ -275,7 +283,7 @@ neighbourparticle	particle_data.h	/^    sc_array_t * neighbourparticle;$/;"	m	st
 neighbourrightparticle	particle_data.h	/^    sc_array_t * neighbourrightparticle;$/;"	m	struct:pdata
 neighbourupparticle	particle_data.h	/^    sc_array_t * neighbourupparticle;$/;"	m	struct:pdata
 numdigit	particle_viewer.h	/^	int numdigit;\/\/\/< The number of digits for the indexing of output file name $/;"	m	class:ParticleViewer
-numrow1st	particle_data.h	/^        int numrow1st;$/;"	m	class:Global_Data
+numrow1st	particle_data.h	/^        size_t numrow1st;$/;"	m	class:Global_Data
 octant_data	particle_data.h	/^typedef struct octant_data$/;"	s
 octant_data_t	particle_data.h	/^octant_data_t;$/;"	t	typeref:struct:octant_data
 octantid	particle_data.h	/^        int octantid;  $/;"	m	class:Global_Data
@@ -365,6 +373,7 @@ v	particle_data.h	/^    double v[3]; \/\/velocity$/;"	m	struct:pdata_copy
 velocity	state/state_pellet.cpp	/^void PelletState::velocity(double x, double y, double z, double& vX, double& vY,double& vZ){$/;"	f	class:PelletState
 volume	particle_data.h	/^    double volume;$/;"	m	struct:pdata
 volume	particle_data.h	/^    double volume;$/;"	m	struct:pdata_copy
+writeGhost	particle_viewer.cpp	/^void ParticleViewer:: writeGhost(double t){$/;"	f	class:ParticleViewer
 writeResult	particle_viewer.cpp	/^void ParticleViewer:: writeResult(double t){$/;"	f	class:ParticleViewer
 writeVTKFiles	particle_data.cpp	/^void Global_Data:: writeVTKFiles(){$/;"	f	class:Global_Data
 writestep	particle_viewer.h	/^    int writestep;$/;"	m	class:ParticleViewer

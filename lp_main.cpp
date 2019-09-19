@@ -45,6 +45,7 @@ int main(){
     gdata->prerun(); 
     gdata->initFluidParticles();
     gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
+    
     octree->adapt_octree(); 
     
     
@@ -86,7 +87,6 @@ int main(){
         break;
     }
     gdata->communicateParticles();
-  
     gdata->postsearch();
     octree->adapt_octree(); 
 

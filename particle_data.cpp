@@ -1188,6 +1188,8 @@ void Global_Data::cleanForTimeStep(){
       lpend = qud->lpend;
       for(int i=offset;i<lpend;i++){
          pad = (pdata_t *)sc_array_index(particle_data,i);
+         if(pad->ifboundary)
+             continue;
          sc_array_destroy(pad->neighbourparticle);
 
  
@@ -1323,7 +1325,8 @@ void Global_Data:: searchNeighbourParticle(){
       ghostsize = qud->ghostneighbourid->elem_count;
     for(int i=offset;i<lpend;i++){
         pad = (pdata_t *)sc_array_index(particle_data,i);
-        
+        if(pad->ifboundary)
+            continue;
         pad->neighbourparticle = sc_array_new(sizeof(neighbour_info_t));
         radius = pad->localspacing * timesearchingradius; 
         position = pad->xyz;
@@ -1430,6 +1433,8 @@ void Global_Data::searchUpwindNeighbourParticle(){
       lpend = qud->lpend;
     for(int i=offset;i<lpend;i++){
         pad = (pdata_t *)sc_array_index(particle_data,i);
+        if(pad->ifboundary)
+            continue;
         pad->neighbourupparticle = sc_array_new(sizeof(neighbour_info_t));
         pad->neighbourdownparticle = sc_array_new(sizeof(neighbour_info_t));
         pad->neighbourrightparticle = sc_array_new(sizeof(neighbour_info_t));
@@ -1516,6 +1521,8 @@ void Global_Data::generateGhostParticle(){
       lpend = qud->lpend;
     for(int i=offset;i<lpend;i++){
         pad = (pdata_t *)sc_array_index(particle_data,i);
+        if(pad->ifboundary)
+            continue;
         pad->ghostneighbour =  sc_array_new(sizeof(pdata_copy_t));
         pad->ifhasghostneighbour = false;
 
