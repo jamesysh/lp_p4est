@@ -174,7 +174,27 @@ void LPSolver::setNeighbourListPointer(pdata_t *pad, sc_array_t** neilist0, sc_a
 
 
 
-//void LPSolver::computeSpatialDer(int dir) // input 
+void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist, const double* inpressure, const double *invelocity,
+        double *vel_d, double *vel_dd, double *p_d, double *p_dd) {
+    size_t numrow = gdata->numrow1st;
+    size_t numcol = 3;
+    double distance;
+    while( true ){
+        if(numrow > neighbourlist->elem_count){
+            *vel_d = 0;
+            *vel_dd = 0;
+            *p_d = 0;
+            *p_dd = 0;
+            pad->schemeorder -= 1./6;
+            break;
+        }
+        double A[numrow*numcol];
+
+
+    
+    }
+
+}
 
 
 

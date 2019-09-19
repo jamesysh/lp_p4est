@@ -20,6 +20,8 @@ public:
 
     void setNeighbourListPointer(pdata_t *pad, sc_array_t** neilist0, sc_array_t **neilist1, int dir );
     
+    void computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist, const double* inpressure, const double *invelocity,
+        double *vel_d, double *vel_dd, double *p_d, double *p_dd);
 
 
 
