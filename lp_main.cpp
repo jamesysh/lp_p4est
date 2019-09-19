@@ -106,7 +106,8 @@ int main(){
     gdata->generateGhostParticle();
     //gdata->testquad(); 
     
-    
+   
+    lpsolver->solve_upwind(0);
     if(tstart  >= nextwritetime)
     
     {
@@ -114,6 +115,7 @@ int main(){
         viewer->writeResult(tstart);
         //viewer->writeGhost(tstart);
     }
+   
     gdata->cleanForTimeStep();
    
     gdata->partitionParticles();

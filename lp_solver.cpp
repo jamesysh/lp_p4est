@@ -1,5 +1,7 @@
-#include "iostream"
+#include <iostream>
 #include "lp_solver.h"
+
+using namespace std;
 LPSolver::LPSolver(Global_Data *g){
     gdata = g;
 
@@ -63,15 +65,14 @@ void LPSolver::solve_upwind(int phase){
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
-      sc_array_destroy(qud->localneighbourid);
-      sc_array_destroy(qud->ghostneighbourid);
     
       lpend = qud->lpend;
       for(int i=offset;i<lpend;i++){
          pad = (pdata_t *)sc_array_index(gdata->particle_data,i);
          if(pad->ifboundary)
              continue;
-         
+         setInAndOutPointer(pad, &inpressure, &outpressure, &involume, &outvolume,
+                  &invelocity, &outvelocity, &insoundspeed, &outsoundspeed, 0, 0);
       }
        offset = lpend;  
     
@@ -80,16 +81,16 @@ void LPSolver::solve_upwind(int phase){
 
 }
 
-void LPSolver::setInAndOutPointer(pdata_t *pad, double *inpressure, double *outpressure, double *involume, double *outvolume,
-        double* invelocity, double *outvelocity, double *insoundspeed, double *outsoundspeed, int dir, int phase){
+void LPSolver::setInAndOutPointer(pdata_t *pad, double **inpressure, double **outpressure, double **involume, double **outvolume,
+        double** invelocity, double **outvelocity, double **insoundspeed, double **outsoundspeed, int dir, int phase){
 
      if(phase == 0){
-        inpressure = &pad->pressure;
-        outpressure = &pad->pressureT1;
-        involume = &pad->volume;
-        outvolume = &pad->volumeT1;
-        insoundspeed = &pad->soundspeed;
-        outsoundspeed = &pad->soundspeedT1;
+        *inpressure = &pad->pressure;
+        *outpressure = &pad->pressureT1;
+        *involume = &pad->volume;
+        *outvolume = &pad->volumeT1;
+        *insoundspeed = &pad->soundspeed;
+        *outsoundspeed = &pad->soundspeedT1;
      }
 
 

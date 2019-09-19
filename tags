@@ -319,6 +319,8 @@ presearch	particle_data.cpp	/^void Global_Data::presearch(){$/;"	f	class:Global_
 pressure	particle_data.h	/^    double pressure;$/;"	m	struct:pdata
 pressure	particle_data.h	/^    double pressure;$/;"	m	struct:pdata_copy
 pressure	state/state_pellet.cpp	/^double PelletState::pressure(double x, double y, double z) {$/;"	f	class:PelletState
+pressureT1	particle_data.h	/^    double pressureT1;$/;"	m	struct:pdata
+pressureT2	particle_data.h	/^    double pressureT2;$/;"	m	struct:pdata
 prevlp	particle_data.h	/^      p4est_locidx_t      prevlp;   \/**< Count local particles in partition callback *\/$/;"	m	class:Global_Data
 psearch_point	particle_data.cpp	/^psearch_point (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 psearch_quad	particle_data.cpp	/^psearch_quad (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
@@ -350,11 +352,15 @@ searchNeighbourParticle	particle_data.cpp	/^void Global_Data:: searchNeighbourPa
 searchUpwindNeighbourParticle	particle_data.cpp	/^void Global_Data::searchUpwindNeighbourParticle(){$/;"	f	class:Global_Data
 send_req	particle_data.h	/^        sc_array_t *send_req; \/**< sc_MPI_Request for sending *\/$/;"	m	class:Global_Data
 setEOS	particle_data.cpp	/^void Global_Data::setEOS(){$/;"	f	class:Global_Data
+setInAndOutPointer	lp_solver.cpp	/^void LPSolver::setInAndOutPointer(pdata_t *pad, double *inpressure, double *outpressure, double *involume, double *outvolume,$/;"	f	class:LPSolver
 sigma	particle_data.h	/^    double sigma; \/\/front and back$/;"	m	struct:neighbour_info
 slocal_point	particle_data.cpp	/^slocal_point (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 slocal_quad	particle_data.cpp	/^slocal_quad (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
+solve_upwind	lp_solver.cpp	/^void LPSolver::solve_upwind(int phase){$/;"	f	class:LPSolver
 soundspeed	particle_data.h	/^    double soundspeed;$/;"	m	struct:pdata
 soundspeed	particle_data.h	/^    double soundspeed;$/;"	m	struct:pdata_copy
+soundspeedT1	particle_data.h	/^    double soundspeedT1;$/;"	m	struct:pdata
+soundspeedT2	particle_data.h	/^    double soundspeedT2;$/;"	m	struct:pdata
 split_by_coord	particle_data.cpp	/^void Global_Data::split_by_coord ( sc_array_t * in,$/;"	f	class:Global_Data
 src_fixed	particle_data.h	/^      sc_array_t         *src_fixed;        \/**< int Particle counts per quadrant *\/$/;"	m	class:Global_Data
 state	particle_data.h	/^        State* state;        $/;"	m	class:Global_Data
@@ -373,6 +379,8 @@ v	particle_data.h	/^    double v[3]; \/\/velocity$/;"	m	struct:pdata_copy
 velocity	state/state_pellet.cpp	/^void PelletState::velocity(double x, double y, double z, double& vX, double& vY,double& vZ){$/;"	f	class:PelletState
 volume	particle_data.h	/^    double volume;$/;"	m	struct:pdata
 volume	particle_data.h	/^    double volume;$/;"	m	struct:pdata_copy
+volumeT1	particle_data.h	/^    double volumeT1;$/;"	m	struct:pdata
+volumeT2	particle_data.h	/^    double volumeT2;$/;"	m	struct:pdata
 writeGhost	particle_viewer.cpp	/^void ParticleViewer:: writeGhost(double t){$/;"	f	class:ParticleViewer
 writeResult	particle_viewer.cpp	/^void ParticleViewer:: writeResult(double t){$/;"	f	class:ParticleViewer
 writeVTKFiles	particle_data.cpp	/^void Global_Data:: writeVTKFiles(){$/;"	f	class:Global_Data
