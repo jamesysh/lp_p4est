@@ -11,6 +11,7 @@ public:
     PelletInflowBoundary();	
     virtual ~PelletInflowBoundary() {};
 	virtual void UpdateInflowBoundary(Global_Data* gdata, EOS* m_pEOS, double dt, double m_fInitParticleSpacing);
+    virtual void generateBoundaryParticle(Global_Data *gdata, EOS* m_pEOS, double m_fInitParticleSpacing); 
 private:
     double Pinflow;//inflow pressure, constant
 	double Uinflow;//inflow velocity, calculated using energy absorb rate

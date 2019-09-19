@@ -359,6 +359,7 @@ static void createParticlesInOctant(p8est_iter_volume_info_t * info, void *user_
                 pd->localspacing = ls;
                 pd->mass = ls*ls*ls/pd->volume/sqrt(2); 
                 pd->soundspeed = eos->getSoundSpeed(pd->pressure,1./pd->volume);
+                pd->ifboundary = false;
                 (*lpnum) ++;
                 }
             }
@@ -1235,7 +1236,8 @@ void Global_Data::copyParticle(pdata_copy_t *d, pdata_t *s){
     d->volume = s->volume;
     d->mass = s->mass;
     d->localspacing = s->localspacing;
-
+    d->ifboundary = s->ifboundary;
+    d->flagboundary = s->flagboundary;
 }
 
 
@@ -1321,6 +1323,7 @@ void Global_Data:: searchNeighbourParticle(){
       ghostsize = qud->ghostneighbourid->elem_count;
     for(int i=offset;i<lpend;i++){
         pad = (pdata_t *)sc_array_index(particle_data,i);
+        
         pad->neighbourparticle = sc_array_new(sizeof(neighbour_info_t));
         radius = pad->localspacing * timesearchingradius; 
         position = pad->xyz;

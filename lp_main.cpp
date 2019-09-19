@@ -44,7 +44,7 @@ int main(){
     octree->partition_octree(1,NULL);
     gdata->prerun(); 
     gdata->initFluidParticles();
-
+    gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
     octree->adapt_octree(); 
     
     
@@ -111,8 +111,7 @@ int main(){
     
     {
         nextwritetime += 0.001;    
- //      gdata->writeVTKFiles();
-        viewer->writeGhost(tstart);
+        viewer->writeResult(tstart);
     }
     gdata->cleanForTimeStep();
    

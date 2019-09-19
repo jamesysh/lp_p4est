@@ -19,6 +19,7 @@ typedef struct pdata{
     double localspacing;
     double flagboundary;
     bool ifhasghostneighbour;
+    bool ifboundary;   //if a boundary particle
     sc_array_t * ghostneighbour;
     sc_array_t * neighbourparticle;
       
@@ -42,8 +43,8 @@ typedef struct pdata_copy{
     double volume;
     double mass;
     double localspacing;
-    double flagboundary;
-    
+    bool flagboundary;
+    bool ifboundary; 
 
 } pdata_copy_t;
 
