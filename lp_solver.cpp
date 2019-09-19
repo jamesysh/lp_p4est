@@ -59,7 +59,6 @@ void LPSolver::solve_upwind(int phase){
     double *involume, *outvolume;
     double *invelocity, *outvelocity;
     double *insoundspeed, *outsoundspeed;
-    
     double vel_d_0, vel_dd_0, p_d_0, p_dd_0, vel_d_1, vel_dd_1, p_d_1, p_dd_1; // output
     size_t numrow, numcol;
     p4est_topidx_t      tt;
@@ -99,10 +98,6 @@ void LPSolver::solve_upwind(int phase){
          pad->schemeorder = 1;
          assert(neighbourlist0->elem_count >= gdata->numrow1st);
          assert(neighbourlist1->elem_count >= gdata->numrow1st);
-         numrow = gdata->numrow1st;
-         numcol = 3;
-         double A[numrow*numcol];
-
       }
        offset = lpend;  
     
@@ -179,6 +174,7 @@ void LPSolver::setNeighbourListPointer(pdata_t *pad, sc_array_t** neilist0, sc_a
 
 
 
+//void LPSolver::computeSpatialDer(int dir) // input 
 
 
 
