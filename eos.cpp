@@ -24,6 +24,7 @@ double PolytropicGasEOS::getSoundSpeed(double pressure, double density) {
 	double cs;
 	if(density != 0)
 		cs = m_fGamma * pressure / density;
+
 	else {
 		std::cout<<"Error (Divide by zero density)! Computing sound speed by EOS: "<<std::endl;
 		//std::cout<<"density = "<<density<<std::endl;

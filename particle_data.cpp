@@ -390,6 +390,7 @@ Global_Data:: Global_Data(Initializer* init){
     state = StateFactory::instance().createState("pelletstate");
     boundary = BoundaryFactory::instance().createBoundary("inflowboundary");
     eoschoice = init->eoschoice;
+    gamma = 1.4;
     setEOS();    
 
 

@@ -27,6 +27,7 @@ typedef struct pdata{
     double flagboundary;
     bool ifhasghostneighbour;
     bool ifboundary;   //if a boundary particle
+    int schemeorder;
     sc_array_t * ghostneighbour;
     sc_array_t * neighbourparticle;
       
@@ -61,8 +62,8 @@ typedef struct octant_data
     int flagboundary;  //if true, octant is at cloud boundary;
     sc_array_t *localneighbourid;
     sc_array_t *ghostneighbourid;
-   // sc_array_t* particle_data_view; 
-    pdata_copy_t localparticle[250];
+   // sc_array_t* particle_data_view;
+    pdata_copy_t localparticle[200];
     int octantid;
     int mpirank;
     p4est_locidx_t    poctant;

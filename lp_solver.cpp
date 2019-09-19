@@ -52,6 +52,7 @@ void LPSolver::moveParticlesByG(double dt){
 void LPSolver::solve_upwind(int phase){
     
     const int dir = m_vDirSplitTable[splitorder][phase];
+    double realdt = dt/3;
     sc_array_t *neighbourlist0;
     sc_array_t *neighbourlist1;
     double *inpressure, *outpressure;
@@ -59,6 +60,8 @@ void LPSolver::solve_upwind(int phase){
     double *invelocity, *outvelocity;
     double *insoundspeed, *outsoundspeed;
     
+    double vel_d_0, vel_dd_0, p_d_0, p_dd_0, vel_d_1, vel_dd_1, p_d_1, p_dd_1; // output
+    size_t numrow, numcol;
     p4est_topidx_t      tt;
   
     p4est_locidx_t      lq;
@@ -84,6 +87,22 @@ void LPSolver::solve_upwind(int phase){
                   &invelocity, &outvelocity, &insoundspeed, &outsoundspeed, dir, phase);
       
          setNeighbourListPointer(pad, &neighbourlist0, &neighbourlist1,dir);
+         if(*insoundspeed == 0 || *involume == 0){
+             pad->schemeorder = 0;
+            *outvolume = *involume;
+            *outpressure = *inpressure;
+            *outvelocity = *invelocity;
+            *outsoundspeed = *insoundspeed;
+            printf("Detect a particle which has 0 volume or 0 soundspeed!!!.\n"); 
+         }
+            
+         pad->schemeorder = 1;
+         assert(neighbourlist0->elem_count >= gdata->numrow1st);
+         assert(neighbourlist1->elem_count >= gdata->numrow1st);
+         numrow = gdata->numrow1st;
+         numcol = 3;
+         double A[numrow*numcol];
+
       }
        offset = lpend;  
     
