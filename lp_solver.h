@@ -11,10 +11,14 @@ public:
     ~LPSolver(){}
     
     void moveParticlesByG(double dt);
+    void solve_upwind(int phase);
 
     double dt = 0.0001;
     Global_Data * gdata; 
-    
+     
+    void setInAndOutPointer(pdata_t *pad, double *inpressure, double *outpressure, double *involume, double *outvolume,
+        double* invelocity, double *outvelocity, double *insoundspeed, double *outsoundspeed, int dir, int phase);
+
     
 
 };

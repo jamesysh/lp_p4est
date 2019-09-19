@@ -15,6 +15,13 @@ typedef struct pdata{
     double soundspeed;
     double temperature;
     double volume;
+    double pressureT1;
+    double volumeT1;
+    double soundspeedT1;
+    
+    double pressureT2;
+    double volumeT2;
+    double soundspeedT2;
     double mass;
     double localspacing;
     double flagboundary;
