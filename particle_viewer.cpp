@@ -54,49 +54,56 @@ void ParticleViewer:: writeGhost(double t){
 	
 	fprintf(outfile,"POINTS %ld double\n",(long int)ghostn);
     
-    pad = (pdata_t *)gdata->particle_data->array;
     //pad = (pdata_t *)sc_array_index_begin(particle_data);
     for(li = 0; li<lpnum; li++){
+       
+        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+        if(pad->ifboundary)
+            continue;
         ghostnum = pad->ghostneighbour->elem_count;
+
         padd = (pdata_copy_t *)pad->ghostneighbour->array; 
         for(size_t j=0;j<ghostnum;j++){
          fprintf(outfile,"%.16g %.16g %.16g\n",padd->xyz[0],padd->xyz[1],padd->xyz[2]);
          padd++;
         }
-    pad++ ;
     }
     
     fprintf(outfile,"POINT_DATA %ld\n",(long int)ghostn);
 
 	fprintf(outfile,"VECTORS Velocity double\n");
     
-    pad = (pdata_t *)gdata->particle_data->array;
     //pad = (pdata_t *)sc_array_index_begin(particle_data);
    
     for(li = 0; li<lpnum; li++){
+        
+        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+        if(pad->ifboundary)
+            continue;
         ghostnum = pad->ghostneighbour->elem_count;
         padd = (pdata_copy_t *)pad->ghostneighbour->array; 
         for(size_t j=0; j<ghostnum;j++){
          fprintf(outfile,"%.16g %.16g %.16g\n",padd->v[0],padd->v[1],padd->v[2]);
          padd++;
         }
-    pad++ ;
     }
  
 
 	fprintf(outfile,"SCALARS pressure double\n");
 	fprintf(outfile,"LOOKUP_TABLE default\n");
     
-    pad = (pdata_t *)gdata->particle_data->array;
     
     for(li = 0; li<lpnum; li++){
+        
+        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+        if(pad->ifboundary)
+            continue;
         ghostnum = pad->ghostneighbour->elem_count;
         padd = (pdata_copy_t *)pad->ghostneighbour->array; 
         for(size_t j=0;j<ghostnum;j++){
          fprintf(outfile,"%.16g\n",padd->pressure);
          padd++;
         }
-    pad++ ;
     }
  
     fclose(outfile);
@@ -185,7 +192,7 @@ void ParticleViewer:: writeResult(double t){
     
     pad = (pdata_t *)gdata->particle_data->array;
     for(li = 0; li<lpnum; li++){
-    fprintf(outfile,"%.16g\n",(double)pad->ifboundary);
+    fprintf(outfile,"%.16g\n",(double)pad->pressure);
     pad++ ;
     }
     

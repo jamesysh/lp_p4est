@@ -112,6 +112,7 @@ int main(){
     {
         nextwritetime += 0.001;    
         viewer->writeResult(tstart);
+        //viewer->writeGhost(tstart);
     }
     gdata->cleanForTimeStep();
    
