@@ -60,7 +60,6 @@ void LPSolver::solve_upwind(int phase){
     double *invelocity, *outvelocity;
     double *insoundspeed, *outsoundspeed;
     double vel_d_0, vel_dd_0, p_d_0, p_dd_0, vel_d_1, vel_dd_1, p_d_1, p_dd_1; // output
-    size_t numrow, numcol;
     p4est_topidx_t      tt;
   
     p4est_locidx_t      lq;
@@ -98,10 +97,18 @@ void LPSolver::solve_upwind(int phase){
          pad->schemeorder = 1;
          assert(neighbourlist0->elem_count >= gdata->numrow1st);
          assert(neighbourlist1->elem_count >= gdata->numrow1st);
-      
          computeSpatialDer(dir, pad, neighbourlist0, inpressure, invelocity,
         &vel_d_0, &vel_dd_0, &p_d_0, &p_dd_0);
+     
+         computeSpatialDer(dir, pad, neighbourlist1, inpressure, invelocity,
+        &vel_d_1, &vel_dd_1, &p_d_1, &p_dd_1);
       
+      
+         timeIntegration( realdt,
+	 0,  *involume, *invelocity, *inpressure, *insoundspeed, 
+	vel_d_0, vel_dd_0, p_d_0, p_dd_0,
+    vel_d_1, vel_dd_1, p_d_1, p_dd_1,
+    outvolume, outvelocity, outpressure);
       }
        offset = lpend;  
     
@@ -145,13 +152,13 @@ void LPSolver::setInAndOutPointer(pdata_t *pad, double **inpressure, double **ou
         *outvelocity = &pad->oldv[0];
      
      }
-     if(dir = 1){
+     if(dir == 1){
      
         *invelocity = &pad->v[1];
         *outvelocity = &pad->oldv[1];
      }
 
-     if(dir = 2){
+     if(dir == 2){
      
         *invelocity = &pad->v[2];
         *outvelocity = &pad->oldv[2];
@@ -162,17 +169,17 @@ void LPSolver::setInAndOutPointer(pdata_t *pad, double **inpressure, double **ou
 void LPSolver::setNeighbourListPointer(pdata_t *pad, sc_array_t** neilist0, sc_array_t **neilist1,int dir){
     if(dir == 0){
         *neilist0 = pad->neighbourfrontparticle;
-        *neilist0 = pad->neighbourbackparticle;
+        *neilist1 = pad->neighbourbackparticle;
     }
     else if(dir == 1){
     
         *neilist0 = pad->neighbourrightparticle;
-        *neilist0 = pad->neighbourleftparticle;
+        *neilist1 = pad->neighbourleftparticle;
     }
     else if(dir == 2){
     
         *neilist0 = pad->neighbourupparticle;
-        *neilist0 = pad->neighbourdownparticle;
+        *neilist1 = pad->neighbourdownparticle;
     }
 }
 
@@ -183,6 +190,8 @@ void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist
     size_t numrow = gdata->numrow1st;
     size_t numcol = 3;
     double distance;
+    int info;
+    int offset = 3; // 2 for 2 dimension
     neighbour_info_t *ninfo;
     while( true ){
         if(numrow > neighbourlist->elem_count){
@@ -196,8 +205,42 @@ void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist
         distance = ninfo->distance;
         double A[numrow*numcol];
         computeA3D(A, pad, neighbourlist,numrow,distance);
+        double B[numrow];
     
+        computeB(B, pad, neighbourlist, numrow, inpressure ,PRESSURE, dir);
     
+		QRSolver qrSolver(numrow,numcol,A);
+		
+		double result[numcol];
+	    info = qrSolver.solve(result,B);
+        if(info != 0){
+            numrow ++;
+        } 
+        else{
+            
+            *p_d = result[dir]/distance; //dir=0 (x), dir=1(y), dir=2(z)
+            *p_dd = pad->schemeorder == 2?  result[dir+offset]/distance/distance:0;
+        
+             computeB(B, pad, neighbourlist, numrow, invelocity ,VELOCITY, dir);
+        
+			 qrSolver.solve(result,B);
+        
+			*vel_d = result[dir]/distance; //dir=0 (x), dir=1(y), dir=2(z)
+        
+            *vel_dd = pad->schemeorder == 2? result[dir+offset]/distance/distance:0;
+        
+			if(std::isnan(*p_d) || std::isnan(*p_dd) || std::isnan(*vel_d) || std::isnan(*vel_dd) ||
+			   std::isinf(*p_d) || std::isinf(*p_dd) || std::isinf(*vel_d) || std::isinf(*vel_dd)) {
+                
+                numrow ++;
+                
+            } 
+            
+            else
+            {
+                break;
+            }
+        }
     }
 
 }// to do
@@ -256,9 +299,63 @@ void LPSolver::computeA3D(double *A, pdata_t *pad, sc_array_t *neighbourlist, si
 
 }
 
+void LPSolver::computeB(double *B, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, const double* indata, indata_t datatype, int dir){
+    pdata_copy_t *padnei;
+    if(datatype == PRESSURE){
+        for(size_t i=0; i<numrow; i++){
+            gdata->fetchNeighbourParticle(pad,&padnei,neighbourlist,i);
+            B[i] = padnei->pressure-*indata;  
+        }   
+    }
+
+    else if(datatype == VELOCITY){
+    
+        for(size_t i=0; i<numrow; i++){
+            gdata->fetchNeighbourParticle(pad,&padnei,neighbourlist,i);
+            B[i] = padnei->v[dir] - *indata;  
+        }   
+    
+    }
+}
 
 
+void LPSolver::timeIntegration(
+	double realDt,
+	double gravity, double inVolume, double inVelocity, double inPressure, double inSoundSpeed, 
+	double vel_d_0, double vel_dd_0, double p_d_0, double p_dd_0,
+	double vel_d_1, double vel_dd_1, double p_d_1, double p_dd_1,
+	double* outVolume, double* outVelocity, double* outPressure){
 
+    double multiplier1st = 3.; // 2 for 2 dimension;
+    double multiplier2nd = 3./4;
+
+
+	double K = inSoundSpeed*inSoundSpeed/inVolume/inVolume; 
+
+	double Pt1st = -0.5*inVolume*K*(vel_d_0+vel_d_1) + 0.5*inVolume*sqrt(K)*(p_d_0-p_d_1);
+	double Pt2nd = -inVolume*inVolume*pow(K,1.5)*(vel_dd_0-vel_dd_1) + inVolume*inVolume*K*(p_dd_0+p_dd_1);
+	double Pt = multiplier1st*Pt1st + multiplier2nd*Pt2nd;
+	// Vt
+	double Vt = -Pt/K;
+	
+
+	// VELt
+	double VELt1st = 0.5*inVolume*sqrt(K)*(vel_d_0-vel_d_1) - 0.5*inVolume*(p_d_0+p_d_1);
+	double VELt2nd = inVolume*inVolume*K*(vel_dd_0+vel_dd_1) - inVolume*inVolume*sqrt(K)*(p_dd_0-p_dd_1);
+	double VELt = multiplier1st*VELt1st + multiplier2nd*VELt2nd;
+
+	(*outVolume)   = inVolume   + realDt*Vt;
+	(*outPressure) = inPressure + realDt*Pt;
+	(*outVelocity) = inVelocity + realDt*(VELt+gravity);	
+
+	if(std::isnan(*outVolume) || std::isinf(*outVolume) || 
+	   std::isnan(*outPressure) || std::isinf(*outPressure) ||
+	   std::isnan(*outVelocity) || std::isinf(*outVelocity)) {
+	    printf("%.16g,%.16g,%.16g\n",*outVolume,*outPressure,*outVelocity);
+        assert(false);   
+	}
+
+}
 
 
 

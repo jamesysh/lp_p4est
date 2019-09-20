@@ -3,6 +3,7 @@
 #include "initializer.h"
 #include "particle_data.h"
 #include <vector>
+#include "ls_solver.h"
 class LPSolver {
 
 public:
@@ -23,10 +24,17 @@ public:
     void computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist, const double* inpressure, const double *invelocity,
         double *vel_d, double *vel_dd, double *p_d, double *p_dd);
 
+    void timeIntegration(
+	double realDt,
+	double gravity, double inVolume, double inVelocity, double inPressure, double inSoundSpeed, 
+	double vel_d_0, double vel_dd_0, double p_d_0, double p_dd_0,
+	double vel_d_1, double vel_dd_1, double p_d_1, double p_dd_1,
+	double* outVolume, double* outVelocity, double* outPressure);
 
     void computeA3D(double *A ,pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, double distance);
 
 
+    void computeB(double *B, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, const double* indata, indata_t datatype, int dir);
 
 
 

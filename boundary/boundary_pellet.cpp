@@ -20,7 +20,7 @@ void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS,
     
      
     double massflowrate = 0.6;
-    double pv  = Vinflow*massflowrate/4/M_PI/pr/pr;
+    double pv  = 0;//Vinflow*massflowrate/4/M_PI/pr/pr;
     double x, y, z, d_x, d_y, d_z, dr;
     for(int i=0;i<n;i++)
     if(g->mpirank == i%g->mpisize){	

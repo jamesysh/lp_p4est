@@ -66,9 +66,9 @@ int main(){
     
     
     
-    lpsolver->moveParticlesByG(lpsolver->dt);
+    //lpsolver->moveParticlesByG(lpsolver->dt);
     
-    gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
+    //gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
     
     gdata->presearch();
         

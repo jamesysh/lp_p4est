@@ -32,6 +32,7 @@ DEBUG	geometry/makefile	/^DEBUG  = -g$/;"	m
 DEBUG	makefile	/^DEBUG = -g$/;"	m
 DEBUG	state/makefile	/^DEBUG  = -g$/;"	m
 EOS	eos.h	/^class EOS {$/;"	c
+FORTRAN_NAME	ls_solver.cpp	9;"	d	file:
 GEOMETRY_DIR	boundary/makefile	/^GEOMETRY_DIR=$(MAIN_DIR)\/geometry\/$/;"	m
 GEOMETRY_DIR	geometry/makefile	/^GEOMETRY_DIR=$(MAIN_DIR)\/geometry\/$/;"	m
 GEOMETRY_DIR	makefile	/^GEOMETRY_DIR=$(MAIN_DIR)\/geometry\/$/;"	m
@@ -67,11 +68,12 @@ LIBS	makefile	/^LIBS = -L $(P4EST_LIB)$/;"	m
 LIBS	state/makefile	/^LIBS   = -L $(LAPACK_DIR) $/;"	m
 LPSolver	lp_solver.cpp	/^LPSolver::LPSolver(Global_Data *g){$/;"	f	class:LPSolver
 LPSolver	lp_solver.h	/^class LPSolver {$/;"	c
+LSSolver	ls_solver.h	/^class LSSolver {$/;"	c
 MAIN_DIR	boundary/makefile	/^MAIN_DIR:=${CURDIR}\/..\/$/;"	m
 MAIN_DIR	geometry/makefile	/^MAIN_DIR:=${CURDIR}\/..\/$/;"	m
 MAIN_DIR	makefile	/^MAIN_DIR:=${CURDIR}$/;"	m
 MAIN_DIR	state/makefile	/^MAIN_DIR:=${CURDIR}\/..\/$/;"	m
-MAIN_OBJS	makefile	/^MAIN_OBJS = lp_main.o particle_data.o initializer.o octree_manager.o registrar.o lp_solver.o eos.o particle_viewer.o$/;"	m
+MAIN_OBJS	makefile	/^MAIN_OBJS = lp_main.o particle_data.o initializer.o octree_manager.o registrar.o lp_solver.o eos.o particle_viewer.o ls_solver.o$/;"	m
 OBJS	boundary/makefile	/^OBJS = boundary.o boundary_pellet.o $/;"	m
 OBJS	geometry/makefile	/^OBJS := $(SRC_FILES:.cpp=.o)$/;"	m
 OBJS	state/makefile	/^OBJS := $(SRC_FILES:.cpp=.o)$/;"	m
@@ -83,6 +85,7 @@ P4EST_LIB	makefile	/^P4EST_LIB = \/home\/syuan\/p4est\/lib$/;"	m
 PA_MODE_LOCATE	particle_data.h	/^  PA_MODE_LOCATE$/;"	e	enum:pa_mode
 PA_MODE_RECEIVE	particle_data.h	/^  PA_MODE_RECEIVE,$/;"	e	enum:pa_mode
 PA_MODE_REMAIN	particle_data.h	/^  PA_MODE_REMAIN,$/;"	e	enum:pa_mode
+PRESSURE	particle_data.h	/^    PRESSURE,$/;"	e	enum:indata
 ParticleViewer	particle_viewer.cpp	/^ParticleViewer::ParticleViewer(Global_Data *g, const std::string &filename,int numd ){$/;"	f	class:ParticleViewer
 ParticleViewer	particle_viewer.h	/^class ParticleViewer {$/;"	c
 PelletInflowBoundary	boundary/boundary_pellet.cpp	/^PelletInflowBoundary::PelletInflowBoundary():Pinflow(30),Uinflow(0),Vinflow(100){}$/;"	f	class:PelletInflowBoundary
@@ -94,6 +97,8 @@ PelletState	state/state_pellet.h	/^class PelletState: public State{$/;"	c
 Pinflow	boundary/boundary_pellet.h	/^    double Pinflow;\/\/inflow pressure, constant$/;"	m	class:PelletInflowBoundary
 PolytropicGasEOS	eos.h	/^	PolytropicGasEOS(double gamma,int pelletmaterial) :m_iPelletMaterial(pelletmaterial) {m_iEOSChoice=1; m_fGamma = gamma;}$/;"	f	class:PolytropicGasEOS
 PolytropicGasEOS	eos.h	/^class PolytropicGasEOS : public EOS {$/;"	c
+QRSolver	ls_solver.h	/^	QRSolver(std::size_t numRow, std::size_t numCol, double *A, double limitR=1e-3) {$/;"	f	class:QRSolver
+QRSolver	ls_solver.h	/^class QRSolver : public LSSolver {$/;"	c
 SRC_FILES	geometry/makefile	/^SRC_FILES := $(wildcard *.cpp) $/;"	m
 SRC_FILES	state/makefile	/^SRC_FILES := $(wildcard *.cpp) $/;"	m
 STATE_DIR	boundary/makefile	/^STATE_DIR=$(MAIN_DIR)\/state\/$/;"	m
@@ -111,6 +116,7 @@ StateRegistrar	registrar.h	/^class StateRegistrar {$/;"	c
 Uinflow	boundary/boundary_pellet.h	/^	double Uinflow;\/\/inflow velocity, calculated using energy absorb rate$/;"	m	class:PelletInflowBoundary
 UpdateInflowBoundary	boundary/boundary.h	/^	virtual void UpdateInflowBoundary(Global_Data* gdata, EOS* m_pEOS, double dt, double m_fInitParticleSpacing){return ;}$/;"	f	class:Boundary
 UpdateInflowBoundary	boundary/boundary_pellet.cpp	/^void PelletInflowBoundary::UpdateInflowBoundary(Global_Data* g, EOS* m_pEOS, double dt, double dx){$/;"	f	class:PelletInflowBoundary
+VELOCITY	particle_data.h	/^    VELOCITY$/;"	e	enum:indata
 Vinflow	boundary/boundary_pellet.h	/^	double Vinflow;\/\/inflow specific volume, constant$/;"	m	class:PelletInflowBoundary
 __BOUNDARY_H__	boundary/boundary.h	2;"	d
 __BOUNDARY_PELLET_H__	boundary/boundary_pellet.h	3;"	d
@@ -119,6 +125,7 @@ __GEOMETRY_H__	geometry/geometry.h	2;"	d
 __GEOMETRY_PELLET_H	geometry/geometry_pellet.h	2;"	d
 __INITIALIZER_H__	initializer.h	2;"	d
 __LP_SOLVER_H__	lp_solver.h	2;"	d
+__LS_SOLVER_H__	ls_solver.h	21;"	d
 __OCTREE_MANAGER__	octree_manager.h	2;"	d
 __PARTICLE_DATA_H__	particle_data.h	2;"	d
 __PARTICLE_VIEWER_H__	particle_viewer.h	2;"	d
@@ -150,7 +157,8 @@ comm_tag_t	particle_data.h	/^comm_tag_t;$/;"	t	typeref:enum:comm_tag
 communicateParticles	particle_data.cpp	/^void Global_Data::communicateParticles(){$/;"	f	class:Global_Data
 compareneighbour_info	particle_data.cpp	/^static int compareneighbour_info(const void *p1,const void *p2)$/;"	f	file:
 compareoctant	particle_data.cpp	/^compareoctant (const void *p1, const void *p2)$/;"	f	file:
-computeA3D	lp_solver.cpp	/^void LPSolver::computeA3D(pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, size_t numcol, double* distance){$/;"	f	class:LPSolver
+computeA3D	lp_solver.cpp	/^void LPSolver::computeA3D(double *A, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, double distance){$/;"	f	class:LPSolver
+computeB	lp_solver.cpp	/^void LPSolver::computeB(double *B, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, const double* indata, indata_t datatype, int dir){$/;"	f	class:LPSolver
 computeSpatialDer	lp_solver.cpp	/^void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist, const double* inpressure, const double *invelocity,$/;"	f	class:LPSolver
 conn	particle_data.h	/^        p8est_connectivity_t *conn;$/;"	m	class:Global_Data
 copyNeighbourInfo	particle_data.cpp	/^static void copyNeighbourInfo(neighbour_info_t * d, neighbour_info_t *s){$/;"	f	file:
@@ -223,6 +231,8 @@ ifghost	particle_data.h	/^    bool ifghost;        \/\/ if the particle is a gho
 ifhasghostneighbour	particle_data.h	/^    bool ifhasghostneighbour;$/;"	m	struct:pdata
 ifremote	particle_data.h	/^    bool ifremote;        \/\/ if the particle is in remote processer$/;"	m	struct:neighbour_info
 ilh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
+indata	particle_data.h	/^typedef enum indata{$/;"	g
+indata_t	particle_data.h	/^indata_t;$/;"	t	typeref:enum:indata
 initFluidParticles	particle_data.cpp	/^void Global_Data::initFluidParticles(){$/;"	f	class:Global_Data
 initNeighbourArray	particle_data.cpp	/^static void initNeighbourArray(p8est_iter_volume_info_t *info, void*user_data){$/;"	f	file:
 initlevel	initializer.h	/^        int initlevel ; \/\/init level of octree$/;"	m	class:Initializer
@@ -245,6 +255,7 @@ irv2	particle_data.h	/^        p4est_locidx_t      irvindex, irv2, irvindex2;   
 irvcumu	particle_data.h	/^        sc_array_t *irvcumu;$/;"	m	class:Global_Data
 irvindex	particle_data.h	/^        p4est_locidx_t      irvindex, irv2, irvindex2;   \/**< Running index into ireceive *\/$/;"	m	class:Global_Data
 irvindex2	particle_data.h	/^        p4est_locidx_t      irvindex, irv2, irvindex2;   \/**< Running index into ireceive *\/$/;"	m	class:Global_Data
+isDecomposed	ls_solver.h	/^	bool isDecomposed;\/\/\/< if true then the matrix A is decomposed into QR already; if false otherwise$/;"	m	class:QRSolver
 jlh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
 klh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
 lfluidnum	particle_data.h	/^        p4est_locidx_t lfluidnum;$/;"	m	class:Global_Data
@@ -259,11 +270,18 @@ lpnum	particle_data.h	/^        p4est_locidx_t lpnum; \/\/number of particles on
 lxyz	particle_data.h	/^        double lxyz[3],hxyz[3],dxyz[3]; \/\/boundingbox of octant$/;"	m	class:Global_Data
 m_fDen	state/state_pellet.h	/^	double m_fDen;$/;"	m	class:PelletState
 m_fGamma	eos.h	/^    double m_fGamma;	$/;"	m	class:EOS
+m_fLimitR	ls_solver.h	/^	double m_fLimitR;\/\/\/< A specified scalar multiplier (<1) for trimming diagonal entry of R in the QR decomposition$/;"	m	class:QRSolver
 m_fPressure	state/state_pellet.h	/^	double m_fPressure;$/;"	m	class:PelletState
 m_fVel	state/state_pellet.h	/^	double m_fVel;$/;"	m	class:PelletState
 m_iEOSChoice	eos.h	/^    int m_iEOSChoice; \/\/\/< The eos choice: 1=Polytropic gas; 2=Stiffened Polytropic gas; 3=Saha Eos$/;"	m	class:EOS
+m_iNumCol	ls_solver.h	/^	std::size_t m_iNumCol;\/\/\/< The number of columns in matrix A	$/;"	m	class:LSSolver
+m_iNumRow	ls_solver.h	/^	std::size_t m_iNumRow;\/\/\/< The number of rows in matrix A	$/;"	m	class:LSSolver
 m_iPelletMaterial	eos.h	/^    int m_iPelletMaterial;$/;"	m	class:PolytropicGasEOS
+m_vA	ls_solver.h	/^	double *m_vA;\/\/\/< The matrix A$/;"	m	class:LSSolver
 m_vDirSplitTable	lp_solver.h	/^	std::vector<std::vector<int> > m_vDirSplitTable; $/;"	m	class:LPSolver
+m_vJPVT	ls_solver.h	/^	std::vector<int> m_vJPVT;\/\/\/< The pivoting matrix 	$/;"	m	class:QRSolver
+m_vTAU	ls_solver.h	/^	std::vector<double> m_vTAU;\/\/\/< The scalar factors of elementary reflectors$/;"	m	class:QRSolver
+m_vb	ls_solver.h	/^	double *m_vb;\/\/\/< The vector b (the right-hand-side)		$/;"	m	class:LSSolver
 main	lp_main.cpp	/^int main(){$/;"	f
 mass	particle_data.h	/^    double mass;$/;"	m	struct:pdata
 mass	particle_data.h	/^    double mass;$/;"	m	struct:pdata_copy
@@ -362,6 +380,7 @@ setNeighbourListPointer	lp_solver.cpp	/^void LPSolver::setNeighbourListPointer(p
 sigma	particle_data.h	/^    double sigma; \/\/front and back$/;"	m	struct:neighbour_info
 slocal_point	particle_data.cpp	/^slocal_point (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 slocal_quad	particle_data.cpp	/^slocal_quad (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
+solve	ls_solver.cpp	/^int QRSolver::solve(double* result, double* b) {$/;"	f	class:QRSolver
 solve_upwind	lp_solver.cpp	/^void LPSolver::solve_upwind(int phase){$/;"	f	class:LPSolver
 soundspeed	particle_data.h	/^    double soundspeed;$/;"	m	struct:pdata
 soundspeed	particle_data.h	/^    double soundspeed;$/;"	m	struct:pdata_copy
@@ -406,6 +425,7 @@ zcen	state/state_pellet.h	/^	double zcen;$/;"	m	class:PelletState
 ~Global_Data	particle_data.cpp	/^Global_Data:: ~Global_Data(){$/;"	f	class:Global_Data
 ~Initializer	initializer.h	/^        ~Initializer(){};$/;"	f	class:Initializer
 ~LPSolver	lp_solver.h	/^    ~LPSolver(){}$/;"	f	class:LPSolver
+~LSSolver	ls_solver.h	/^	virtual ~LSSolver() {}$/;"	f	class:LSSolver
 ~Octree_Manager	octree_manager.h	/^        ~Octree_Manager(){};$/;"	f	class:Octree_Manager
 ~ParticleViewer	particle_viewer.h	/^     ~ParticleViewer() {}$/;"	f	class:ParticleViewer
 ~PelletInflowBoundary	boundary/boundary_pellet.h	/^    virtual ~PelletInflowBoundary() {};$/;"	f	class:PelletInflowBoundary

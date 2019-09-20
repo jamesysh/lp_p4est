@@ -83,7 +83,12 @@ typedef enum pa_mode
 }
 pa_mode_t;
 
+typedef enum indata{
+    PRESSURE,
+    VELOCITY
 
+}
+indata_t;
 typedef struct neighbour_info{
     
     size_t quadid;
