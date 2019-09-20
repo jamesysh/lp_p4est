@@ -98,6 +98,10 @@ void LPSolver::solve_upwind(int phase){
          pad->schemeorder = 1;
          assert(neighbourlist0->elem_count >= gdata->numrow1st);
          assert(neighbourlist1->elem_count >= gdata->numrow1st);
+      
+         computeSpatialDer(dir, pad, neighbourlist0, inpressure, invelocity,
+        &vel_d_0, &vel_dd_0, &p_d_0, &p_dd_0);
+      
       }
        offset = lpend;  
     
@@ -179,18 +183,20 @@ void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist
     size_t numrow = gdata->numrow1st;
     size_t numcol = 3;
     double distance;
+    neighbour_info_t *ninfo;
     while( true ){
         if(numrow > neighbourlist->elem_count){
             *vel_d = 0;
             *vel_dd = 0;
             *p_d = 0;
             *p_dd = 0;
-            pad->schemeorder -= 1./6;
             break;
         }
+        ninfo = (neighbour_info_t *)sc_array_index(neighbourlist,0);
+        distance = ninfo->distance;
         double A[numrow*numcol];
-
-
+        computeA3D(A, pad, neighbourlist,numrow,distance);
+    
     
     }
 
@@ -200,9 +206,53 @@ void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist
 
 void LPSolver::computeA3D(double *A, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, double distance){
     double x, y, z, x0, y0, z0;
+    double h,k,l;
+    pdata_copy_t * padnei;
     x = pad->xyz[0];
     y = pad->xyz[1];
     z = pad->xyz[2];
+    if(pad->schemeorder == 1){
+        for(size_t i=0; i<numrow; i++){
+            gdata->fetchNeighbourParticle(pad,&padnei,neighbourlist,i);
+            x0 = padnei->xyz[0];
+            y0 = padnei->xyz[1];
+            z0 = padnei->xyz[2];
+            h = (x0-x)/distance;
+            k = (y0-y)/distance;
+            l = (z0-z)/distance;
+
+            A[i]            = h;
+            A[i + 1*numrow] = k;
+            A[i + 2*numrow] = l;
+   
+        }
+    
+    }
+    if(pad->schemeorder == 2){
+        for(size_t i=0; i<numrow; i++){
+        
+            gdata->fetchNeighbourParticle(pad,&padnei,neighbourlist,i);
+            x0 = padnei->xyz[0];
+            y0 = padnei->xyz[1];
+            z0 = padnei->xyz[2];
+            h = (x0-x)/distance;
+            k = (y0-y)/distance;
+            l = (z0-z)/distance;
+        
+			A[i]            = h;
+			A[i + 1*numrow] = k;
+			A[i + 2*numrow] = l;
+			A[i + 3*numrow] = 0.5*h*h;
+			A[i + 4*numrow] = 0.5*k*k;
+			A[i + 5*numrow] = 0.5*l*l;
+			A[i + 6*numrow] = h*k;
+			A[i + 7*numrow] = h*l;
+			A[i + 8*numrow] = k*l;
+        } 
+    
+    
+    }
+
 
 }
 
