@@ -198,7 +198,7 @@ void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist
 
 
 
-void LPSolver::computeA3D(pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, size_t numcol, double* distance){
+void LPSolver::computeA3D(double *A, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, double distance){
     double x, y, z, x0, y0, z0;
     x = pad->xyz[0];
     y = pad->xyz[1];
