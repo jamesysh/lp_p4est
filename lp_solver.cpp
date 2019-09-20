@@ -104,7 +104,7 @@ void LPSolver::solve_upwind(int phase){
     }
   }
 
-}
+} //to do
 
 void LPSolver::setInAndOutPointer(pdata_t *pad, double **inpressure, double **outpressure, double **involume, double **outvolume,
         double** invelocity, double **outvelocity, double **insoundspeed, double **outsoundspeed, int dir, int phase){
@@ -194,11 +194,17 @@ void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist
     
     }
 
+}// to do
+
+
+
+void LPSolver::computeA3D(pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, size_t numcol, double* distance){
+    double x, y, z, x0, y0, z0;
+    x = pad->xyz[0];
+    y = pad->xyz[1];
+    z = pad->xyz[2];
+
 }
-
-
-
-
 
 
 

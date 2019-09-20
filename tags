@@ -150,6 +150,8 @@ comm_tag_t	particle_data.h	/^comm_tag_t;$/;"	t	typeref:enum:comm_tag
 communicateParticles	particle_data.cpp	/^void Global_Data::communicateParticles(){$/;"	f	class:Global_Data
 compareneighbour_info	particle_data.cpp	/^static int compareneighbour_info(const void *p1,const void *p2)$/;"	f	file:
 compareoctant	particle_data.cpp	/^compareoctant (const void *p1, const void *p2)$/;"	f	file:
+computeA3D	lp_solver.cpp	/^void LPSolver::computeA3D(pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, size_t numcol, double* distance){$/;"	f	class:LPSolver
+computeSpatialDer	lp_solver.cpp	/^void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist, const double* inpressure, const double *invelocity,$/;"	f	class:LPSolver
 conn	particle_data.h	/^        p8est_connectivity_t *conn;$/;"	m	class:Global_Data
 copyNeighbourInfo	particle_data.cpp	/^static void copyNeighbourInfo(neighbour_info_t * d, neighbour_info_t *s){$/;"	f	file:
 copyParticle	particle_data.cpp	/^void Global_Data::copyParticle(pdata_copy_t *d, pdata_t *s){$/;"	f	class:Global_Data
@@ -177,6 +179,7 @@ endt	particle_data.h	/^        double endt;$/;"	m	class:Global_Data
 eos	particle_data.h	/^        EOS* eos;        $/;"	m	class:Global_Data
 eoschoice	initializer.h	/^        int eoschoice;$/;"	m	class:Initializer
 eoschoice	particle_data.h	/^        int eoschoice;$/;"	m	class:Global_Data
+fetchNeighbourParticle	particle_data.cpp	/^void Global_Data::fetchNeighbourParticle(pdata_t* pad, pdata_copy_t **padnei ,sc_array_t *neighbourlist, size_t index){$/;"	f	class:Global_Data
 fillArrayWithGhostParticle	particle_data.cpp	/^void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t * pad, int count, int dir){$/;"	f	class:Global_Data
 flagboundary	particle_data.h	/^    bool flagboundary;$/;"	m	struct:pdata_copy
 flagboundary	particle_data.h	/^    double flagboundary;$/;"	m	struct:pdata
@@ -206,7 +209,7 @@ gfluidnum	particle_data.h	/^        p4est_gloidx_t gfluidnum;$/;"	m	class:Global
 gghostnum	particle_data.h	/^        p4est_gloidx_t gghostnum;$/;"	m	class:Global_Data
 ghost	particle_data.h	/^        p8est_ghost_t *ghost;$/;"	m	class:Global_Data
 ghost_data	particle_data.h	/^        octant_data_t *ghost_data; $/;"	m	class:Global_Data
-ghostneighbour	particle_data.h	/^    sc_array_t * ghostneighbour;$/;"	m	struct:pdata
+ghostneighbour	particle_data.h	/^    sc_array_t * ghostneighbour;   \/\/pdata_copy_t$/;"	m	struct:pdata
 ghostneighbourid	particle_data.h	/^    sc_array_t *ghostneighbourid;$/;"	m	struct:octant_data
 gplost	particle_data.h	/^        p4est_gloidx_t gpnum, gplost; \/\/number of particles on all processor, number of particles on all processers which left domain$/;"	m	class:Global_Data
 gpnum	particle_data.h	/^        p4est_gloidx_t gpnum, gplost; \/\/number of particles on all processor, number of particles on all processers which left domain$/;"	m	class:Global_Data
@@ -247,7 +250,7 @@ klh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Gl
 lfluidnum	particle_data.h	/^        p4est_locidx_t lfluidnum;$/;"	m	class:Global_Data
 lghostnum	particle_data.h	/^        p4est_locidx_t lghostnum;$/;"	m	class:Global_Data
 localneighbourid	particle_data.h	/^    sc_array_t *localneighbourid;$/;"	m	struct:octant_data
-localparticle	particle_data.h	/^    pdata_copy_t localparticle[250];$/;"	m	struct:octant_data
+localparticle	particle_data.h	/^    pdata_copy_t localparticle[200];$/;"	m	struct:octant_data
 localspacing	particle_data.h	/^    double localspacing;$/;"	m	struct:pdata
 localspacing	particle_data.h	/^    double localspacing;$/;"	m	struct:pdata_copy
 loopquad	particle_data.cpp	/^void Global_Data::loopquad (p4est_topidx_t tt, p8est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]){$/;"	f	class:Global_Data
@@ -260,6 +263,7 @@ m_fPressure	state/state_pellet.h	/^	double m_fPressure;$/;"	m	class:PelletState
 m_fVel	state/state_pellet.h	/^	double m_fVel;$/;"	m	class:PelletState
 m_iEOSChoice	eos.h	/^    int m_iEOSChoice; \/\/\/< The eos choice: 1=Polytropic gas; 2=Stiffened Polytropic gas; 3=Saha Eos$/;"	m	class:EOS
 m_iPelletMaterial	eos.h	/^    int m_iPelletMaterial;$/;"	m	class:PolytropicGasEOS
+m_vDirSplitTable	lp_solver.h	/^	std::vector<std::vector<int> > m_vDirSplitTable; $/;"	m	class:LPSolver
 main	lp_main.cpp	/^int main(){$/;"	f
 mass	particle_data.h	/^    double mass;$/;"	m	struct:pdata
 mass	particle_data.h	/^    double mass;$/;"	m	struct:pdata_copy
@@ -347,12 +351,14 @@ resetOctantData	particle_data.cpp	/^void Global_Data::resetOctantData(){$/;"	f	c
 rightFlush	particle_viewer.cpp	/^string ParticleViewer::rightFlush(size_t numDigits) {$/;"	f	class:ParticleViewer
 sc_array_index_begin	particle_data.cpp	/^void * Global_Data::sc_array_index_begin (sc_array_t * arr)$/;"	f	class:Global_Data
 sc_array_paste	particle_data.cpp	/^void Global_Data::sc_array_paste (sc_array_t * dest, sc_array_t * src)$/;"	f	class:Global_Data
+schemeorder	particle_data.h	/^    double schemeorder;$/;"	m	struct:pdata
 searchNeighbourOctant	particle_data.cpp	/^void Global_Data::searchNeighbourOctant(){$/;"	f	class:Global_Data
 searchNeighbourParticle	particle_data.cpp	/^void Global_Data:: searchNeighbourParticle(){$/;"	f	class:Global_Data
 searchUpwindNeighbourParticle	particle_data.cpp	/^void Global_Data::searchUpwindNeighbourParticle(){$/;"	f	class:Global_Data
 send_req	particle_data.h	/^        sc_array_t *send_req; \/**< sc_MPI_Request for sending *\/$/;"	m	class:Global_Data
 setEOS	particle_data.cpp	/^void Global_Data::setEOS(){$/;"	f	class:Global_Data
 setInAndOutPointer	lp_solver.cpp	/^void LPSolver::setInAndOutPointer(pdata_t *pad, double **inpressure, double **outpressure, double **involume, double **outvolume,$/;"	f	class:LPSolver
+setNeighbourListPointer	lp_solver.cpp	/^void LPSolver::setNeighbourListPointer(pdata_t *pad, sc_array_t** neilist0, sc_array_t **neilist1,int dir){$/;"	f	class:LPSolver
 sigma	particle_data.h	/^    double sigma; \/\/front and back$/;"	m	struct:neighbour_info
 slocal_point	particle_data.cpp	/^slocal_point (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 slocal_quad	particle_data.cpp	/^slocal_quad (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
@@ -362,6 +368,7 @@ soundspeed	particle_data.h	/^    double soundspeed;$/;"	m	struct:pdata_copy
 soundspeedT1	particle_data.h	/^    double soundspeedT1;$/;"	m	struct:pdata
 soundspeedT2	particle_data.h	/^    double soundspeedT2;$/;"	m	struct:pdata
 split_by_coord	particle_data.cpp	/^void Global_Data::split_by_coord ( sc_array_t * in,$/;"	f	class:Global_Data
+splitorder	lp_solver.h	/^    int splitorder;$/;"	m	class:LPSolver
 src_fixed	particle_data.h	/^      sc_array_t         *src_fixed;        \/**< int Particle counts per quadrant *\/$/;"	m	class:Global_Data
 state	particle_data.h	/^        State* state;        $/;"	m	class:Global_Data
 stateTable	state/state.h	/^	std::unordered_map<std::string, StateCreateFunc> stateTable; \/\/\/< hash table for the (name,creatFunction) pair	$/;"	m	class:StateFactory

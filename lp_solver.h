@@ -24,6 +24,7 @@ public:
         double *vel_d, double *vel_dd, double *p_d, double *p_dd);
 
 
+    void computeA3D(pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, size_t numcol, double* distance);
 
 
 

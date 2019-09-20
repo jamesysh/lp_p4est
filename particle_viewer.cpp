@@ -192,7 +192,7 @@ void ParticleViewer:: writeResult(double t){
     
     pad = (pdata_t *)gdata->particle_data->array;
     for(li = 0; li<lpnum; li++){
-    fprintf(outfile,"%.16g\n",(double)pad->pressure);
+    fprintf(outfile,"%.16g\n",(double)pad->ifhasghostneighbour);
     pad++ ;
     }
     

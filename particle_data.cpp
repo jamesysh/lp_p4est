@@ -1048,7 +1048,7 @@ void Global_Data::testquad(){
   pdata_t * pad;
   pdata_copy_t *pad2;
   neighbour_info_t * ninfo;
-  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+/*  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
@@ -1070,33 +1070,45 @@ void Global_Data::testquad(){
 
     }
   }
-
+*/
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
     lpend = qud->lpend;
-    if(lq>2000){
+    if(lq>=0){
     for(int i=offset;i<lpend;i++){
         pad = (pdata_t *)sc_array_index(particle_data,i);
-
+        if(pad->ifboundary)
+            continue;
+        if(pad->ifhasghostneighbour == 0) 
+            continue;
         printf("dest%f %f %f\n",pad->xyz[0],pad->xyz[1],pad->xyz[2]);
-       // pad->flagboundary = 100;
+        // cout<<pad->ifhasghostneighbour<<" ifhasghost "<<endl; 
+         // pad->flagboundary = 100;
         size_t cc = pad->neighbourleftparticle->elem_count;
-        cout<<cc<<endl;
         for(size_t i=0;i<cc;i++){
-            ninfo = (neighbour_info_t *)sc_array_index(pad->neighbourleftparticle,i);
+              
+           fetchNeighbourParticle(pad, &pad2, pad->neighbourleftparticle, i);
+
+           ninfo = (neighbour_info_t *)sc_array_index(pad->neighbourleftparticle,i); 
+            /*
             int qid = ninfo->quadid;
             int pid = ninfo->parid;
             quad2 = p8est_quadrant_array_index(&tree->quadrants,qid);
             qud2= (octant_data_t *)quad2->p.user_data;
-            pad2 = &qud2->localparticle[pid];
+            pad2 = &qud2->localparticle[pid];*/
            // pad2->flagboundary = 10000;
-            printf("%f %f %f %f\n",pad2->xyz[0],pad2->xyz[1],pad2->xyz[2], ninfo->distance);
+            if(ninfo->ifghost) 
+            printf("%f %f %f %d\n",pad2->xyz[0],pad2->xyz[1],pad2->xyz[2],9999);
+            else if(ninfo->ifremote)
+            printf("%f %f %f %d\n",pad2->xyz[0],pad2->xyz[1],pad2->xyz[2],2);
+            else
+            printf("%f %f %f %d\n",pad2->xyz[0],pad2->xyz[1],pad2->xyz[2],3);
+        
         }
       //  pad->flagboundary = (double)qud->flagboundary;
-       return;      
       }
     }
        offset = lpend;  
@@ -1217,7 +1229,7 @@ void Global_Data::cleanForTimeStep(){
 static void copyNeighbourInfo(neighbour_info_t * d, neighbour_info_t *s){
     d->ifremote = s->ifremote;
     d->distance = s->distance;
-    d->ifghost = d->ifghost;
+    d->ifghost = s->ifghost;
     d->theta = s->theta;
     d->phi = s->phi;
     d->sigma = s->sigma;
@@ -1390,7 +1402,7 @@ void Global_Data:: searchNeighbourParticle(){
                     nei_info = (neighbour_info_t *) sc_array_push(pad->neighbourparticle);
                     nei_info->ifremote = true;
                     nei_info->ifghost =false;
-                    nei_info->quadid = *localneiid;
+                    nei_info->quadid = *ghostneiid;
                     nei_info->parid = pid;
                     nei_info->distance = sqrt(dissquared);
                     nei_info->phi = acos(dy/sqrt(dissquared));
@@ -1601,9 +1613,9 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei_info->ifremote = false;
                 ghostnei_info->ifghost = true;
                 ghostnei_info->distance = sqrt(dx*dx+dy*dy+dz*dz);
-                ghostnei->xyz[0] = pad->xyz[0] + dx; 
-                ghostnei->xyz[1] = pad->xyz[1] + dy; 
-                ghostnei->xyz[2] = pad->xyz[2] + dz; 
+                ghostnei->xyz[0] = pad->xyz[0] - dx; 
+                ghostnei->xyz[1] = pad->xyz[1] - dy; 
+                ghostnei->xyz[2] = pad->xyz[2] - dz; 
                 ghostnei->v[0] = pad->v[0];
                 ghostnei->v[1] = pad->v[1];
                 ghostnei->v[2] = pad->v[2];
@@ -1627,9 +1639,9 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei_info->ifremote = false;
                 ghostnei_info->ifghost = true;
                 ghostnei_info->distance = sqrt(dx*dx+dy*dy+dz*dz);
-                ghostnei->xyz[0] = pad->xyz[0] + dx; 
-                ghostnei->xyz[1] = pad->xyz[1] + dy; 
-                ghostnei->xyz[2] = pad->xyz[2] + dz; 
+                ghostnei->xyz[0] = pad->xyz[0] - dx; 
+                ghostnei->xyz[1] = pad->xyz[1] - dy; 
+                ghostnei->xyz[2] = pad->xyz[2] - dz; 
                 ghostnei->v[0] = pad->v[0];
                 ghostnei->v[1] = pad->v[1];
                 ghostnei->v[2] = pad->v[2];
@@ -1651,9 +1663,9 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei_info->ifremote = false;
                 ghostnei_info->ifghost = true;
                 ghostnei_info->distance = sqrt(dx*dx+dy*dy+dz*dz);
-                ghostnei->xyz[0] = pad->xyz[0] + dx; 
-                ghostnei->xyz[1] = pad->xyz[1] + dy; 
-                ghostnei->xyz[2] = pad->xyz[2] + dz; 
+                ghostnei->xyz[0] = pad->xyz[0] - dx; 
+                ghostnei->xyz[1] = pad->xyz[1] - dy; 
+                ghostnei->xyz[2] = pad->xyz[2] - dz; 
                 ghostnei->v[0] = pad->v[0];
                 ghostnei->v[1] = pad->v[1];
                 ghostnei->v[2] = pad->v[2];
@@ -1681,9 +1693,9 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei_info->ifremote = false;
                 ghostnei_info->ifghost = true;
                 ghostnei_info->distance = sqrt(dx*dx+dy*dy+dz*dz);
-                ghostnei->xyz[0] = pad->xyz[0] + dx; 
-                ghostnei->xyz[1] = pad->xyz[1] + dy; 
-                ghostnei->xyz[2] = pad->xyz[2] + dz; 
+                ghostnei->xyz[0] = pad->xyz[0] - dx; 
+                ghostnei->xyz[1] = pad->xyz[1] - dy; 
+                ghostnei->xyz[2] = pad->xyz[2] - dz; 
                 ghostnei->v[0] = pad->v[0];
                 ghostnei->v[1] = pad->v[1];
                 ghostnei->v[2] = pad->v[2];
@@ -1706,9 +1718,9 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei_info->ifremote = false;
                 ghostnei_info->ifghost = true;
                 ghostnei_info->distance = sqrt(dx*dx+dy*dy+dz*dz);
-                ghostnei->xyz[0] = pad->xyz[0] + dx; 
-                ghostnei->xyz[1] = pad->xyz[1] + dy; 
-                ghostnei->xyz[2] = pad->xyz[2] + dz; 
+                ghostnei->xyz[0] = pad->xyz[0] - dx; 
+                ghostnei->xyz[1] = pad->xyz[1] - dy; 
+                ghostnei->xyz[2] = pad->xyz[2] - dz; 
                 ghostnei->v[0] = pad->v[0];
                 ghostnei->v[1] = pad->v[1];
                 ghostnei->v[2] = pad->v[2];
@@ -1730,9 +1742,9 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei_info->ifremote = false;
                 ghostnei_info->ifghost = true;
                 ghostnei_info->distance = sqrt(dx*dx+dy*dy+dz*dz);
-                ghostnei->xyz[0] = pad->xyz[0] + dx; 
-                ghostnei->xyz[1] = pad->xyz[1] + dy; 
-                ghostnei->xyz[2] = pad->xyz[2] + dz; 
+                ghostnei->xyz[0] = pad->xyz[0] - dx; 
+                ghostnei->xyz[1] = pad->xyz[1] - dy; 
+                ghostnei->xyz[2] = pad->xyz[2] - dz; 
                 ghostnei->v[0] = pad->v[0];
                 ghostnei->v[1] = pad->v[1];
                 ghostnei->v[2] = pad->v[2];
@@ -1753,7 +1765,43 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
 }
 
 
+void Global_Data::fetchNeighbourParticle(pdata_t* pad, pdata_copy_t **padnei ,sc_array_t *neighbourlist, size_t index){
 
+  p8est_tree_t       *tree;
+  p8est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  neighbour_info_t *neiinfo;
+  size_t parid;
+  size_t quadid;
+
+  tree = p8est_tree_array_index (p8est->trees, 0);
+  neiinfo = (neighbour_info_t *) sc_array_index(neighbourlist, index);
+
+  if(neiinfo->ifghost){         //ghost neighbour
+      parid = neiinfo->parid;
+      *padnei = (pdata_copy_t*) sc_array_index(pad->ghostneighbour, parid);
+      
+  
+  }
+
+  else if(neiinfo -> ifremote){     //remote neighbour
+      quadid = neiinfo->quadid;
+      parid = neiinfo->parid;
+      qud = &ghost_data[quadid];
+      *padnei = &qud->localparticle[parid];     
+    
+  }
+  
+  else{              //local neighbour
+      quadid = neiinfo->quadid;
+      parid = neiinfo->parid;
+      quad = p8est_quadrant_array_index(&tree->quadrants,quadid);
+      qud = (octant_data_t *) quad->p.user_data;
+      *padnei = &qud->localparticle[parid];
+  }
+
+
+} 
 
 
 

@@ -28,7 +28,7 @@ typedef struct pdata{
     bool ifhasghostneighbour;
     bool ifboundary;   //if a boundary particle
     double schemeorder;
-    sc_array_t * ghostneighbour;
+    sc_array_t * ghostneighbour;   //pdata_copy_t
     sc_array_t * neighbourparticle;
       
     sc_array_t * neighbourupparticle;
@@ -147,6 +147,8 @@ class Global_Data{
         void copyParticle(pdata_copy_t* d, pdata_t *s);
         void generateGhostParticle();
         void fillArrayWithGhostParticle(sc_array_t * array, pdata_t * pad, int count,int dir);
+        
+        void fetchNeighbourParticle(pdata_t* pad, pdata_copy_t **padnei ,sc_array_t *neighbourlist, size_t index);
         void createViewForOctant();
         void cleanForTimeStep();
         void testquad();

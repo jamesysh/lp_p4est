@@ -104,10 +104,8 @@ int main(){
     
     gdata->searchUpwindNeighbourParticle(); 
     gdata->generateGhostParticle();
-    //gdata->testquad(); 
-    
-   
-    lpsolver->solve_upwind(0);
+   // gdata->testquad(); 
+   // lpsolver->solve_upwind(0);
     if(tstart  >= nextwritetime)
     
     {
