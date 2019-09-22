@@ -36,7 +36,7 @@ public:
 
     void computeB(double *B, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, const double* indata, indata_t datatype, int dir);
 
-    
+    void computeCFLCondition();
 
 
 

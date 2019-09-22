@@ -1585,8 +1585,9 @@ void Global_Data::generateGhostParticle(){
 
 //dir: 1 up 2 down 3 right 4 left 5 front 6 back
 void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t * pad, int count, int dir){
-    
-      double radius = timesearchingradius * pad->localspacing;
+      double anglemin = 0.14;
+      double anglemax = 3.;
+      double radius = (timesearchingradius-1) * pad->localspacing;
       double r;
       double angle;
       double dx, dy, dz;
@@ -1598,9 +1599,9 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
       
       lghostnum += count;
       for(int i = 0;i<count;i++){
-        r = rand()/(double)RAND_MAX * radius;
+        r = rand()/(double)RAND_MAX * radius + pad->localspacing;
         if(dir == 1 || dir == 3 || dir == 5){
-            angle = 2.19 + rand()/(double)RAND_MAX *(M_PI-2.19);
+            angle = anglemax + rand()/(double)RAND_MAX *(M_PI-anglemax);
             if(dir == 1){
                 dz = cos(angle)*r;
                 r2 = r*r - dz*dz;
@@ -1613,17 +1614,7 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei_info->ifremote = false;
                 ghostnei_info->ifghost = true;
                 ghostnei_info->distance = sqrt(dx*dx+dy*dy+dz*dz);
-                ghostnei->xyz[0] = pad->xyz[0] - dx; 
-                ghostnei->xyz[1] = pad->xyz[1] - dy; 
-                ghostnei->xyz[2] = pad->xyz[2] - dz; 
-                ghostnei->v[0] = pad->v[0];
-                ghostnei->v[1] = pad->v[1];
-                ghostnei->v[2] = pad->v[2];
-                ghostnei->pressure = 0.64;//pad->pressure; 
-                ghostnei->volume = 1.0e6; 
-                ghostnei->soundspeed = pad->soundspeed; 
-                ghostnei->mass = 0; 
-                ghostnei->localspacing = pad->localspacing; 
+                addGhostParticle(ghostnei,pad,dx,dy,dz);
             }
 
             if(dir == 3){
@@ -1639,17 +1630,7 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei_info->ifremote = false;
                 ghostnei_info->ifghost = true;
                 ghostnei_info->distance = sqrt(dx*dx+dy*dy+dz*dz);
-                ghostnei->xyz[0] = pad->xyz[0] - dx; 
-                ghostnei->xyz[1] = pad->xyz[1] - dy; 
-                ghostnei->xyz[2] = pad->xyz[2] - dz; 
-                ghostnei->v[0] = pad->v[0];
-                ghostnei->v[1] = pad->v[1];
-                ghostnei->v[2] = pad->v[2];
-                ghostnei->pressure = 0.64;//pad->pressure; 
-                ghostnei->volume = 1.0e6; 
-                ghostnei->soundspeed = pad->soundspeed; 
-                ghostnei->mass = 0; 
-                ghostnei->localspacing = pad->localspacing; 
+                addGhostParticle(ghostnei,pad,dx,dy,dz);
             }
             if(dir == 5){
                 dx = cos(angle)*r;
@@ -1663,24 +1644,14 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei_info->ifremote = false;
                 ghostnei_info->ifghost = true;
                 ghostnei_info->distance = sqrt(dx*dx+dy*dy+dz*dz);
-                ghostnei->xyz[0] = pad->xyz[0] - dx; 
-                ghostnei->xyz[1] = pad->xyz[1] - dy; 
-                ghostnei->xyz[2] = pad->xyz[2] - dz; 
-                ghostnei->v[0] = pad->v[0];
-                ghostnei->v[1] = pad->v[1];
-                ghostnei->v[2] = pad->v[2];
-                ghostnei->pressure = 0.64;//pad->pressure; 
-                ghostnei->volume = 1.0e6; 
-                ghostnei->soundspeed = pad->soundspeed; 
-                ghostnei->mass = 0; 
-                ghostnei->localspacing = pad->localspacing; 
+                addGhostParticle(ghostnei,pad,dx,dy,dz);
             }
         
         
         } 
 
         if(dir == 2 || dir == 4 || dir == 6){
-            angle =  rand()/(double)RAND_MAX *0.96;
+            angle =  rand()/(double)RAND_MAX *anglemin;
             if(dir == 2){
                 dz = cos(angle)*r;
                 r2 = r*r - dz*dz;
@@ -1693,17 +1664,7 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei_info->ifremote = false;
                 ghostnei_info->ifghost = true;
                 ghostnei_info->distance = sqrt(dx*dx+dy*dy+dz*dz);
-                ghostnei->xyz[0] = pad->xyz[0] - dx; 
-                ghostnei->xyz[1] = pad->xyz[1] - dy; 
-                ghostnei->xyz[2] = pad->xyz[2] - dz; 
-                ghostnei->v[0] = pad->v[0];
-                ghostnei->v[1] = pad->v[1];
-                ghostnei->v[2] = pad->v[2];
-                ghostnei->pressure = 0.64;//pad->pressure; 
-                ghostnei->volume = 1.0e6; 
-                ghostnei->soundspeed = pad->soundspeed; 
-                ghostnei->mass = 0; 
-                ghostnei->localspacing = pad->localspacing; 
+                addGhostParticle(ghostnei,pad,dx,dy,dz);
             }
 
             if(dir == 4){
@@ -1718,17 +1679,7 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei_info->ifremote = false;
                 ghostnei_info->ifghost = true;
                 ghostnei_info->distance = sqrt(dx*dx+dy*dy+dz*dz);
-                ghostnei->xyz[0] = pad->xyz[0] - dx; 
-                ghostnei->xyz[1] = pad->xyz[1] - dy; 
-                ghostnei->xyz[2] = pad->xyz[2] - dz; 
-                ghostnei->v[0] = pad->v[0];
-                ghostnei->v[1] = pad->v[1];
-                ghostnei->v[2] = pad->v[2];
-                ghostnei->pressure = 0.64;//pad->pressure; 
-                ghostnei->volume = 1.0e6; 
-                ghostnei->soundspeed = pad->soundspeed; 
-                ghostnei->mass = 0; 
-                ghostnei->localspacing = pad->localspacing; 
+                addGhostParticle(ghostnei,pad,dx,dy,dz);
             }
             if(dir == 6){
                 dx = cos(angle)*r;
@@ -1742,17 +1693,7 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 ghostnei_info->ifremote = false;
                 ghostnei_info->ifghost = true;
                 ghostnei_info->distance = sqrt(dx*dx+dy*dy+dz*dz);
-                ghostnei->xyz[0] = pad->xyz[0] - dx; 
-                ghostnei->xyz[1] = pad->xyz[1] - dy; 
-                ghostnei->xyz[2] = pad->xyz[2] - dz; 
-                ghostnei->v[0] = pad->v[0];
-                ghostnei->v[1] = pad->v[1];
-                ghostnei->v[2] = pad->v[2];
-                ghostnei->pressure = 0.64;//pad->pressure; 
-                ghostnei->volume = 1.0e6; 
-                ghostnei->soundspeed = pad->soundspeed; 
-                ghostnei->mass = 0; 
-                ghostnei->localspacing = pad->localspacing; 
+                addGhostParticle(ghostnei,pad,dx,dy,dz);
             }
         
         
@@ -1805,7 +1746,21 @@ void Global_Data::fetchNeighbourParticle(pdata_t* pad, pdata_copy_t **padnei ,sc
 
 
 
+void Global_Data::addGhostParticle(pdata_copy_t * ghostnei, pdata_t *pad, double dx, double dy, double dz){
 
+                ghostnei->xyz[0] = pad->xyz[0] - dx; 
+                ghostnei->xyz[1] = pad->xyz[1] - dy; 
+                ghostnei->xyz[2] = pad->xyz[2] - dz; 
+                ghostnei->v[0] = pad->v[0];
+                ghostnei->v[1] = pad->v[1];
+                ghostnei->v[2] = pad->v[2];
+                ghostnei->pressure = 0.64;//pad->pressure; 
+                ghostnei->volume = 1.0e6; 
+                ghostnei->soundspeed = pad->soundspeed; 
+                ghostnei->mass = 0; 
+                ghostnei->localspacing = pad->localspacing; 
+
+}
 
 
 

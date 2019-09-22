@@ -105,16 +105,14 @@ int main(){
     gdata->searchUpwindNeighbourParticle(); 
     gdata->generateGhostParticle();
    // gdata->testquad();
-    for(int phase = 0;phase < 3;phase ++){
-     
-    lpsolver->solve_upwind(phase);
-    }
+    lpsolver->computeCFLCondition();
+    lpsolver->solve_upwind(0);
     if(tstart  >= nextwritetime)
     
     {
         nextwritetime += 0.001;    
-        viewer->writeResult(tstart);
-        //viewer->writeGhost(tstart);
+        //viewer->writeResult(tstart);
+        viewer->writeGhost(tstart);
     }
    
     gdata->cleanForTimeStep();
