@@ -245,6 +245,7 @@ innerradius	geometry/geometry_pellet.h	/^	double innerradius;$/;"	m	class:Pellet
 instance	boundary/boundary.cpp	/^BoundaryFactory& BoundaryFactory::instance() { $/;"	f	class:BoundaryFactory
 instance	geometry/geometry.cpp	/^GeometryFactory& GeometryFactory::instance() { $/;"	f	class:GeometryFactory
 instance	state/state.cpp	/^StateFactory& StateFactory::instance() { \/\/ singleton$/;"	f	class:StateFactory
+invalidpressure	lp_solver.h	/^    double invalidpressure;$/;"	m	class:LPSolver
 ire2	particle_data.h	/^        p4est_locidx_t      ireindex, ire2, ireindex2;   \/**< Running index into iremain *\/$/;"	m	class:Global_Data
 ireceive	particle_data.h	/^        sc_array_t *ireceive;\/**< Index into particle receive buffer *\/$/;"	m	class:Global_Data
 irecumu	particle_data.h	/^        sc_array_t *irecumu;   \/\/cumulative remain particles count$/;"	m	class:Global_Data
@@ -398,6 +399,7 @@ testedgeside	octree_manager.cpp	/^static void testedgeside( p8est_iter_edge_info
 testfaceside	octree_manager.cpp	/^static void testfaceside( p8est_iter_face_info_t * info, void *user_data){$/;"	f	file:
 testquad	particle_data.cpp	/^void Global_Data::testquad(){$/;"	f	class:Global_Data
 theta	particle_data.h	/^    double theta;          \/\/up and down$/;"	m	struct:neighbour_info
+timeIntegration	lp_solver.cpp	/^void LPSolver::timeIntegration($/;"	f	class:LPSolver
 timesearchingradius	initializer.h	/^        double timesearchingradius;$/;"	m	class:Initializer
 timesearchingradius	particle_data.h	/^        double timesearchingradius;$/;"	m	class:Global_Data
 v	particle_data.h	/^    double v[3]; \/\/velocity$/;"	m	struct:pdata

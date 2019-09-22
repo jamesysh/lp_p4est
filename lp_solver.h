@@ -36,15 +36,16 @@ public:
 
     void computeB(double *B, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, const double* indata, indata_t datatype, int dir);
 
+    
 
 
 
-
-    double dt = 0.0001;
+    double cfldt = 0.0001;
     Global_Data * gdata; 
 
 	std::vector<std::vector<int> > m_vDirSplitTable; 
     int splitorder;
+    double invalidpressure;
 };
 
 

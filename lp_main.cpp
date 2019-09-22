@@ -62,7 +62,7 @@ int main(){
     double nextwritetime = 0;
     while(tstart<tend)
     {
-    tstart += lpsolver->dt;
+    tstart += lpsolver->cfldt;
     
     
     
@@ -104,8 +104,11 @@ int main(){
     
     gdata->searchUpwindNeighbourParticle(); 
     gdata->generateGhostParticle();
-   // gdata->testquad(); 
-    lpsolver->solve_upwind(0);
+   // gdata->testquad();
+    for(int phase = 0;phase < 3;phase ++){
+     
+    lpsolver->solve_upwind(phase);
+    }
     if(tstart  >= nextwritetime)
     
     {

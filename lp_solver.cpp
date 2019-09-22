@@ -5,6 +5,7 @@ using namespace std;
 LPSolver::LPSolver(Global_Data *g){
     gdata = g;
     splitorder = 0;
+    invalidpressure = 0;
     m_vDirSplitTable = vector<vector<int> >
     ({{0,1,2},
       {0,2,1},
@@ -52,7 +53,7 @@ void LPSolver::moveParticlesByG(double dt){
 void LPSolver::solve_upwind(int phase){
     
     const int dir = m_vDirSplitTable[splitorder][phase];
-    double realdt = dt/3;
+    double realdt = cfldt/3;
     sc_array_t *neighbourlist0;
     sc_array_t *neighbourlist1;
     double *inpressure, *outpressure;
@@ -109,6 +110,28 @@ void LPSolver::solve_upwind(int phase){
 	vel_d_0, vel_dd_0, p_d_0, p_dd_0,
     vel_d_1, vel_dd_1, p_d_1, p_dd_1,
     outvolume, outvelocity, outpressure);
+        if(*outpressure < invalidpressure)
+            pad->schemeorder = 0;
+        
+        if(std::isnan(*outvolume) || std::isnan(*outvelocity) || std::isnan(*outpressure)) 
+            pad->schemeorder = 0;
+
+        if(pad->schemeorder == 0)
+        {
+        
+            *outvolume = *involume;
+            *outpressure = *inpressure;
+            *outvelocity = *invelocity;
+            *outsoundspeed = *insoundspeed;
+        }
+        else{
+            *outsoundspeed = gdata->eos->getSoundSpeed(*outpressure, 1./(*outvolume));
+        
+        }
+
+      
+      
+      
       }
        offset = lpend;  
     
