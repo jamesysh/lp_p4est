@@ -4,7 +4,7 @@
 using namespace std;
 LPSolver::LPSolver(Global_Data *g){
     gdata = g;
-    splitorder = 4;
+    splitorder = 0;
     invalidpressure = 0;
     m_vDirSplitTable = vector<vector<int> >
     ({{0,1,2},
