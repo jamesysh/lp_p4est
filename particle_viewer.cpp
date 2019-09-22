@@ -192,10 +192,26 @@ void ParticleViewer:: writeResult(double t){
     
     pad = (pdata_t *)gdata->particle_data->array;
     for(li = 0; li<lpnum; li++){
-    fprintf(outfile,"%.16g\n",(double)pad->ifhasghostneighbour);
+    if(pad->ifboundary)
+ 
+    fprintf(outfile,"%.16g\n",(double)pad->pressure);
+    else
+   fprintf(outfile,"%.16g\n",(double)pad->pressureT1);
     pad++ ;
     }
     
+	fprintf(outfile,"SCALARS density double\n");
+	fprintf(outfile,"LOOKUP_TABLE default\n");
+    
+    pad = (pdata_t *)gdata->particle_data->array;
+    for(li = 0; li<lpnum; li++){
+    if(pad->ifboundary)
+ 
+    fprintf(outfile,"%.16g\n",1./(double)pad->volume);
+    else
+   fprintf(outfile,"%.16g\n",1./(double)pad->volumeT1);
+    pad++ ;
+    }
     fclose(outfile);
     if(mpirank == 0){
     FILE *visitfile;

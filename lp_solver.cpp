@@ -4,7 +4,7 @@
 using namespace std;
 LPSolver::LPSolver(Global_Data *g){
     gdata = g;
-    splitorder = 0;
+    splitorder = 4;
     invalidpressure = 0;
     m_vDirSplitTable = vector<vector<int> >
     ({{0,1,2},
@@ -101,9 +101,9 @@ void LPSolver::solve_upwind(int phase){
          computeSpatialDer(dir, pad, neighbourlist0, inpressure, invelocity,
         &vel_d_0, &vel_dd_0, &p_d_0, &p_dd_0);
      
-       //  computeSpatialDer(dir, pad, neighbourlist1, inpressure, invelocity,
-       // &vel_d_1, &vel_dd_1, &p_d_1, &p_dd_1);
-     /* 
+        computeSpatialDer(dir, pad, neighbourlist1, inpressure, invelocity,
+        &vel_d_1, &vel_dd_1, &p_d_1, &p_dd_1);
+        /* 
          if(p_d_1 > 0){
 
              printf("%f %f %f\n",pad->xyz[0],pad->xyz[1],pad->xyz[2]);
@@ -141,7 +141,6 @@ if(p_d_0>0){
 
         if(pad->schemeorder == 0)
         {
-        
             *outvolume = *involume;
             *outpressure = *inpressure;
             *outvelocity = *invelocity;
@@ -214,8 +213,8 @@ void LPSolver::setInAndOutPointer(pdata_t *pad, double **inpressure, double **ou
 
 void LPSolver::setNeighbourListPointer(pdata_t *pad, sc_array_t** neilist0, sc_array_t **neilist1,int dir){
     if(dir == 0){
-        *neilist0 = pad->neighbourrightparticle;
-        *neilist1 = pad->neighbourleftparticle;
+        *neilist0 = pad->neighbourfrontparticle;
+        *neilist1 = pad->neighbourbackparticle;
     }
     else if(dir == 1){
     
@@ -266,15 +265,17 @@ void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist
             
             *p_d = result[dir]/distance; //dir=0 (x), dir=1(y), dir=2(z)
             *p_dd = pad->schemeorder == 2?  result[dir+offset]/distance/distance:0;
-            
+           /* 
+                cout<<"newone"<<*p_d*distance<<endl;
             if(*p_d > 0){
-                cout<<"newone"<<*inpressure<<endl;
+                cout<<"newone"<<*p_d<<endl;
                 
                 for(int i=0;i<numrow;i++){
                 cout<<B[i]<<endl;
                 }
             
-            } 
+            }
+            */
              computeB(B, pad, neighbourlist, numrow, invelocity ,VELOCITY, dir);
         
 			 qrSolver.solve(result,B);
@@ -308,6 +309,7 @@ void LPSolver::computeA3D(double *A, pdata_t *pad, sc_array_t *neighbourlist, si
     x = pad->xyz[0];
     y = pad->xyz[1];
     z = pad->xyz[2];
+   
     if(pad->schemeorder == 1){
         for(size_t i=0; i<numrow; i++){
             gdata->fetchNeighbourParticle(pad,&padnei,neighbourlist,i);
@@ -317,7 +319,8 @@ void LPSolver::computeA3D(double *A, pdata_t *pad, sc_array_t *neighbourlist, si
             h = (x0-x)/distance;
             k = (y0-y)/distance;
             l = (z0-z)/distance;
-          //  cout<<k<<endl;
+//           printf("%f %f %f \n",h,k,l);
+            //  cout<<k<<endl;
           //  if(k>0)
           //      cout<<"warning"<<endl;
             A[i]            = h;
@@ -361,7 +364,7 @@ void LPSolver::computeB(double *B, pdata_t *pad, sc_array_t *neighbourlist, size
         for(size_t i=0; i<numrow; i++){
             gdata->fetchNeighbourParticle(pad,&padnei,neighbourlist,i);
             B[i] = padnei->pressure-*indata;  
-            cout<<B[i]<<endl;
+//            cout<<B[i]<<endl;
         }   
     }
 

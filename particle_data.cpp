@@ -1603,10 +1603,10 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
         if(dir == 1 || dir == 3 || dir == 5){
             angle = anglemax + rand()/(double)RAND_MAX *(M_PI-anglemax);
             if(dir == 1){
-                dz = cos(angle)*r;
+                dz = -r;//cos(angle)*r;
                 r2 = r*r - dz*dz;
-                dx = sqrt(rand()/(double)RAND_MAX * r2) * (2*(rand()%2)-1);
-                dy = sqrt(r2 - dx*dx) * (2*(rand()%2)-1);
+                dx = rand()/(double)RAND_MAX *(2*(rand()%2)-1)* r/4;
+                dy = rand()/(double)RAND_MAX *(2*(rand()%2)-1)* r/4;
                 ghostnei_info = (neighbour_info_t *)sc_array_push(neighbourlist);
                 ghostid = pad->ghostneighbour->elem_count;
                 ghostnei = (pdata_copy_t *) sc_array_push(pad->ghostneighbour);
@@ -1618,11 +1618,10 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
             }
 
             if(dir == 3){
-                dy = cos(angle)*r;
+                dy = -r;
                 r2 = r*r - dy*dy;
-                dz = sqrt(rand()/(double)RAND_MAX * r2) * (2*(rand()%2)-1);
-                dx = sqrt(r2 - dz*dz) * (2*(rand()%2)-1);
-                
+                dz = rand()/(double)RAND_MAX *(2*(rand()%2)-1)* r/4;
+                dx = rand()/(double)RAND_MAX *(2*(rand()%2)-1)* r/4;
                 ghostnei_info = (neighbour_info_t *)sc_array_push(neighbourlist);
                 ghostid = pad->ghostneighbour->elem_count;
                 ghostnei = (pdata_copy_t *) sc_array_push(pad->ghostneighbour);
@@ -1633,10 +1632,10 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 addGhostParticle(ghostnei,pad,dx,dy,dz);
             }
             if(dir == 5){
-                dx = cos(angle)*r;
+                dx = -r;
                 r2 = r*r - dx*dx;
-                dy = sqrt(rand()/(double)RAND_MAX * r2) * (2*(rand()%2)-1);
-                dz = sqrt(r2 - dy*dy) * (2*(rand()%2)-1);
+                dz = rand()/(double)RAND_MAX *(2*(rand()%2)-1)* r/4;
+                dy = rand()/(double)RAND_MAX *(2*(rand()%2)-1)* r/4;
                 ghostnei_info = (neighbour_info_t *)sc_array_push(neighbourlist);
                 ghostid = pad->ghostneighbour->elem_count;
                 ghostnei = (pdata_copy_t *) sc_array_push(pad->ghostneighbour);
@@ -1653,10 +1652,10 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
         if(dir == 2 || dir == 4 || dir == 6){
             angle =  rand()/(double)RAND_MAX *anglemin;
             if(dir == 2){
-                dz = cos(angle)*r;
+                dz = r;
                 r2 = r*r - dz*dz;
-                dx = sqrt(rand()/(double)RAND_MAX * r2) * (2*(rand()%2)-1);
-                dy = sqrt(r2 - dx*dx) * (2*(rand()%2)-1);
+                dx = rand()/(double)RAND_MAX *(2*(rand()%2)-1)* r/4;
+                dy = rand()/(double)RAND_MAX *(2*(rand()%2)-1)* r/4;
                 ghostnei_info = (neighbour_info_t *)sc_array_push(neighbourlist);
                 ghostid = pad->ghostneighbour->elem_count;
                 ghostnei = (pdata_copy_t *) sc_array_push(pad->ghostneighbour);
@@ -1668,10 +1667,10 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
             }
 
             if(dir == 4){
-                dy = cos(angle)*r;
+                dy = r;
                 r2 = r*r - dy*dy;
-                dz = sqrt(rand()/(double)RAND_MAX * r2) * (2*(rand()%2)-1);
-                dx = sqrt(r2 - dz*dz) * (2*(rand()%2)-1);
+                dz = rand()/(double)RAND_MAX *(2*(rand()%2)-1)* r/4;
+                dx = rand()/(double)RAND_MAX *(2*(rand()%2)-1)* r/4;
                 ghostnei_info = (neighbour_info_t *)sc_array_push(neighbourlist);
                 ghostid = pad->ghostneighbour->elem_count;
                 ghostnei = (pdata_copy_t *) sc_array_push(pad->ghostneighbour);
@@ -1682,10 +1681,12 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
                 addGhostParticle(ghostnei,pad,dx,dy,dz);
             }
             if(dir == 6){
-                dx = cos(angle)*r;
+                dx = r;
                 r2 = r*r - dx*dx;
-                dy = sqrt(rand()/(double)RAND_MAX * r2) * (2*(rand()%2)-1);
-                dz = sqrt(r2 - dy*dy) * (2*(rand()%2)-1);
+                
+                dz = rand()/(double)RAND_MAX *(2*(rand()%2)-1)* r/4;
+                dy = rand()/(double)RAND_MAX *(2*(rand()%2)-1)* r/4;
+                
                 ghostnei_info = (neighbour_info_t *)sc_array_push(neighbourlist);
                 ghostid = pad->ghostneighbour->elem_count;
                 ghostnei = (pdata_copy_t *) sc_array_push(pad->ghostneighbour);
