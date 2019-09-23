@@ -1764,6 +1764,115 @@ void Global_Data::addGhostParticle(pdata_copy_t * ghostnei, pdata_t *pad, double
 }
 
 
+void Global_Data::updateViewForOctant(int phase){
+
+    if(phase == 2)
+        return;
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+    p4est_locidx_t      offset = 0;
+  p8est_tree_t       *tree;
+  p8est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  pdata_t *pads;
+  pdata_copy_t *padd;
+  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+    tree = p8est_tree_array_index (p8est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      qud->poctant = qud->lpend - offset;
+      
+      pads = (pdata_t *) sc_array_index(particle_data,(size_t)offset);
+      for(size_t i=0;i<(size_t) qud->poctant;i++){
+        
+        if(pads->ifboundary){
+            pads++;
+            continue;
+        }  
+        padd = &qud->localparticle[i];
+        if(phase == 0){
+            padd->pressure = pads->pressureT1;
+            padd->soundspeed = pads->soundspeedT1;
+            padd->volume = pads->volumeT1;
+        }
+        else if(phase == 1 ){
+        
+            padd->pressure = pads->pressureT2;
+            padd->soundspeed = pads->soundspeedT2;
+            padd->volume = pads->volumeT2;
+        }
+        
+        pads++;
+      
+      } 
+          offset = qud->lpend;
+    
+    }
+  }
+
+    P4EST_FREE (ghost_data);
+    
+   // ghost_data = NULL;
+    
+    ghost_data = P4EST_ALLOC (octant_data_t, ghost->ghosts.elem_count);
+    p8est_ghost_exchange_data (p8est, ghost, ghost_data);
+}
+
+void Global_Data::updateParticleStates(){
+
+
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+
+  p8est_tree_t       *tree;
+  p8est_quadrant_t   *quad;
+  octant_data_t          *qud;
+
+  p4est_locidx_t   offset = 0,lpend;
+  pdata_t * pad;
+  double v0,v1,v2;
+  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+    tree = p8est_tree_array_index (p8est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      lpend = qud->lpend;
+      for(int i=offset;i<lpend;i++){
+         pad = (pdata_t *)sc_array_index(particle_data,i);
+         if(pad->ifboundary)
+         {
+             continue;
+         }
+         pad->pressure = pad->pressureT1;
+         pad->soundspeed = pad->soundspeedT1;
+         pad->volume = pad->volumeT1;
+         
+         swap(pad->v,pad->oldv);
+        /* 
+         v0 = pad->v[0];
+         v1 = pad->v[1];
+         v2 = pad->v[2];
+
+         pad->v[0] = pad->oldv[0];
+         pad->v[1] = pad->oldv[1];
+         pad->v[2] = pad->oldv[2];
+         pad->oldv[0] = v0;
+         pad->oldv[1] = v1;
+         pad->oldv[2] = v2;
+         
+*/         
+         }
+       offset = lpend;  
+    
+    }
+  }
+
+
+}
+
 
 
 

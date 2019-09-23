@@ -108,6 +108,8 @@ int main(){
     lpsolver->computeCFLCondition();
     for(int phase = 0;phase<3;phase++){
     lpsolver->solve_upwind(phase);
+    
+    gdata->updateViewForOctant(phase);
     }
     if(tstart  >= nextwritetime)
     

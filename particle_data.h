@@ -153,6 +153,8 @@ class Global_Data{
         void generateGhostParticle();
         void fillArrayWithGhostParticle(sc_array_t * array, pdata_t * pad, int count,int dir);
         
+        void updateParticleStates();
+        void updateViewForOctant(int phase);
         void addGhostParticle(pdata_copy_t * ghostnei, pdata_t *pad, double dx, double dy, double dz);
         void fetchNeighbourParticle(pdata_t* pad, pdata_copy_t **padnei ,sc_array_t *neighbourlist, size_t index);
         void createViewForOctant();
