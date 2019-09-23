@@ -111,6 +111,7 @@ int main(){
     
     gdata->updateViewForOctant(phase);
     }
+    gdata->updateParticleStates();
     if(tstart  >= nextwritetime)
     
     {

@@ -136,6 +136,7 @@ adapt_coarsen	octree_manager.cpp	/^int Octree_Manager:: adapt_coarsen (p8est_t *
 adapt_octree	octree_manager.cpp	/^void Octree_Manager:: adapt_octree(){$/;"	f	class:Octree_Manager
 adapt_refine	octree_manager.cpp	/^int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
 adapt_replace	octree_manager.cpp	/^void Octree_Manager:: adapt_replace (p8est_t * p8est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
+addGhostParticle	particle_data.cpp	/^void Global_Data::addGhostParticle(pdata_copy_t * ghostnei, pdata_t *pad, double dx, double dy, double dz){$/;"	f	class:Global_Data
 adjustCoordByDomain	particle_data.cpp	/^void Global_Data:: adjustCoordByDomain( double xyz[3]){$/;"	f	class:Global_Data
 bTable	boundary/boundary.h	/^	std::unordered_map<std::string,GeoCreateFunc> bTable; \/\/\/< hash table for the (name,creatFunction) pair$/;"	m	class:BoundaryFactory
 balance_octree	octree_manager.cpp	/^void Octree_Manager::balance_octree(p8est_init_t init_fn, p8est_replace_t replace_fn){$/;"	f	class:Octree_Manager
@@ -144,6 +145,7 @@ bb	particle_data.h	/^        double bb[6]; \/\/ bounding box of initial fluid pa
 boundary	particle_data.h	/^        Boundary *boundary; $/;"	m	class:Global_Data
 build_octree	octree_manager.cpp	/^void Octree_Manager:: build_octree(){$/;"	f	class:Octree_Manager
 cfl_coefficient	initializer.h	/^        double cfl_coefficient;$/;"	m	class:Initializer
+cfldt	lp_solver.h	/^    double cfldt = 0.0001;$/;"	m	class:LPSolver
 cfound	particle_data.h	/^        sc_array_t *cfound;   \/**< char Flag for received particles *\/$/;"	m	class:Global_Data
 cleanForTimeStep	particle_data.cpp	/^void Global_Data::cleanForTimeStep(){$/;"	f	class:Global_Data
 cleanUpArrays	particle_data.cpp	/^void Global_Data:: cleanUpArrays(){$/;"	f	class:Global_Data
@@ -159,6 +161,7 @@ compareneighbour_info	particle_data.cpp	/^static int compareneighbour_info(const
 compareoctant	particle_data.cpp	/^compareoctant (const void *p1, const void *p2)$/;"	f	file:
 computeA3D	lp_solver.cpp	/^void LPSolver::computeA3D(double *A, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, double distance){$/;"	f	class:LPSolver
 computeB	lp_solver.cpp	/^void LPSolver::computeB(double *B, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, const double* indata, indata_t datatype, int dir){$/;"	f	class:LPSolver
+computeCFLCondition	lp_solver.cpp	/^void LPSolver:: computeCFLCondition(){$/;"	f	class:LPSolver
 computeSpatialDer	lp_solver.cpp	/^void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist, const double* inpressure, const double *invelocity,$/;"	f	class:LPSolver
 conn	particle_data.h	/^        p8est_connectivity_t *conn;$/;"	m	class:Global_Data
 copyNeighbourInfo	particle_data.cpp	/^static void copyNeighbourInfo(neighbour_info_t * d, neighbour_info_t *s){$/;"	f	file:
@@ -177,7 +180,6 @@ destroy_octree	octree_manager.cpp	/^void Octree_Manager:: destroy_octree(){$/;"	
 diagnosis	eos.h	/^    virtual void diagnosis(double rho0, double rho1, double t0, double t1){};$/;"	f	class:PolytropicGasEOS
 distance	particle_data.h	/^    double distance;$/;"	m	struct:neighbour_info
 domain_len	particle_data.h	/^        double domain_len = 16; $/;"	m	class:Global_Data
-dt	lp_solver.h	/^    double dt = 0.0001;$/;"	m	class:LPSolver
 dt	particle_data.h	/^        double dt;$/;"	m	class:Global_Data
 dxyz	particle_data.h	/^        double lxyz[3],hxyz[3],dxyz[3]; \/\/boundingbox of octant$/;"	m	class:Global_Data
 elem_particles	initializer.h	/^        int elem_particles; \/\/max number of particles per octant$/;"	m	class:Initializer
@@ -402,6 +404,8 @@ theta	particle_data.h	/^    double theta;          \/\/up and down$/;"	m	struct:
 timeIntegration	lp_solver.cpp	/^void LPSolver::timeIntegration($/;"	f	class:LPSolver
 timesearchingradius	initializer.h	/^        double timesearchingradius;$/;"	m	class:Initializer
 timesearchingradius	particle_data.h	/^        double timesearchingradius;$/;"	m	class:Global_Data
+updateParticleStates	particle_data.cpp	/^void Global_Data::updateParticleStates(){$/;"	f	class:Global_Data
+updateViewForOctant	particle_data.cpp	/^void Global_Data::updateViewForOctant(int phase){$/;"	f	class:Global_Data
 v	particle_data.h	/^    double v[3]; \/\/velocity$/;"	m	struct:pdata
 v	particle_data.h	/^    double v[3]; \/\/velocity$/;"	m	struct:pdata_copy
 velocity	state/state_pellet.cpp	/^void PelletState::velocity(double x, double y, double z, double& vX, double& vY,double& vZ){$/;"	f	class:PelletState

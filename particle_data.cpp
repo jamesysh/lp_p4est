@@ -1850,7 +1850,7 @@ void Global_Data::updateParticleStates(){
          pad->soundspeed = pad->soundspeedT1;
          pad->volume = pad->volumeT1;
          
-         swap(pad->v,pad->oldv);
+//         swap(pad->v,pad->oldv);
         /* 
          v0 = pad->v[0];
          v1 = pad->v[1];
