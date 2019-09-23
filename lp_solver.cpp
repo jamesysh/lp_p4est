@@ -360,6 +360,8 @@ void LPSolver::computeA3D(double *A, pdata_t *pad, sc_array_t *neighbourlist, si
 
 void LPSolver::computeB(double *B, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, const double* indata, indata_t datatype, int dir){
     pdata_copy_t *padnei;
+    
+    
     if(datatype == PRESSURE){
         for(size_t i=0; i<numrow; i++){
             gdata->fetchNeighbourParticle(pad,&padnei,neighbourlist,i);
