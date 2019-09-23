@@ -28,6 +28,7 @@ typedef struct pdata{
     bool ifhasghostneighbour;
     bool ifboundary;   //if a boundary particle
     double schemeorder;
+    int32_t redocount;
     sc_array_t * ghostneighbour;   //pdata_copy_t
     sc_array_t * neighbourparticle;
       

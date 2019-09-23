@@ -13,7 +13,7 @@ public:
     
     ~LPSolver(){}
     
-    void moveParticlesByG(double dt);
+    void moveParticle();
     void solve_upwind(int phase);
      
     void setInAndOutPointer(pdata_t *pad, double **inpressure, double **outpressure, double **involume, double **outvolume,
@@ -24,6 +24,8 @@ public:
     void computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist, const double* inpressure, const double *invelocity,
         double *vel_d, double *vel_dd, double *p_d, double *p_dd);
 
+
+    void updateLocalSpacing();
     void timeIntegration(
 	double realDt,
 	double gravity, double inVolume, double inVelocity, double inPressure, double inSoundSpeed, 

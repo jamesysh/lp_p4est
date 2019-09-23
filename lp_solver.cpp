@@ -16,32 +16,15 @@ LPSolver::LPSolver(Global_Data *g){
       {2,1,0}});
 }
 
-void LPSolver::moveParticlesByG(double dt){
-    double g = 9.8;
+void LPSolver::moveParticle(){
     pdata_t *pad;
+    double dt = cfldt;
     size_t li, lpnum = gdata->particle_data->elem_count;
      
     for(li = 0; li<lpnum; li++){
        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
        if(pad->ifboundary)
            continue;
-       double x = pad->xyz[0];
-        
-       double y = pad->xyz[1];
-       double z = pad->xyz[2];
-       double r = sqrt(x*x+y*y+z*z);
-
-       pad->oldv[0] = pad->v[0];
-       pad->oldv[1] = pad->v[1];
-       pad->oldv[2] = pad->v[2];
-        
-       pad->v[0] = 200*x;
-       pad->v[1] = 200*y;
-       pad->v[2] = 200*z;
-
-
-   
-//move
        pad->xyz[0] +=  0.5*dt*(pad->oldv[0]+pad->v[0]);
        pad->xyz[1] += 0.5*dt*(pad->oldv[1]+pad->v[1]);
        pad->xyz[2] += 0.5*dt*(pad->oldv[2]+pad->v[2]);
@@ -49,6 +32,19 @@ void LPSolver::moveParticlesByG(double dt){
     }
 }
 
+void LPSolver::updateLocalSpacing(){
+
+    pdata_t *pad;
+    size_t li, lpnum = gdata->particle_data->elem_count;
+     
+    for(li = 0; li<lpnum; li++){
+       pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+       if(pad->ifboundary)
+           continue;
+        pad->localspacing *= cbrt(pad->volume/pad->volumeT1); 
+    }
+
+}
 
 //dir: 0 x, 1 y, 2 z
 void LPSolver::solve_upwind(int phase){
@@ -80,6 +76,7 @@ void LPSolver::solve_upwind(int phase){
     
       lpend = qud->lpend;
       for(int i=offset;i<lpend;i++){
+         bool redo = false;
          pad = (pdata_t *)sc_array_index(gdata->particle_data,i);
          if(pad->ifboundary)
              continue;
@@ -134,23 +131,45 @@ if(p_d_0>0){
     vel_d_1, vel_dd_1, p_d_1, p_dd_1,
     outvolume, outvelocity, outpressure);
         
-         if(*outpressure < invalidpressure)
-            pad->schemeorder = 0;
-        
+         if(*outpressure < invalidpressure || 1./(*outvolume)<0)
+         {
+             redo  = true;
+         }
         if(std::isnan(*outvolume) || std::isnan(*outvelocity) || std::isnan(*outpressure)) 
-            pad->schemeorder = 0;
+        {
+                redo = true;}
+
+
+        if(redo == true){
+
+            pad->redocount++;
+            
+            if(pad->redocount >4){
+                pad->schemeorder = 0;
+            }
+            else{
+                i--;
+                cout<<"refo upwind for a particle"<<endl;
+            }
+
+            
+        }
+        else{
+        
+        
+            *outsoundspeed = gdata->eos->getSoundSpeed(*outpressure, 1./(*outvolume));
+            pad->redocount = 0;        
+        }
 
         if(pad->schemeorder == 0)
         {
+            pad->redocount = 0;
             *outvolume = *involume;
             *outpressure = *inpressure;
             *outvelocity = *invelocity;
             *outsoundspeed = *insoundspeed;
         }
-        else{
-            *outsoundspeed = gdata->eos->getSoundSpeed(*outpressure, 1./(*outvolume));
         
-        }
 
       
       
@@ -233,7 +252,7 @@ void LPSolver::setNeighbourListPointer(pdata_t *pad, sc_array_t** neilist0, sc_a
 
 void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist, const double* inpressure, const double *invelocity,
         double *vel_d, double *vel_dd, double *p_d, double *p_dd) {
-    size_t numrow = gdata->numrow1st;
+    size_t numrow = gdata->numrow1st + pad->redocount;
     size_t numcol = 3;
     double distance;
     int info;

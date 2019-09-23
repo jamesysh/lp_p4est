@@ -212,6 +212,19 @@ void ParticleViewer:: writeResult(double t){
    fprintf(outfile,"%.16g\n",1./(double)pad->volume);
     pad++ ;
     }
+    
+	fprintf(outfile,"SCALARS localspacing double\n");
+	fprintf(outfile,"LOOKUP_TABLE default\n");
+    
+    pad = (pdata_t *)gdata->particle_data->array;
+    for(li = 0; li<lpnum; li++){
+    if(pad->ifboundary)
+ 
+    fprintf(outfile,"%.16g\n",1./(double)pad->localspacing);
+    else
+   fprintf(outfile,"%.16g\n",1./(double)pad->localspacing);
+    pad++ ;
+    }
     fclose(outfile);
     if(mpirank == 0){
     FILE *visitfile;

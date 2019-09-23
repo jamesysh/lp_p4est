@@ -360,6 +360,7 @@ static void createParticlesInOctant(p8est_iter_volume_info_t * info, void *user_
                 pd->mass = ls*ls*ls/pd->volume/sqrt(2); 
                 pd->soundspeed = eos->getSoundSpeed(pd->pressure,1./pd->volume);
                 pd->ifboundary = false;
+                pd->redocount = 0;
                 (*lpnum) ++;
                 }
             }
@@ -1599,7 +1600,7 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
       
       lghostnum += count;
       for(int i = 0;i<count;i++){
-        r = rand()/(double)RAND_MAX * radius + pad->localspacing;
+        r = rand()/(double)RAND_MAX * radius/4 + pad->localspacing;
         if(dir == 1 || dir == 3 || dir == 5){
             angle = anglemax + rand()/(double)RAND_MAX *(M_PI-anglemax);
             if(dir == 1){

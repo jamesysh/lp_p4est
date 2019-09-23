@@ -44,7 +44,7 @@ int main(){
     octree->partition_octree(1,NULL);
     gdata->prerun(); 
     gdata->initFluidParticles();
-    gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
+    //gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
     
     octree->adapt_octree(); 
     
@@ -66,7 +66,6 @@ int main(){
     
     
     
-    //lpsolver->moveParticlesByG(lpsolver->dt);
     
     //gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
     
@@ -94,6 +93,7 @@ int main(){
     gdata->regroupParticles(); 
  
     
+    gdata->partitionParticles();
     gdata->createViewForOctant();
     
 
@@ -108,10 +108,16 @@ int main(){
     lpsolver->computeCFLCondition();
     for(int phase = 0;phase<3;phase++){
     lpsolver->solve_upwind(phase);
-    
+    MPI_Barrier(gdata->mpicomm); 
     gdata->updateViewForOctant(phase);
+
+    MPI_Barrier(gdata->mpicomm); 
     }
     gdata->updateParticleStates();
+   
+    lpsolver->updateLocalSpacing();
+    lpsolver->moveParticle();
+
     if(tstart  >= nextwritetime)
     
     {
@@ -120,9 +126,9 @@ int main(){
     //    viewer->writeGhost(tstart);
     }
    
+    MPI_Barrier(gdata->mpicomm); 
     gdata->cleanForTimeStep();
    
-    gdata->partitionParticles();
     
     }
     
