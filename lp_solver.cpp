@@ -5,6 +5,7 @@ using namespace std;
 LPSolver::LPSolver(Global_Data *g){
     gdata = g;
     splitorder = 0;
+    cflcoefficient = 0.5;
     invalidpressure = 0;
     m_vDirSplitTable = vector<vector<int> >
     ({{0,1,2},
@@ -462,7 +463,7 @@ void LPSolver:: computeCFLCondition(){
 
     SC_CHECK_MPI (mpiret);
 
-    cfldt = gmindt;
+    cfldt = gmindt * cflcoefficient;
 
     P4EST_GLOBAL_ESSENTIALF ("MINCFL timestep is %f. \n", cfldt);
 

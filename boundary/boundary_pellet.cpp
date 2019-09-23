@@ -23,7 +23,7 @@ void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS,
     double pv  = 0;//Vinflow*massflowrate/4/M_PI/pr/pr;
     double x, y, z, d_x, d_y, d_z, dr;
     for(int i=0;i<n;i++)
-    if(g->mpirank == i%g->mpisize){	
+    if(g->mpirank == 0){	
     {
 
         pad = (pdata_t*)sc_array_push_count(g->particle_data,1);

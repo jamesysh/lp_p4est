@@ -196,7 +196,7 @@ void ParticleViewer:: writeResult(double t){
  
     fprintf(outfile,"%.16g\n",(double)pad->pressure);
     else
-   fprintf(outfile,"%.16g\n",(double)pad->pressureT1);
+   fprintf(outfile,"%.16g\n",(double)pad->pressure);
     pad++ ;
     }
     
@@ -209,7 +209,7 @@ void ParticleViewer:: writeResult(double t){
  
     fprintf(outfile,"%.16g\n",1./(double)pad->volume);
     else
-   fprintf(outfile,"%.16g\n",1./(double)pad->volumeT1);
+   fprintf(outfile,"%.16g\n",1./(double)pad->volume);
     pad++ ;
     }
     fclose(outfile);

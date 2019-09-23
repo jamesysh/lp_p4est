@@ -42,7 +42,7 @@ public:
 
     double cfldt = 0.0001;
     Global_Data * gdata; 
-
+    double cflcoefficient;
 	std::vector<std::vector<int> > m_vDirSplitTable; 
     int splitorder;
     double invalidpressure;
