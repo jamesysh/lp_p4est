@@ -38,7 +38,19 @@ class Octree_Manager{
         void refine_octree2d(int recursive, p4est_refine_t refine_fn, p4est_init_t init_fn, p4est_replace_t replace_fn);
         
         void balance_octree(p8est_init_t init_fn, p8est_replace_t replace_fn);
+
+        
+        void balance_octree2d(p4est_init_t init_fn, p4est_replace_t replace_fn);
         void adapt_octree();
+ 
+        void adapt_octree2d();
+ 
+        static int adapt_coarsen2d (p4est_t * p8est, p4est_topidx_t which_tree,
+               p4est_quadrant_t * quadrants[]);
+
+
+        static int adapt_refine2d (p4est_t * p8est, p4est_topidx_t which_tree,
+              p4est_quadrant_t * quadrant);
         static int adapt_coarsen (p8est_t * p8est, p4est_topidx_t which_tree,
                p8est_quadrant_t * quadrants[]);
 
@@ -49,10 +61,16 @@ class Octree_Manager{
                int num_outgoing, p8est_quadrant_t * outgoing[],
                int num_incoming, p8est_quadrant_t * incoming[]);
 
+        static void adapt_replace2d (p4est_t * p8est, p4est_topidx_t which_tree,
+               int num_outgoing, p4est_quadrant_t * outgoing[],
+               int num_incoming, p4est_quadrant_t * incoming[]);
         static void balance_replace (p8est_t * p8est, p4est_topidx_t which_tree,
                int num_outgoing, p8est_quadrant_t * outgoing[],
                int num_incoming, p8est_quadrant_t * incoming[]);
 
+        static void balance_replace2d (p4est_t * p4est, p4est_topidx_t which_tree,
+               int num_outgoing, p4est_quadrant_t * outgoing[],
+               int num_incoming, p4est_quadrant_t * incoming[]);
 };
 
 

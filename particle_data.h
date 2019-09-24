@@ -140,12 +140,18 @@ class Global_Data{
         void initFluidParticles();
         void prerun();
         void presearch();
+        void presearch2d();
         void packParticles();
         void postsearch();
+        void postsearch2d();
         void resetOctantData();
+        void resetOctantData2d();
         void communicateParticles();
         void regroupParticles();
+        void regroupParticles2d();
         void partitionParticles();
+
+        void partitionParticles2d();
         void searchNeighbourOctant(); 
         void searchNeighbourParticle();
         void searchUpwindNeighbourParticle();
@@ -159,10 +165,12 @@ class Global_Data{
         void addGhostParticle(pdata_copy_t * ghostnei, pdata_t *pad, double dx, double dy, double dz);
         void fetchNeighbourParticle(pdata_t* pad, pdata_copy_t **padnei ,sc_array_t *neighbourlist, size_t index);
         void createViewForOctant();
+        void createViewForOctant2d();
         void cleanForTimeStep();
         void testquad();
         void loopquad (p4est_topidx_t tt, p8est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]);
         
+        void loopquad2d (p4est_topidx_t tt, p4est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]);
 
         void split_by_coord ( sc_array_t * in,
                 sc_array_t * out[2], pa_mode_t mode, int component,

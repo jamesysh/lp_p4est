@@ -60,18 +60,23 @@ int main(){
     gdata->prerun(); 
     gdata->initFluidParticles();
     //gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
-    
-    octree->adapt_octree(); 
-    
+    if(gdata->dimension == 3 ) 
+        octree->adapt_octree(); 
+    else if(gdata->dimension == 2)
+        octree->adapt_octree2d();
     
     sc_array_destroy(gdata->irecumu);
     sc_array_destroy(gdata->irvcumu);
-    gdata->resetOctantData(); 
+    if(gdata->dimension == 3)
+       gdata->resetOctantData(); 
+    else if(gdata->dimension == 2)
+        gdata->resetOctantData2d();
    sc_array_destroy(gdata->ireceive);
     sc_array_destroy(gdata->iremain);
     LPSolver * lpsolver = new LPSolver(gdata);
-
+    
      
+    viewer->writeResult(0);
     double tstart = 0;
     double tend = 0.01;
     double nextwritetime = 0;
@@ -83,8 +88,10 @@ int main(){
     
     
     //gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
-    
-    gdata->presearch();
+    if(gdata->dimension == 3) 
+        gdata->presearch();
+    else if(gdata->dimension == 2)
+        gdata->presearch2d();
         
     gdata->packParticles();
     
@@ -101,17 +108,37 @@ int main(){
         break;
     }
     gdata->communicateParticles();
-    gdata->postsearch();
-    octree->adapt_octree(); 
+    if(gdata->dimension == 3)
+        gdata->postsearch();
+    else if(gdata->dimension == 2)
+        gdata->postsearch2d();
 
-    octree->balance_octree(NULL,octree->balance_replace);
-    gdata->regroupParticles(); 
- 
+    if(gdata->dimension == 3 ) 
+        octree->adapt_octree(); 
+    else if(gdata->dimension == 2)
+        octree->adapt_octree2d();
     
-    gdata->partitionParticles();
-    gdata->createViewForOctant();
+    if(gdata->dimension == 3)
+        octree->balance_octree(NULL,octree->balance_replace);
+    else if(gdata->dimension == 2)
+        octree->balance_octree2d(NULL,octree->balance_replace2d);
     
-
+    if(gdata->dimension == 3)
+        gdata->regroupParticles(); 
+    else if(gdata->dimension == 2) 
+        gdata->regroupParticles2d(); 
+    
+    if(gdata->dimension == 3)
+        gdata->partitionParticles();
+    else if(gdata->dimension == 2)
+        gdata->partitionParticles2d();
+    
+    if(gdata->dimension == 3)
+        gdata->createViewForOctant();
+    else if(gdata->dimension == 2)
+        gdata->createViewForOctant2d();
+    
+    
     gdata->searchNeighbourOctant();
     
 

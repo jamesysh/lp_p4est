@@ -88,6 +88,48 @@ void Octree_Manager:: refine_octree2d(int recursive, p4est_refine_t refine_fn, p
     
 }
 
+int Octree_Manager:: adapt_coarsen2d (p4est_t * p4est, p4est_topidx_t which_tree,
+               p4est_quadrant_t * quadrants[])
+{
+    int i;
+    p4est_locidx_t remain = 0, receive = 0;
+    octant_data_t *oud;
+    Global_Data *g = (Global_Data *)p4est->user_pointer;
+    
+    if (quadrants[1] == NULL ||
+      quadrants[0]->level == g->minlevel) {
+    
+        oud = (octant_data_t *) quadrants[0]->p.user_data;
+        g->ireindex2 += oud->premain;
+        g->irvindex2 += oud->preceive;
+    
+        return 0;
+  }
+   
+    remain = receive = 0;
+  
+    for (i = 0; i < P4EST_CHILDREN; ++i) {
+        oud = (octant_data_t *) quadrants[i]->p.user_data;
+        remain += oud->premain;
+        receive += oud->preceive;
+  }
+  if ((double) (remain + receive) < .5 * g->elem_particles) {
+    /* we will coarsen and adjust ireindex, irvindex in adapt_replace */
+    g->qremain = remain;
+    g->qreceive = receive;
+    return 1;
+  }
+  else {
+    /* we will not coarsen and proceed with next quadrant */
+    oud = (octant_data_t *) quadrants[0]->p.user_data;
+    g->ireindex2 += oud->premain;
+    g->irvindex2 += oud->preceive;
+    return 0;
+  }
+
+
+}
+
 int Octree_Manager:: adapt_coarsen (p8est_t * p8est, p4est_topidx_t which_tree,
                p8est_quadrant_t * quadrants[])
 {
@@ -130,6 +172,110 @@ int Octree_Manager:: adapt_coarsen (p8est_t * p8est, p4est_topidx_t which_tree,
 
 }
 
+void Octree_Manager:: balance_replace2d (p4est_t * p4est, p4est_topidx_t which_tree,
+               int num_outgoing, p4est_quadrant_t * outgoing[],
+               int num_incoming, p4est_quadrant_t * incoming[]){
+
+  int octantid;
+  int                 wx, wy, wz;
+  double              lxyz[3], hxyz[3], dxyz[3];
+  sc_array_t          iview, *arr;
+  p4est_locidx_t      irem, ibeg, offset, *newoffset;
+  p4est_quadrant_t  **pchild, *outoctant;
+  octant_data_t          *oud, *iud;
+  Global_Data      *g = (Global_Data *) p4est->user_pointer;
+  if (num_outgoing == P4EST_CHILDREN) {
+    // we are coarsening 
+      oud = (octant_data_t *) incoming[0]->p.user_data;
+      oud->premain = oud->preceive = 0;
+      for(int i=0;i<P4EST_CHILDREN;i++){
+      iud = (octant_data_t *) outgoing[i]->p.user_data;
+      oud->premain += iud->premain;
+      oud->preceive += iud->preceive;
+      }
+      
+      oud->poctant = oud->preceive + oud-> premain;
+  }
+
+  else {
+    outoctant = outgoing[0];
+    iud = (octant_data_t *)outoctant->p.user_data;
+    octantid = iud->octantid;
+    // we are refining 
+    // access parent quadrant 
+    g->loopquad2d (which_tree, outgoing[0],lxyz,hxyz,dxyz);
+
+    // recover window onto remaining particles for the new family 
+    
+    irem = iud->premain ;//sc_array_index(g->irecumu,octantid);
+    
+    ibeg = *(p4est_locidx_t *) sc_array_index(g->irecumu,octantid) - irem;
+    offset = ibeg;
+    sc_array_init_view (&iview, g->iremain, ibeg, irem);
+
+    // sort remaining particles into the children 
+    pchild = incoming;
+    
+    g->klh[0] = &iview;
+    wz = 0;
+
+    
+    g->split_by_coord ( g->klh[wz], g->jlh, PA_MODE_REMAIN, 1, lxyz, dxyz);
+    
+    for (wy = 0; wy < 2; ++wy) {
+      g->split_by_coord (g->jlh[wy], g->ilh, PA_MODE_REMAIN, 0, lxyz, dxyz);
+      for (wx = 0; wx < 2; ++wx) {
+        // we have a set of particles for child 4 * wz + 2 * wy + wx 
+        arr = g->ilh[wx];
+        sc_array_init_view (&iview, g->iremain, ibeg, arr->elem_count);
+        g->sc_array_paste (&iview, arr);
+        oud = (octant_data_t *) (*pchild++)->p.user_data;
+        ibeg += (oud->premain = (p4est_locidx_t) arr->elem_count);
+        oud->poctant = oud->premain;
+        oud->octantid = g->octantid;
+        g->octantid ++;
+        newoffset = (p4est_locidx_t *)sc_array_push(g->irecumu);
+        *newoffset = offset + oud->premain;
+        offset = offset + oud->premain;
+
+      }
+    }
+    // recover window onto received particles for the new family 
+    
+    irem = iud->preceive ;//sc_array_index(g->irecumu,octantid);
+    ibeg = *(p4est_locidx_t *) sc_array_index(g->irvcumu,octantid) - irem;
+    offset = ibeg;
+    P4EST_ASSERT (irem >= 0);
+    sc_array_init_view (&iview, g->ireceive, ibeg, irem);
+    P4EST_ASSERT (qod->preceive == irem);
+
+    // sort received particles into the children 
+    pchild = incoming;
+   
+    g->klh[0] = &iview;
+    wz = 0;
+    
+    g->split_by_coord ( g->klh[wz], g->jlh, PA_MODE_RECEIVE, 1, lxyz, dxyz);
+    for (wy = 0; wy < 2; ++wy) {
+      g->split_by_coord ( g->jlh[wy], g->ilh, PA_MODE_RECEIVE, 0, lxyz, dxyz);
+      for (wx = 0; wx < 2; ++wx) {
+        // we have a set of particles for child 4 * wz + 2 * wy + wx 
+        arr = g->ilh[wx];
+        sc_array_init_view (&iview, g->ireceive, ibeg, arr->elem_count);
+        g->sc_array_paste (&iview, arr);
+        oud = (octant_data_t *) (*pchild++)->p.user_data;
+        ibeg += (oud->preceive = (p4est_locidx_t) arr->elem_count);
+        oud->poctant += oud->preceive;
+        newoffset = (p4est_locidx_t *)sc_array_push(g->irvcumu);
+        *newoffset = offset + oud->preceive;
+        offset += oud->preceive;
+      }
+    }
+    P4EST_ASSERT (pchild == incoming + P4EST_CHILDREN);
+
+  }
+}
+
 
 void Octree_Manager:: balance_replace (p8est_t * p8est, p4est_topidx_t which_tree,
                int num_outgoing, p8est_quadrant_t * outgoing[],
@@ -147,7 +293,7 @@ void Octree_Manager:: balance_replace (p8est_t * p8est, p4est_topidx_t which_tre
     // we are coarsening 
       oud = (octant_data_t *) incoming[0]->p.user_data;
       oud->premain = oud->preceive = 0;
-      for(int i=0;i<P4EST_CHILDREN;i++){
+      for(int i=0;i<P8EST_CHILDREN;i++){
       iud = (octant_data_t *) outgoing[i]->p.user_data;
       oud->premain += iud->premain;
       oud->preceive += iud->preceive;
@@ -232,6 +378,89 @@ void Octree_Manager:: balance_replace (p8est_t * p8est, p4est_topidx_t which_tre
 
   }
 }
+
+void Octree_Manager:: adapt_replace2d (p4est_t * p4est, p4est_topidx_t which_tree,
+               int num_outgoing, p4est_quadrant_t * outgoing[],
+               int num_incoming, p4est_quadrant_t * incoming[]){
+
+  int                 wx, wy, wz;
+  double              lxyz[3], hxyz[3], dxyz[3];
+  sc_array_t          iview, *arr;
+  p4est_locidx_t      irem, ibeg;
+  p4est_quadrant_t  **pchild;
+  octant_data_t          *oud;
+  Global_Data      *g = (Global_Data *) p4est->user_pointer;
+  if (num_outgoing == P4EST_CHILDREN) {
+    // we are coarsening 
+      oud = (octant_data_t *) incoming[0]->p.user_data;
+    g->ireindex2 += (oud->premain = g->qremain);
+    g->irvindex2 += (oud->preceive = g->qreceive);
+    oud->poctant = oud->preceive + oud-> premain;
+  }
+
+  else {
+    // we are refining 
+    // access parent quadrant 
+    g->loopquad2d (which_tree, outgoing[0],lxyz,hxyz,dxyz);
+
+    // recover window onto remaining particles for the new family 
+    ibeg = g->ire2;
+    irem = g->ireindex - ibeg;
+    sc_array_init_view (&iview, g->iremain, ibeg, irem);
+
+    // sort remaining particles into the children 
+    pchild = incoming;
+    g->klh[0] = &iview;
+    wz = 0;
+
+    g->split_by_coord ( g->klh[wz], g->jlh, PA_MODE_REMAIN, 1, lxyz, dxyz);
+    
+    for (wy = 0; wy < 2; ++wy) {
+      g->split_by_coord (g->jlh[wy], g->ilh, PA_MODE_REMAIN, 0, lxyz, dxyz);
+      for (wx = 0; wx < 2; ++wx) {
+        // we have a set of particles for child 4 * wz + 2 * wy + wx 
+        arr = g->ilh[wx];
+        sc_array_init_view (&iview, g->iremain, ibeg, arr->elem_count);
+        g->sc_array_paste (&iview, arr);
+        oud = (octant_data_t *) (*pchild++)->p.user_data;
+        ibeg += (oud->premain = (p4est_locidx_t) arr->elem_count);
+        oud->poctant = oud->premain;
+      
+      }
+    }
+
+    // recover window onto received particles for the new family 
+    ibeg = g->irv2;
+    irem = g->irvindex - ibeg;
+    P4EST_ASSERT (irem >= 0);
+    sc_array_init_view (&iview, g->ireceive, ibeg, irem);
+    P4EST_ASSERT (qod->preceive == irem);
+
+    // sort received particles into the children 
+    pchild = incoming;
+    wz = 0;
+    g->split_by_coord ( g->klh[wz], g->jlh, PA_MODE_RECEIVE, 1, lxyz, dxyz);
+    for (wy = 0; wy < 2; ++wy) {
+      g->split_by_coord ( g->jlh[wy], g->ilh, PA_MODE_RECEIVE, 0, lxyz, dxyz);
+      for (wx = 0; wx < 2; ++wx) {
+        // we have a set of particles for child 4 * wz + 2 * wy + wx 
+        arr = g->ilh[wx];
+        sc_array_init_view (&iview, g->ireceive, ibeg, arr->elem_count);
+        g->sc_array_paste (&iview, arr);
+        oud = (octant_data_t *) (*pchild++)->p.user_data;
+        P4EST_ASSERT (oud->u.lpend == -1);
+        ibeg += (oud->preceive = (p4est_locidx_t) arr->elem_count);
+        oud->poctant += oud->preceive;
+      }
+    }
+    g->klh[0] = NULL;
+    assert (ibeg == g->irvindex);
+    P4EST_ASSERT (pchild == incoming + P4EST_CHILDREN);
+
+  }
+
+}
+
 void Octree_Manager:: adapt_replace (p8est_t * p8est, p4est_topidx_t which_tree,
                int num_outgoing, p8est_quadrant_t * outgoing[],
                int num_incoming, p8est_quadrant_t * incoming[]){
@@ -316,6 +545,81 @@ void Octree_Manager:: adapt_replace (p8est_t * p8est, p4est_topidx_t which_tree,
 
 }
 
+int Octree_Manager:: adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,
+              p4est_quadrant_t * quadrant)
+{
+ 
+  static p4est_locidx_t maxp = -1;  
+  Global_Data      *g = (Global_Data *) p4est->user_pointer;
+
+  p4est_topidx_t      tt;
+
+  p4est_quadrant_t   *quad;
+  
+  p4est_tree_t       *tree;
+  tt = p4est->first_local_tree;
+  tree = p4est_tree_array_index (p4est->trees, tt);
+  
+  quad = p4est_quadrant_array_index (&tree->quadrants, 0);
+  octant_data_t          *oud = (octant_data_t *) quadrant->p.user_data;
+  
+
+  if(g->flagstartrefine){
+    maxp = -1;
+    g->flagstartrefine = 0;
+  
+  }  
+  
+  if(quad == quadrant)
+  { 
+      if(maxp <= g->elem_particles && maxp>-1)
+      { g->flagrefine = 0;
+      }
+      else
+      { 
+          maxp = -1;
+      }
+       
+      int  mpiret = sc_MPI_Allreduce (&g->flagrefine, &g->gflagrefine, 1, sc_MPI_INT,
+                               sc_MPI_MAX, g->mpicomm);
+           
+      SC_CHECK_MPI (mpiret);
+  }
+  
+  if((oud->premain+oud->preceive) > maxp){
+      maxp = oud->premain+oud->preceive;
+  }
+
+
+  
+  
+  /* we have set this to -1 in adapt_coarsen */
+
+  if ((double) (oud->premain + oud->preceive) > g->elem_particles) {
+    /* we are trying to refine, we will possibly go into the replace function */
+    g->ire2 = g->ireindex;
+    g->ireindex += oud->premain;
+    g->irv2 = g->irvindex;
+    g->irvindex += oud->preceive;
+    
+    return 1;
+  }
+  else {
+    /* maintain cumulative particle count for next quadrant */
+    g->ireindex += oud->premain;
+    g->irvindex += oud->preceive;
+    p4est_locidx_t *irecumu = (p4est_locidx_t *)sc_array_push(g->irecumu);
+    *irecumu = g->ireindex;
+
+    p4est_locidx_t *irvcumu = (p4est_locidx_t *)sc_array_push(g->irvcumu);
+    *irvcumu = g->irvindex;
+    oud->octantid = g->octantid;
+    g->octantid ++;
+    return 0;
+  }
+
+}
+
 
 int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,
               p8est_quadrant_t * quadrant)
@@ -392,6 +696,39 @@ int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,
 
 }
 
+void Octree_Manager:: adapt_octree2d(){
+
+  
+
+    p4est_t *p4est = gdata->p4est;
+    gdata->ireindex2 = gdata->irvindex2 = 0;
+    p4est_coarsen_ext (p4est, 0, 1, adapt_coarsen2d, NULL, adapt_replace2d);
+    gdata->flagrefine = 1;
+    gdata->gflagrefine = 1;
+    
+    gdata->flagstartrefine = 1;
+
+
+    while(true ){   
+    
+    gdata->irecumu = sc_array_new(sizeof(p4est_locidx_t));
+    gdata->irvcumu = sc_array_new(sizeof(p4est_locidx_t));
+    
+    gdata->octantid = 0;
+    gdata->ireindex = gdata->ire2 = 0;
+    gdata->irvindex = gdata->irv2 = 0;
+    p4est_refine_ext (p4est, 0, gdata->maxlevel, adapt_refine2d, NULL, adapt_replace2d);
+    if(gdata->gflagrefine == 0){
+        break;
+    }
+    sc_array_destroy(gdata->irecumu);
+    sc_array_destroy(gdata->irvcumu);
+    
+    }
+
+   
+}
+
 void Octree_Manager:: adapt_octree(){
 
   
@@ -426,6 +763,11 @@ void Octree_Manager:: adapt_octree(){
 }
 
 
+void Octree_Manager::balance_octree2d(p4est_init_t init_fn, p4est_replace_t replace_fn){
+
+    p4est_balance_ext(gdata->p4est,P4EST_CONNECT_FULL,init_fn,replace_fn);
+
+}
 
 void Octree_Manager::balance_octree(p8est_init_t init_fn, p8est_replace_t replace_fn){
 

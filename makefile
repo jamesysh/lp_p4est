@@ -15,7 +15,7 @@ LFLAGS = -Wall  $(DEBUG) $(INCS) $(LIBS)
 vpath %.h $(GEOMETRY_DIR) $(STATE_DIR) $(BOUNDARY_DIR)
 
 MAIN_OBJS = lp_main.o particle_data.o initializer.o octree_manager.o registrar.o lp_solver.o eos.o particle_viewer.o ls_solver.o
-GEOMETRY_OBJS = geometry.o geometry_pellet.o
+GEOMETRY_OBJS = geometry.o geometry_pellet.o geometry_disk.o
 STATE_OBJS = state.o state_pellet.o 
 BOUNDARY_OBJS = boundary.o boundary_pellet.o
 

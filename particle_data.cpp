@@ -71,6 +71,20 @@ static void initNeighbourArray(p8est_iter_volume_info_t *info, void*user_data){
 }
 
 static int
+slocal_quad2d (p4est_t * p4est, p4est_topidx_t which_tree,
+             p4est_quadrant_t * quadrant, p4est_locidx_t local_num,
+             void *point)
+{
+  Global_Data      *g = (Global_Data *) p4est->user_pointer;
+
+  /* compute coordinate range of this quadrant */
+  g->loopquad2d ( which_tree, quadrant, g->lxyz, g->hxyz, g->dxyz);
+
+  /* always return 1 to search particles individually */
+  return 1;
+}
+
+static int
 slocal_quad (p8est_t * p4est, p4est_topidx_t which_tree,
              p8est_quadrant_t * quadrant, p4est_locidx_t local_num,
              void *point)
@@ -85,6 +99,52 @@ slocal_quad (p8est_t * p4est, p4est_topidx_t which_tree,
 }
 
 
+static int
+slocal_point2d (p4est_t * p4est, p4est_topidx_t which_tree,
+              p4est_quadrant_t * quadrant, p4est_locidx_t local_num,
+              void *point)
+{
+  int                 i;
+  char               *cf;
+  size_t              zp;
+  Global_Data      *g = (Global_Data *) p4est->user_pointer;
+  octant_data_t          *qud;
+  double             *x;
+  pdata_t          *pad = (pdata_t *) point;
+
+  /* access location of particle to be searched */
+  x = pad->xyz;
+
+  /* due to roundoff we call this even for a local leaf */
+  for (i = 0; i < P4EST_DIM; ++i) {
+    if (!(g->lxyz[i] <= x[i] && x[i] <= g->hxyz[i])) {
+      /* the point is outside the search quadrant */
+      return 0;
+    }
+  }
+
+  if (local_num >= 0) {
+    /* quadrant is a local leaf */
+    /* first local match counts (due to roundoff there may be multiple) */
+    zp = sc_array_position (g->prebuf, point);
+    cf = (char *) sc_array_index (g->cfound, zp);
+    if (!*cf) {
+      /* make sure this particle is not found twice */
+      *cf = 1;
+
+      /* count this particle in its target quadrant */
+      *(p4est_locidx_t *) sc_array_push (g->ireceive) = (p4est_locidx_t) zp;
+      qud = (octant_data_t *) quadrant->p.user_data;
+      ++qud->preceive;
+    }
+
+    /* return value will have no effect */
+    return 0;
+  }
+
+  /* the leaf for this particle has not yet been found */
+  return 1;
+}
 static int
 slocal_point (p8est_t * p4est, p4est_topidx_t which_tree,
               p8est_quadrant_t * quadrant, p4est_locidx_t local_num,
@@ -142,6 +202,89 @@ psearch_quad (p8est_t * p4est, p4est_topidx_t which_tree,
   g->loopquad ( which_tree, quadrant, g->lxyz, g->hxyz, g->dxyz);
 
   /* always return 1 to search particles individually */
+  return 1;
+}
+
+static int
+psearch_quad2d (p4est_t * p4est, p4est_topidx_t which_tree,
+              p4est_quadrant_t * quadrant, int pfirst, int plast,
+              p4est_locidx_t local_num, void *point)
+{
+  Global_Data      *g = (Global_Data *) p4est->user_pointer;
+
+  /* compute coordinate range of this quadrant */
+  g->loopquad2d ( which_tree, quadrant, g->lxyz, g->hxyz, g->dxyz);
+
+  /* always return 1 to search particles individually */
+  return 1;
+}
+
+static int
+psearch_point2d (p4est_t * p4est, p4est_topidx_t which_tree,
+               p4est_quadrant_t * quadrant, int pfirst, int plast,
+               p4est_locidx_t local_num, void *point)
+{
+  int                 i;
+  int                *pfn;
+  size_t              zp;
+  double             *x;
+  Global_Data      *g = (Global_Data *) p4est->user_pointer;
+  octant_data_t          *qud;
+  pdata_t          *pad = (pdata_t *) point;
+
+  /* access location of particle to be searched */
+  x = pad->xyz;
+
+  /* due to roundoff we call this even for a local leaf */
+  for (i = 0; i < P4EST_DIM; ++i) {
+    if (!(g->lxyz[i] <= x[i] && x[i] <= g->hxyz[i])) {
+      /* the point is outside the search quadrant */
+      return 0;
+    }
+  }
+
+  /* convention for entries of pfound:
+     -1              particle has not yet been found
+     [0 .. mpisize)  particle found on that rank, me or other
+   */
+
+  /* find process/quadrant for this particle */
+  if (local_num >= 0) {
+    /* quadrant is a local leaf */
+    zp = sc_array_position (g->particle_data, point);
+    pfn = (int *) sc_array_index (g->pfound, zp);
+    /* first local match counts (due to roundoff there may be multiple) */
+    if (*pfn != g->mpirank) {
+      /* particle was either yet unfound, or found on another process */
+      /* bump counter of particles in this local quadrant */
+
+      *pfn = g->mpirank;
+      *(p4est_locidx_t *) sc_array_push (g->iremain) = (p4est_locidx_t) zp;
+      qud = (octant_data_t *) quadrant->p.user_data;
+      ++qud->premain;
+    }
+    /* return value will have no effect, but we must return */
+    return 0;
+  }
+  if (pfirst == plast) {
+    if (pfirst == g->mpirank) {
+      /* continue recursion for local branch quadrant */
+      return 1;
+    }
+    
+    /* found particle on a remote process */
+    zp = sc_array_position (g->particle_data, point);
+    pfn = (int *) sc_array_index (g->pfound, zp);
+    /* only count match if it has not been found locally or on lower rank */
+    if (*pfn < 0 || (*pfn != g->mpirank && pfirst < *pfn)) {
+        *pfn = pfirst;
+    }
+
+    /* return value will have no effect, but we must return */
+    return 0;
+  }
+
+  /* the process for this particle has not yet been found */
   return 1;
 }
 
@@ -215,6 +358,22 @@ psearch_point (p8est_t * p4est, p4est_topidx_t which_tree,
   return 1;
 }
 
+static int
+part_weight2d (p4est_t * p4est,
+             p4est_topidx_t which_tree, p4est_quadrant_t * quadrant)
+{
+  p4est_locidx_t      ilem_particles;
+  Global_Data      *g = (Global_Data *) p4est->user_pointer;
+  octant_data_t          *qud = (octant_data_t *) quadrant->p.user_data;
+
+
+  ilem_particles = qud->lpend - g->prevlp;
+
+  g->prevlp = qud->lpend;
+  *(int *) sc_array_index (g->src_fixed, g->qcount++) =
+    (int) (ilem_particles * sizeof (pdata_t));
+  return 1 + ilem_particles;
+}
 static int
 part_weight (p8est_t * p4est,
              p4est_topidx_t which_tree, p8est_quadrant_t * quadrant)
@@ -473,7 +632,7 @@ Global_Data:: Global_Data(Initializer* init){
     gpnum = 0;
     gplost = 0; 
     flagrefine = 1;
-    dimension = 3;
+    dimension = 2;
     initlevel = init->initlevel;
     timesearchingradius = init->timesearchingradius;
     maxlevel = init->maxlevel;
@@ -482,7 +641,7 @@ Global_Data:: Global_Data(Initializer* init){
     numrow1st = 8;
     initperturbation = init->initperturbation;
     elem_particles = init->elem_particles;
-    geometry = GeometryFactory::instance().createGeometry("pelletlayer"); 
+    geometry = GeometryFactory::instance().createGeometry("disk"); 
     geometry->getBoundingBox(bb[0],bb[1],bb[2],bb[3],bb[4],bb[5]);
     state = StateFactory::instance().createState("pelletstate");
     boundary = BoundaryFactory::instance().createBoundary("inflowboundary");
@@ -667,6 +826,25 @@ void Global_Data::setEOS(){
 }
 
 
+void Global_Data::loopquad2d (p4est_topidx_t tt, p4est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]){
+
+    
+  int                 i;
+  p4est_qcoord_t      qh;
+  qh = P4EST_QUADRANT_LEN (quad->level);
+  p4est_qcoord_to_vertex (conn2d, tt, quad->x, quad->y,    lxyz);
+  p4est_qcoord_to_vertex (conn2d, tt, quad->x + qh, quad->y + qh,  hxyz);
+  adjustCoordByDomain(lxyz);
+  adjustCoordByDomain(hxyz);
+  for (i = 0; i < 2; ++i) {
+
+    dxyz[i] = hxyz[i] - lxyz[i];
+   
+  }
+
+}
+
+
 void Global_Data::loopquad (p4est_topidx_t tt, p8est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]){
 
     
@@ -745,6 +923,20 @@ void Global_Data::presearch(){
   sc_array_memset (pfound, -1);
 
   p8est_search_all (p8est, 0, psearch_quad, psearch_point, particle_data);
+
+
+
+}
+
+
+void Global_Data::presearch2d(){
+        
+  pfound = sc_array_new_count (sizeof (int), particle_data->elem_count);
+  
+  iremain = sc_array_new (sizeof (p4est_locidx_t));
+  sc_array_memset (pfound, -1);
+
+  p4est_search_all (p4est, 0, psearch_quad2d, psearch_point2d, particle_data);
 
 
 
@@ -977,6 +1169,100 @@ void Global_Data::postsearch(){
 */
 }
 
+void Global_Data::postsearch2d(){
+  ireceive = sc_array_new (sizeof (p4est_locidx_t));
+  cfound = sc_array_new_count (sizeof (char), prebuf->elem_count);
+
+  sc_array_memset (cfound, 0);
+
+  p4est_search_local (p4est, 0, slocal_quad2d, slocal_point2d, prebuf);
+  
+  sc_array_destroy_null (&cfound);
+
+/*
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+
+  p8est_tree_t       *tree;
+  p8est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+    tree = p8est_tree_array_index (p8est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      if(qud->preceive>0 )
+          printf("%d %d %d \n",qud->premain,qud->preceive,mpirank);
+        
+    }
+  }
+*/
+}
+
+void Global_Data::regroupParticles2d(){
+
+  sc_array_t         *newpa;
+  p4est_topidx_t      tt;
+  p4est_locidx_t      newnum;
+  p4est_locidx_t      ppos;
+  p4est_locidx_t      lq, prev;
+  p4est_locidx_t      qboth, li;
+  p4est_locidx_t     *premain, *preceive;
+  p4est_tree_t       *tree;
+  p4est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  pdata_t          *pad;
+
+  newnum =
+    (p4est_locidx_t) (iremain->elem_count + ireceive->elem_count);
+  lpnum = newnum;
+
+  premain = (p4est_locidx_t *) sc_array_index_begin (iremain);
+  preceive = (p4est_locidx_t *) sc_array_index_begin (ireceive);
+  newpa = sc_array_new_count (sizeof (pdata_t), newnum);
+  pad = (pdata_t *) sc_array_index_begin (newpa);
+  prev = 0;
+  
+  for (tt = p4est->first_local_tree; tt <= p4est->last_local_tree; ++tt) {
+    
+      tree = p4est_tree_array_index (p4est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      
+      quad = p4est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      qboth = qud->premain + qud->preceive;
+      if (qboth == 0) {
+        qud->lpend = prev;
+        qud->premain = qud->preceive = 0;
+        qud->poctant = 0;
+        continue;
+      }
+      prev += qboth;
+      for (li = 0; li < qud->premain; ++li) {
+        ppos = *premain++;
+        memcpy (pad++, sc_array_index (particle_data, ppos), sizeof (pdata_t));
+      }
+      for (li = 0; li < qud->preceive; ++li) {
+        ppos = *preceive++;
+        memcpy (pad++, sc_array_index (prebuf, ppos), sizeof (pdata_t));
+      }
+      qud->lpend = prev;
+      qud->poctant = qboth;
+      qud->premain = qud->preceive = 0;
+    }
+    
+  } 
+   
+  sc_array_destroy_null (&iremain);
+
+  sc_array_destroy_null (&prebuf);
+  sc_array_destroy_null (&ireceive);
+  sc_array_destroy (particle_data);
+
+  particle_data = newpa;
+}
+
 void Global_Data::regroupParticles(){
 
   sc_array_t         *newpa;
@@ -1038,6 +1324,102 @@ void Global_Data::regroupParticles(){
   sc_array_destroy (particle_data);
 
   particle_data = newpa;
+}
+
+void Global_Data:: partitionParticles2d(){
+
+
+  sc_array_t         *dest_data;
+  p4est_topidx_t      tt;
+  p4est_locidx_t      ldatasize, lcount;
+  p4est_locidx_t      dest_quads, src_quads;
+  p4est_locidx_t      dest_parts;
+  p4est_locidx_t      lquad, lq;
+  p4est_locidx_t      lpnum;
+  p4est_gloidx_t      gshipped;
+  p4est_gloidx_t     *src_gfq;
+  p4est_tree_t       *tree;
+  p4est_quadrant_t   *quad;
+  octant_data_t          *qud;
+   
+  if(mpisize == 1)
+  
+      return;
+
+  src_gfq = P4EST_ALLOC (p4est_gloidx_t, mpisize + 1);
+
+  memcpy (src_gfq, p4est->global_first_quadrant,
+          (mpisize + 1) * sizeof (p4est_gloidx_t));
+
+
+  src_quads = p4est->local_num_quadrants;
+
+  assert(src_quads == src_gfq[mpirank+1]-src_gfq[mpirank]);
+
+  src_fixed = sc_array_new_count (sizeof (int), src_quads);
+
+  qcount = 0;
+  prevlp = 0;
+
+  gshipped = p4est_partition_ext (p4est, 1, part_weight2d);
+  dest_quads = p4est->local_num_quadrants;
+
+  if (gshipped == 0) {
+    sc_array_destroy_null (&src_fixed);
+    P4EST_FREE (src_gfq);
+    return;
+  }
+
+  dest_fixed = sc_array_new_count (sizeof (int), dest_quads);
+
+  p4est_transfer_fixed (p4est->global_first_quadrant, src_gfq,
+                        mpicomm, COMM_TAG_FIXED,
+                        (int *) dest_fixed->array,
+                        (const int *) src_fixed->array, sizeof (int));
+
+  ldatasize = (p4est_locidx_t) sizeof (pdata_t);
+
+  dest_parts = 0;
+
+  for (lq = 0; lq < dest_quads; ++lq) {
+    dest_parts += *(int *) sc_array_index (dest_fixed, lq);
+  }
+  assert(dest_parts % ldatasize == 0); 
+  dest_parts /= ldatasize;
+  dest_data = sc_array_new_count (sizeof (pdata_t), dest_parts);
+  p4est_transfer_custom (p4est->global_first_quadrant, src_gfq,
+                         mpicomm, COMM_TAG_CUSTOM,
+                         (pdata_t *) dest_data->array,
+                         (const int *) dest_fixed->array,
+                         (const pdata_t *) particle_data->array,
+                         (const int *) src_fixed->array);
+
+  sc_array_destroy_null (&src_fixed);
+
+  P4EST_FREE (src_gfq);
+  sc_array_destroy (particle_data);
+  particle_data = dest_data;
+  lpnum = 0;
+  lquad = 0;
+  for (tt = p4est->first_local_tree; tt <= p4est->last_local_tree; ++tt) {
+    tree = p4est_tree_array_index (p4est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      /* access quadrant */
+      quad = p4est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+
+      /* back out particle count in quadrant from data size */
+      lcount = *(int *) sc_array_index (dest_fixed, lquad);
+      assert (lcount % ldatasize == 0);
+      lcount /= ldatasize;
+      lpnum += lcount;
+      qud->lpend = lpnum;
+      ++lquad;
+    }
+  }
+  sc_array_destroy_null (&dest_fixed);
+
+
 }
 
 void Global_Data:: partitionParticles(){
@@ -1219,6 +1601,25 @@ void Global_Data::testquad(){
 }
 
 
+void Global_Data::resetOctantData2d(){
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+
+  p4est_tree_t       *tree;
+  p4est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  for (tt = p4est->first_local_tree; tt <= p4est->last_local_tree; ++tt) {
+    tree = p4est_tree_array_index (p4est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p4est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      qud->premain = qud->preceive = 0;
+    }
+  }
+
+}
+
 void Global_Data::resetOctantData(){
     p4est_topidx_t      tt;
   
@@ -1233,6 +1634,45 @@ void Global_Data::resetOctantData(){
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
       qud->premain = qud->preceive = 0;
+    }
+  }
+
+}
+
+
+void Global_Data::createViewForOctant2d(){
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+    p4est_locidx_t      offset = 0;
+  p4est_tree_t       *tree;
+  p4est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  pdata_t *pads;
+  pdata_copy_t *padd;
+  for (tt = p4est->first_local_tree; tt <= p4est->last_local_tree; ++tt) {
+    tree = p4est_tree_array_index (p4est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p4est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      qud->flagboundary = 0;  
+      qud->poctant = qud->lpend - offset;
+        if(qud->poctant >= 250){
+            printf("This octant has more than 250 particles, please enlarge size of localparticle!!\n");
+            assert(false);
+        }
+//      qud->particle_data_view = sc_array_new_count(sizeof(pdata_t),(size_t)qud->poctant);
+//      padd = (pdata_t *) sc_array_index_begin(qud->particle_data_view);
+      
+      pads = (pdata_t *) sc_array_index(particle_data,(size_t)offset);
+      for(size_t i=0;i<(size_t) qud->poctant;i++){
+        padd = &qud->localparticle[i];
+        copyParticle( padd, pads);
+        pads++;
+      
+      } 
+          offset = qud->lpend;
+    
     }
   }
 
@@ -1933,7 +2373,6 @@ void Global_Data::updateParticleStates(){
 
   p4est_locidx_t   offset = 0,lpend;
   pdata_t * pad;
-  double v0,v1,v2;
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
