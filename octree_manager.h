@@ -35,6 +35,7 @@ class Octree_Manager{
         
         void refine_octree(int recursive, p8est_refine_t refine_fn, p8est_init_t init_fn, p8est_replace_t replace_fn);
      
+        void refine_octree2d(int recursive, p4est_refine_t refine_fn, p4est_init_t init_fn, p4est_replace_t replace_fn);
         
         void balance_octree(p8est_init_t init_fn, p8est_replace_t replace_fn);
         void adapt_octree();

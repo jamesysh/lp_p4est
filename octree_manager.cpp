@@ -26,13 +26,25 @@ void Octree_Manager:: build_octree(){
   
     p4est_init (NULL, SC_LP_DEFAULT);
 
+    if(gdata->dimension == 3){
 //build octree connectivity
     gdata->conn = p8est_connectivity_new_unitcube ();
 //build octree
     gdata->p8est = p8est_new_ext (gdata->mpicomm, gdata->conn, 0,
                             0 , 1,
                             sizeof (octant_data_t), NULL, gdata);
+    }
 
+    else if(gdata->dimension == 2){
+    
+//build octree connectivity
+    gdata->conn2d = p4est_connectivity_new_unitsquare ();
+//build octree
+    gdata->p4est = p4est_new_ext (gdata->mpicomm, gdata->conn2d, 0,
+                            0 , 1,
+                            sizeof (octant_data_t), NULL, gdata);
+    
+    }
 }
 
 
@@ -62,8 +74,14 @@ void Octree_Manager:: partition_octree(int allow_for_coarsening,p8est_weight_t w
         
 void Octree_Manager:: refine_octree(int recursive, p8est_refine_t refine_fn, p8est_init_t init_fn, p8est_replace_t replace_fn){
    
-    p8est_refine_ext(gdata->p8est,recursive,-1,refine_fn,init_fn,replace_fn);
+        p8est_refine_ext(gdata->p8est,recursive,-1,refine_fn,init_fn,replace_fn);
+    
+}
 
+void Octree_Manager:: refine_octree2d(int recursive, p4est_refine_t refine_fn, p4est_init_t init_fn, p4est_replace_t replace_fn){
+   
+        p4est_refine_ext(gdata->p4est,recursive,-1,refine_fn,init_fn,replace_fn);
+    
 }
 
 int Octree_Manager:: adapt_coarsen (p8est_t * p8est, p4est_topidx_t which_tree,

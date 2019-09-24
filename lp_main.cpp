@@ -21,6 +21,20 @@ refine_init (p8est_t * p8est, p4est_topidx_t which_tree,
 }
 
 
+static  int
+refine_init2d (p4est_t * p4est, p4est_topidx_t which_tree,
+           p4est_quadrant_t * quadrant)
+{
+    Global_Data *g = (Global_Data *) p4est->user_pointer;
+    int initlevel = g->initlevel;
+    if(quadrant->level >= initlevel)
+
+        return 0;
+    else 
+        return 1;
+}
+
+
 
 int main(){
     Initializer *init = new Initializer();
@@ -37,9 +51,10 @@ int main(){
 
     octree->build_octree();
 
- 
-    octree->refine_octree(1,refine_init,NULL,NULL);  //initial refinement of octree
-
+    if(gdata->dimension == 3) 
+        octree->refine_octree(1,refine_init,NULL,NULL);  //initial refinement of octree
+    else if(gdata->dimension == 2)
+        octree->refine_octree2d(1,refine_init2d,NULL,NULL);  //initial refinement of octree
 
     octree->partition_octree(1,NULL);
     gdata->prerun(); 

@@ -172,6 +172,7 @@ class Global_Data{
         void setEOS();
 
         sc_MPI_Comm mpicomm;
+        int dimension;
         int mpisize,mpirank;
         int initlevel;
         double timesearchingradius;
@@ -206,6 +207,7 @@ class Global_Data{
         int flagrefine, gflagrefine, flagstartrefine;
         octant_data_t *ghost_data; 
         p8est_ghost_t *ghost;
+        p4est_ghost_t *ghost2d;
         sc_array_t *particle_data; //local particle data on process
         
         sc_array_t *pfound; //target process of particle
@@ -244,7 +246,9 @@ class Global_Data{
         p8est_connectivity_t *conn;
       
         p8est_t            *p8est;
-
+        
+        p4est_connectivity_t *conn2d;
+        p4est_t            *p4est;
       
 
 
