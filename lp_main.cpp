@@ -56,7 +56,7 @@ int main(){
     else if(gdata->dimension == 2)
         octree->refine_octree2d(1,refine_init2d,NULL,NULL);  //initial refinement of octree
 
-    octree->partition_octree(1,NULL);
+    octree->partition_octree(1);
     gdata->prerun(); 
     gdata->initFluidParticles();
     //gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);

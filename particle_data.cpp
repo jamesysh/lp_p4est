@@ -268,6 +268,15 @@ static bool ifPointInsideBox(double x, double y, double z, double bb[6]) {
         return false;
 }
 
+static bool ifPointInsideBox2d(double x, double y, double bb[6]) {
+    
+    if(x>bb[0] && x<bb[1] && y>bb[2] && y<bb[3] 
+
+            )
+        return true;
+    else
+        return false;
+}
 void Global_Data:: adjustCoordByDomain( double xyz[3]){
     double dl = domain_len;
     for(int i=0;i<3;i++){
@@ -294,6 +303,92 @@ static bool ifOctantInsectBox(double lxyz[3],double bb[6],double l) //l:lenth of
     return false;
 }
 
+
+static bool ifOctantInsectBox2d(double lxyz[3],double bb[6],double l) //l:lenth of octant, lxyz:coord of octant
+{
+    int i,j,k;
+    bool ifin;
+    for(i = 0; i<2; i++){
+        for( j = 0;j<2;j++){
+                ifin = ifPointInsideBox2d(lxyz[0]+i*l,lxyz[1]+j*l,bb);
+                if(ifin)
+                    return true;
+        }
+    
+    }
+    return false;
+}
+static void createParticlesInOctant2d(p4est_iter_volume_info_t * info, void *user_data){
+    double l; //actuall length of a octant
+    bool iffill; //if fill octant with fluid particles;
+    int nump;
+    Global_Data* g = (Global_Data*) user_data;
+     
+    Geometry * geom = g->geometry;
+    State* state = g->state;
+    EOS* eos = g->eos;
+    double x,y;
+    int i,j,k;
+    double ls = g->initlocalspacing;
+    double initr = g->initperturbation;
+    p4est_locidx_t *lpnum = &g->lpnum; 
+    p4est_locidx_t oldnum = *lpnum;
+    p4est_topidx_t      tt = info->treeid;  /**< the tree containing \a quad */
+    p4est_quadrant_t   *quad = info->quad;
+    double domain_len = g->domain_len;
+    double* bb = g->bb;
+    pdata_t *pd;
+    octant_data_t *oud = (octant_data_t *)quad->p.user_data;
+    p4est_qcoord_t qh;
+   
+    p4est_locidx_t      *remainid;
+
+
+    oud->premain = oud->preceive =  oud->poctant = 0;
+    qh = P4EST_QUADRANT_LEN (quad->level);
+    l = qh/(double)P4EST_ROOT_LEN*domain_len;
+    p4est_qcoord_to_vertex (g->conn2d, tt, quad->x, quad->y,
+                          g->lxyz);
+   
+    g->adjustCoordByDomain(g->lxyz);
+    
+    iffill = ifOctantInsectBox2d(g->lxyz,bb, l);
+    if(!iffill){
+        oud->lpend = -1;
+        return;
+    }
+    //TO DO FILL WITH PARTICLE DATA 
+    nump =(int)(l/ls);
+    
+    for(i = 0;i<nump;i++){
+        for(j=0;j<nump;j++){
+                x = g->lxyz[0] + (i+rand()/(double)RAND_MAX*initr)*ls;
+                y = g->lxyz[1] + (j+rand()/(double)RAND_MAX*initr)*ls;
+            if(geom->operator()(x,y,0)){
+       
+                pd = (pdata_t *) sc_array_push_count (g->particle_data,1);
+                remainid = (p4est_locidx_t *) sc_array_push_count(g->iremain,1);
+                *remainid = *lpnum;
+                pd->xyz[0] = x;
+                pd->xyz[1] = y;
+                pd->xyz[2] = 0;
+                state->velocity(x,y,0,pd->v[0],pd->v[1],pd->v[2]);                
+                pd->volume = 1./state->density(x,y,0);
+                pd->pressure = state->pressure(x,y,0);
+                pd->localspacing = ls;
+                pd->mass = ls*ls*ls/pd->volume/sqrt(2); 
+                pd->soundspeed = eos->getSoundSpeed(pd->pressure,1./pd->volume);
+                pd->ifboundary = false;
+                pd->redocount = 0;
+                (*lpnum) ++;
+                }
+        }
+    }
+    //   pd = (pdata_t *) sc_array_push_count(g->particle_data,nump); 
+   oud->lpend = *(lpnum); 
+   oud->premain = *(lpnum) - oldnum; 
+   oud->poctant = oud->premain;
+};
 
 
 static void createParticlesInOctant(p8est_iter_volume_info_t * info, void *user_data){
@@ -414,9 +509,12 @@ void Global_Data::initFluidParticles(){
    srand(time(NULL));   
 
    
+   if(dimension == 3) 
+       p8est_iterate(p8est,NULL,(void *)this,createParticlesInOctant,NULL,NULL,NULL); 
+   else if(dimension == 2)
+       p4est_iterate(p4est,NULL,(void *)this,createParticlesInOctant2d,NULL,NULL); 
    
-   p8est_iterate(p8est,NULL,(void *)this,createParticlesInOctant,NULL,NULL,NULL); 
-   p4est_gloidx_t gnum = 0,lnum = (p4est_gloidx_t)lpnum; 
+    p4est_gloidx_t gnum = 0,lnum = (p4est_gloidx_t)lpnum; 
     
 
     mpiret = sc_MPI_Allreduce (&lnum, &gnum, 1, P4EST_MPI_GLOIDX, sc_MPI_SUM, mpicomm);

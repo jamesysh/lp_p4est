@@ -31,7 +31,7 @@ class Octree_Manager{
 
         void destroy_octree();
         
-        void partition_octree(int allow_for_coarsening,p8est_weight_t weight_fn);
+        void partition_octree(int allow_for_coarsening);
         
         void refine_octree(int recursive, p8est_refine_t refine_fn, p8est_init_t init_fn, p8est_replace_t replace_fn);
      

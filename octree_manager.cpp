@@ -65,10 +65,14 @@ void Octree_Manager:: destroy_octree(){
 }
 
 
-void Octree_Manager:: partition_octree(int allow_for_coarsening,p8est_weight_t weight_fn){
+void Octree_Manager:: partition_octree(int allow_for_coarsening){
+    
+   if(gdata->dimension == 3) 
+       p8est_partition(gdata->p8est,allow_for_coarsening,NULL); 
 
-   p8est_partition(gdata->p8est,allow_for_coarsening,weight_fn); 
+   else if(gdata->dimension == 2)
 
+       p4est_partition(gdata->p4est,allow_for_coarsening,NULL); 
 }
 
         
