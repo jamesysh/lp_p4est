@@ -125,7 +125,7 @@ void Octree_Manager:: balance_replace (p8est_t * p8est, p4est_topidx_t which_tre
     // we are coarsening 
       oud = (octant_data_t *) incoming[0]->p.user_data;
       oud->premain = oud->preceive = 0;
-      for(int i=0;i<P4EST_CHILDREN;i++){
+      for(int i=0;i<P8EST_CHILDREN;i++){
       iud = (octant_data_t *) outgoing[i]->p.user_data;
       oud->premain += iud->premain;
       oud->preceive += iud->preceive;
