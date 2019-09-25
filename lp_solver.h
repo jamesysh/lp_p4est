@@ -34,9 +34,11 @@ public:
 	double* outVolume, double* outVelocity, double* outPressure);
 
     void computeA3D(double *A ,pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, double distance);
+    void computeA2D(double *A ,pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, double distance);
 
 
-    void computeB(double *B, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, const double* indata, indata_t datatype, int dir);
+    void computeB3d(double *B, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, const double* indata, indata_t datatype, int dir);
+    void computeB2d(double *B, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, const double* indata, indata_t datatype, int dir);
 
     void computeCFLCondition();
 
@@ -48,6 +50,7 @@ public:
 	std::vector<std::vector<int> > m_vDirSplitTable; 
     int splitorder;
     double invalidpressure;
+    int totalphase;
 };
 
 

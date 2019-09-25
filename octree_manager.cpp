@@ -51,15 +51,26 @@ void Octree_Manager:: build_octree(){
 
 void Octree_Manager:: destroy_octree(){
 
-
-    p8est_destroy (gdata->p8est);
-  
-    gdata->p8est = NULL;
-  
-    p8est_connectivity_destroy (gdata->conn);
-  
-    gdata->conn = NULL;
-  
+    if(gdata->dimension == 3){
+        p8est_destroy (gdata->p8est);
+      
+        gdata->p8est = NULL;
+      
+        p8est_connectivity_destroy (gdata->conn);
+      
+        gdata->conn = NULL;
+    }
+    else {
+            
+        p4est_destroy (gdata->p4est);
+      
+        gdata->p4est = NULL;
+      
+        p4est_connectivity_destroy (gdata->conn2d);
+      
+        gdata->conn2d = NULL;
+            
+    }
     sc_finalize ();
 
 }

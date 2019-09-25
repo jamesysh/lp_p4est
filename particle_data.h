@@ -167,11 +167,14 @@ class Global_Data{
         void fillArrayWithGhostParticle2d(sc_array_t * array, pdata_t * pad, int count,int dir);
         void updateParticleStates();
         void updateViewForOctant(int phase);
+        void updateViewForOctant2d(int phase);
         void addGhostParticle(pdata_copy_t * ghostnei, pdata_t *pad, double dx, double dy, double dz);
         void fetchNeighbourParticle(pdata_t* pad, pdata_copy_t **padnei ,sc_array_t *neighbourlist, size_t index);
+        void fetchNeighbourParticle2d(pdata_t* pad, pdata_copy_t **padnei ,sc_array_t *neighbourlist, size_t index);
         void createViewForOctant();
         void createViewForOctant2d();
         void cleanForTimeStep();
+        void cleanForTimeStep2d();
         void testquad();
         void loopquad (p4est_topidx_t tt, p8est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]);
         

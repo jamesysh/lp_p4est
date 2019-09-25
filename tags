@@ -158,6 +158,7 @@ cflcoefficient	lp_solver.h	/^    double cflcoefficient;$/;"	m	class:LPSolver
 cfldt	lp_solver.h	/^    double cfldt = 0.0001;$/;"	m	class:LPSolver
 cfound	particle_data.h	/^        sc_array_t *cfound;   \/**< char Flag for received particles *\/$/;"	m	class:Global_Data
 cleanForTimeStep	particle_data.cpp	/^void Global_Data::cleanForTimeStep(){$/;"	f	class:Global_Data
+cleanForTimeStep2d	particle_data.cpp	/^void Global_Data::cleanForTimeStep2d(){$/;"	f	class:Global_Data
 cleanUpArrays	particle_data.cpp	/^void Global_Data:: cleanUpArrays(){$/;"	f	class:Global_Data
 comm_prank	particle_data.h	/^typedef struct comm_prank$/;"	s
 comm_prank_compare	particle_data.cpp	/^comm_prank_compare (const void *v1, const void *v2)$/;"	f	file:
@@ -169,6 +170,7 @@ comm_tag_t	particle_data.h	/^comm_tag_t;$/;"	t	typeref:enum:comm_tag
 communicateParticles	particle_data.cpp	/^void Global_Data::communicateParticles(){$/;"	f	class:Global_Data
 compareneighbour_info	particle_data.cpp	/^static int compareneighbour_info(const void *p1,const void *p2)$/;"	f	file:
 compareoctant	particle_data.cpp	/^compareoctant (const void *p1, const void *p2)$/;"	f	file:
+computeA2D	lp_solver.cpp	/^void LPSolver::computeA2D(double *A, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, double distance){$/;"	f	class:LPSolver
 computeA3D	lp_solver.cpp	/^void LPSolver::computeA3D(double *A, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, double distance){$/;"	f	class:LPSolver
 computeB	lp_solver.cpp	/^void LPSolver::computeB(double *B, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, const double* indata, indata_t datatype, int dir){$/;"	f	class:LPSolver
 computeCFLCondition	lp_solver.cpp	/^void LPSolver:: computeCFLCondition(){$/;"	f	class:LPSolver
@@ -204,7 +206,9 @@ eos	particle_data.h	/^        EOS* eos;        $/;"	m	class:Global_Data
 eoschoice	initializer.h	/^        int eoschoice;$/;"	m	class:Initializer
 eoschoice	particle_data.h	/^        int eoschoice;$/;"	m	class:Global_Data
 fetchNeighbourParticle	particle_data.cpp	/^void Global_Data::fetchNeighbourParticle(pdata_t* pad, pdata_copy_t **padnei ,sc_array_t *neighbourlist, size_t index){$/;"	f	class:Global_Data
+fetchNeighbourParticle2d	particle_data.cpp	/^void Global_Data::fetchNeighbourParticle2d(pdata_t* pad, pdata_copy_t **padnei ,sc_array_t *neighbourlist, size_t index){$/;"	f	class:Global_Data
 fillArrayWithGhostParticle	particle_data.cpp	/^void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t * pad, int count, int dir){$/;"	f	class:Global_Data
+fillArrayWithGhostParticle2d	particle_data.cpp	/^void Global_Data::fillArrayWithGhostParticle2d(sc_array_t * neighbourlist, pdata_t * pad, int count, int dir){$/;"	f	class:Global_Data
 flagboundary	particle_data.h	/^    bool flagboundary;$/;"	m	struct:pdata_copy
 flagboundary	particle_data.h	/^    double flagboundary;$/;"	m	struct:pdata
 flagboundary	particle_data.h	/^    int flagboundary;  \/\/if true, octant is at cloud boundary;$/;"	m	struct:octant_data
@@ -218,6 +222,7 @@ gdata	particle_viewer.h	/^     Global_Data *gdata;$/;"	m	class:ParticleViewer
 generateBoundaryParticle	boundary/boundary.h	/^    virtual void generateBoundaryParticle(Global_Data *gdata, EOS* m_pEOS, double m_fInitParticleSpacing)  {return ;}  $/;"	f	class:Boundary
 generateBoundaryParticle	boundary/boundary_pellet.cpp	/^void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx){$/;"	f	class:PelletInflowBoundary
 generateGhostParticle	particle_data.cpp	/^void Global_Data::generateGhostParticle(){$/;"	f	class:Global_Data
+generateGhostParticle2d	particle_data.cpp	/^void Global_Data::generateGhostParticle2d(){$/;"	f	class:Global_Data
 geoTable	geometry/geometry.h	/^	std::unordered_map<std::string,GeoCreateFunc> geoTable; \/\/\/< hash table for the (name,creatFunction) pair$/;"	m	class:GeometryFactory
 geometry	particle_data.h	/^        Geometry* geometry;$/;"	m	class:Global_Data
 getBoundingBox	geometry/geometry_disk.cpp	/^void Disk::getBoundingBox(double& xmin, double& xmax, double& ymin, double& ymax, double& zmin, double& zmax){$/;"	f	class:Disk
@@ -329,6 +334,7 @@ neighbourrightparticle	particle_data.h	/^    sc_array_t * neighbourrightparticle
 neighbourupparticle	particle_data.h	/^    sc_array_t * neighbourupparticle;$/;"	m	struct:pdata
 numdigit	particle_viewer.h	/^	int numdigit;\/\/\/< The number of digits for the indexing of output file name $/;"	m	class:ParticleViewer
 numrow1st	particle_data.h	/^        size_t numrow1st;$/;"	m	class:Global_Data
+numrow1st2d	particle_data.h	/^        size_t numrow1st2d;$/;"	m	class:Global_Data
 octant_data	particle_data.h	/^typedef struct octant_data$/;"	s
 octant_data_t	particle_data.h	/^octant_data_t;$/;"	t	typeref:struct:octant_data
 octantid	particle_data.h	/^        int octantid;  $/;"	m	class:Global_Data
@@ -444,9 +450,11 @@ theta	particle_data.h	/^    double theta;          \/\/up and down$/;"	m	struct:
 timeIntegration	lp_solver.cpp	/^void LPSolver::timeIntegration($/;"	f	class:LPSolver
 timesearchingradius	initializer.h	/^        double timesearchingradius;$/;"	m	class:Initializer
 timesearchingradius	particle_data.h	/^        double timesearchingradius;$/;"	m	class:Global_Data
+totalphase	lp_solver.h	/^    int totalphase;$/;"	m	class:LPSolver
 updateLocalSpacing	lp_solver.cpp	/^void LPSolver::updateLocalSpacing(){$/;"	f	class:LPSolver
 updateParticleStates	particle_data.cpp	/^void Global_Data::updateParticleStates(){$/;"	f	class:Global_Data
 updateViewForOctant	particle_data.cpp	/^void Global_Data::updateViewForOctant(int phase){$/;"	f	class:Global_Data
+updateViewForOctant2d	particle_data.cpp	/^void Global_Data::updateViewForOctant2d(int phase){$/;"	f	class:Global_Data
 v	particle_data.h	/^    double v[3]; \/\/velocity$/;"	m	struct:pdata
 v	particle_data.h	/^    double v[3]; \/\/velocity$/;"	m	struct:pdata_copy
 velocity	state/state_pellet.cpp	/^void PelletState::velocity(double x, double y, double z, double& vX, double& vY,double& vZ){$/;"	f	class:PelletState

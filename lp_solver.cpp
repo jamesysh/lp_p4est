@@ -7,13 +7,22 @@ LPSolver::LPSolver(Global_Data *g){
     splitorder = 0;
     cflcoefficient = 0.5;
     invalidpressure = 0;
-    m_vDirSplitTable = vector<vector<int> >
-    ({{0,1,2},
-      {0,2,1},
-      {1,0,2},
-      {1,2,0},
-      {2,0,1},
-      {2,1,0}});
+    if(gdata->dimension == 3){
+        m_vDirSplitTable = vector<vector<int> >
+        ({{0,1,2},
+          {0,2,1},
+          {1,0,2},
+          {1,2,0},
+          {2,0,1},
+          {2,1,0}});
+        totalphase = 3;
+    }
+    else if(gdata->dimension == 2){
+        m_vDirSplitTable = vector<vector<int> >
+        ({{0,1},
+          {1,0}});
+        totalphase = 2;
+    }
 }
 
 void LPSolver::moveParticle(){
@@ -27,7 +36,8 @@ void LPSolver::moveParticle(){
            continue;
        pad->xyz[0] += 0.5*dt*(pad->oldv[0]+pad->v[0]);
        pad->xyz[1] += 0.5*dt*(pad->oldv[1]+pad->v[1]);
-       pad->xyz[2] += 0.5*dt*(pad->oldv[2]+pad->v[2]);
+       if(gdata->dimension == 3)
+           pad->xyz[2] += 0.5*dt*(pad->oldv[2]+pad->v[2]);
   
     }
 }
@@ -41,7 +51,10 @@ void LPSolver::updateLocalSpacing(){
        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
        if(pad->ifboundary)
            continue;
-        pad->localspacing *= cbrt(pad->volume/pad->volumeT1); 
+       if(gdata->dimension == 3) 
+           pad->localspacing *= cbrt(pad->volume/pad->volumeT1); 
+       else if(gdata->dimension == 2)
+           pad->localspacing *= sqrt(pad->volume/pad->volumeT2); 
     }
 
 }
@@ -50,7 +63,8 @@ void LPSolver::updateLocalSpacing(){
 void LPSolver::solve_upwind(int phase){
     
     const int dir = m_vDirSplitTable[splitorder][phase];
-    double realdt = cfldt/3;
+
+    double realdt = gdata->dimension == 3? cfldt/3 : cfldt/2;
     sc_array_t *neighbourlist0;
     sc_array_t *neighbourlist1;
     double *inpressure, *outpressure;
@@ -58,32 +72,24 @@ void LPSolver::solve_upwind(int phase){
     double *invelocity, *outvelocity;
     double *insoundspeed, *outsoundspeed;
     double vel_d_0, vel_dd_0, p_d_0, p_dd_0, vel_d_1, vel_dd_1, p_d_1, p_dd_1; // output
-    p4est_topidx_t      tt;
   
-    p4est_locidx_t      lq;
 
-  p8est_tree_t       *tree;
-  p8est_quadrant_t   *quad;
-  octant_data_t          *qud;
 
-  p4est_locidx_t   offset = 0,lpend;
   pdata_t * pad;
-  for (tt = gdata->p8est->first_local_tree; tt <= gdata->p8est->last_local_tree; ++tt) {
-    tree = p8est_tree_array_index (gdata->p8est->trees, tt);
-    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
-      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
-      qud = (octant_data_t *) quad->p.user_data;
-    
-      lpend = qud->lpend;
-      for(int i=offset;i<lpend;i++){
+
+  size_t li, lpnum = gdata->particle_data->elem_count;
+     
+  for(li = 0; li<lpnum; li++){
+       pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+       if(pad->ifboundary)
+           continue;
          bool redo = false;
-         pad = (pdata_t *)sc_array_index(gdata->particle_data,i);
-         if(pad->ifboundary)
-             continue;
+         
          setInAndOutPointer(pad, &inpressure, &outpressure, &involume, &outvolume,
                   &invelocity, &outvelocity, &insoundspeed, &outsoundspeed, dir, phase);
       
          setNeighbourListPointer(pad, &neighbourlist0, &neighbourlist1,dir);
+         
          if(*insoundspeed == 0 || *involume == 0){
              pad->schemeorder = 0;
             *outvolume = *involume;
@@ -94,13 +100,13 @@ void LPSolver::solve_upwind(int phase){
          }
             
          pad->schemeorder = 1;
-         assert(neighbourlist0->elem_count >= gdata->numrow1st);
-         assert(neighbourlist1->elem_count >= gdata->numrow1st);
+        
          computeSpatialDer(dir, pad, neighbourlist0, inpressure, invelocity,
         &vel_d_0, &vel_dd_0, &p_d_0, &p_dd_0);
      
         computeSpatialDer(dir, pad, neighbourlist1, inpressure, invelocity,
         &vel_d_1, &vel_dd_1, &p_d_1, &p_dd_1);
+        
         /* 
          if(p_d_1 > 0){
 
@@ -148,7 +154,7 @@ if(p_d_0>0){
                 pad->schemeorder = 0;
             }
             else{
-                i--;
+                li--;
                 cout<<"refo upwind for a particle"<<endl;
             }
 
@@ -175,10 +181,6 @@ if(p_d_0>0){
       
       
       }
-       offset = lpend;  
-    
-    }
-  }
 
 } //to do
 
@@ -252,11 +254,12 @@ void LPSolver::setNeighbourListPointer(pdata_t *pad, sc_array_t** neilist0, sc_a
 
 void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist, const double* inpressure, const double *invelocity,
         double *vel_d, double *vel_dd, double *p_d, double *p_dd) {
-    size_t numrow = gdata->numrow1st + pad->redocount;
-    size_t numcol = 3;
+    size_t numrow = pad->redocount + gdata->dimension == 3? gdata->numrow1st:gdata->numrow1st2d;
+    
+    size_t numcol = gdata->dimension == 3? 3:2;
     double distance;
     int info;
-    int offset = 3; // 2 for 2 dimension
+    int offset = gdata->dimension == 3? 3:2; // 2 for 2 dimension
     neighbour_info_t *ninfo;
     while( true ){
         if(numrow > neighbourlist->elem_count){
@@ -269,15 +272,23 @@ void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist
         ninfo = (neighbour_info_t *)sc_array_index(neighbourlist,0);
         distance = ninfo->distance;
         double A[numrow*numcol];
-        computeA3D(A, pad, neighbourlist,numrow,distance);
+        
+        if(gdata->dimension == 3)
+            computeA3D(A, pad, neighbourlist,numrow,distance);
+        else if(gdata->dimension == 2)
+            computeA2D(A, pad, neighbourlist,numrow,distance);
+        
         double B[numrow];
     
-        computeB(B, pad, neighbourlist, numrow, inpressure ,PRESSURE, dir);
-    
-		QRSolver qrSolver(numrow,numcol,A);
+        if(gdata->dimension == 3)
+            computeB3d(B, pad, neighbourlist, numrow, inpressure ,PRESSURE, dir);
+        else if(gdata->dimension == 2)
+            computeB2d(B, pad, neighbourlist, numrow, inpressure ,PRESSURE, dir);
+        QRSolver qrSolver(numrow,numcol,A);
 		
 		double result[numcol];
 	    info = qrSolver.solve(result,B);
+        
         if(info != 0){
             numrow ++;
         } 
@@ -296,7 +307,11 @@ void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist
             
             }
             */
-             computeB(B, pad, neighbourlist, numrow, invelocity ,VELOCITY, dir);
+             
+        if(gdata->dimension == 3)
+            computeB3d(B, pad, neighbourlist, numrow, invelocity ,VELOCITY, dir);
+        else if(gdata->dimension == 2)
+            computeB2d(B, pad, neighbourlist, numrow, invelocity ,VELOCITY, dir);
         
 			 qrSolver.solve(result,B);
         
@@ -320,6 +335,54 @@ void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist
 
 }// to do
 
+
+void LPSolver::computeA2D(double *A, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, double distance){
+    double x, y,  x0, y0;
+    double h,k;
+    pdata_copy_t * padnei;
+    x = pad->xyz[0];
+    y = pad->xyz[1];
+   
+    if(pad->schemeorder == 1){
+
+        for(size_t i=0; i<numrow; i++){
+            gdata->fetchNeighbourParticle2d(pad,&padnei,neighbourlist,i);
+            x0 = padnei->xyz[0];
+            y0 = padnei->xyz[1];
+            h = (x0-x)/distance;
+            k = (y0-y)/distance;
+//           printf("%f %f %f \n",h,k,l);
+            //  cout<<k<<endl;
+          //  if(k>0)
+          //      cout<<"warning"<<endl;
+            A[i]            = h;
+            A[i + 1*numrow] = k;
+   
+        }
+    
+    }
+    if(pad->schemeorder == 2){
+        for(size_t i=0; i<numrow; i++){
+        
+            gdata->fetchNeighbourParticle2d(pad,&padnei,neighbourlist,i);
+            x0 = padnei->xyz[0];
+            y0 = padnei->xyz[1];
+            h = (x0-x)/distance;
+            k = (y0-y)/distance;
+        
+            A[i]            = h;
+			A[i + 1*numrow] = k;
+			A[i + 2*numrow]	= 0.5*h*h;
+			A[i + 3*numrow]	= 0.5*k*k;
+			A[i + 4*numrow]	= h*k;
+	
+        } 
+    
+    
+    }
+
+
+}
 
 
 void LPSolver::computeA3D(double *A, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, double distance){
@@ -378,7 +441,7 @@ void LPSolver::computeA3D(double *A, pdata_t *pad, sc_array_t *neighbourlist, si
 
 }
 
-void LPSolver::computeB(double *B, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, const double* indata, indata_t datatype, int dir){
+void LPSolver::computeB3d(double *B, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, const double* indata, indata_t datatype, int dir){
     pdata_copy_t *padnei;
     
     
@@ -399,6 +462,27 @@ void LPSolver::computeB(double *B, pdata_t *pad, sc_array_t *neighbourlist, size
     
     }
 }
+void LPSolver::computeB2d(double *B, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, const double* indata, indata_t datatype, int dir){
+    pdata_copy_t *padnei;
+    
+    
+    if(datatype == PRESSURE){
+        for(size_t i=0; i<numrow; i++){
+            gdata->fetchNeighbourParticle2d(pad,&padnei,neighbourlist,i);
+            B[i] = padnei->pressure-*indata;  
+//            cout<<B[i]<<endl;
+        }   
+    }
+
+    else if(datatype == VELOCITY){
+    
+        for(size_t i=0; i<numrow; i++){
+            gdata->fetchNeighbourParticle2d(pad,&padnei,neighbourlist,i);
+            B[i] = padnei->v[dir] - *indata;  
+        }   
+    
+    }
+}
 
 
 void LPSolver::timeIntegration(
@@ -408,8 +492,8 @@ void LPSolver::timeIntegration(
 	double vel_d_1, double vel_dd_1, double p_d_1, double p_dd_1,
 	double* outVolume, double* outVelocity, double* outPressure){
 
-    double multiplier1st = 3.; // 2 for 2 dimension;
-    double multiplier2nd = 3./4;
+    double multiplier1st = gdata->dimension == 3? 3.:2.; // 2 for 2 dimension;
+    double multiplier2nd = gdata->dimension == 3? 3./4*cfldt : 1./2*cfldt;
 
 
 	double K = inSoundSpeed*inSoundSpeed/inVolume/inVolume; 
@@ -441,43 +525,25 @@ void LPSolver::timeIntegration(
 
 void LPSolver:: computeCFLCondition(){
 
-    p4est_topidx_t      tt;
-  
-    p4est_locidx_t      lq;
 
-  p8est_tree_t       *tree;
-  p8est_quadrant_t   *quad;
-  octant_data_t          *qud;
 
-  p4est_locidx_t   offset = 0,lpend;
-  pdata_t * pad;
-  double lmindt = 100, gmindt = 0;
-  double dt;
-  double speed,sc;
-  for (tt = gdata->p8est->first_local_tree; tt <= gdata->p8est->last_local_tree; ++tt) {
-    tree = p8est_tree_array_index (gdata->p8est->trees, tt);
-    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
-      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
-      qud = (octant_data_t *) quad->p.user_data;
-    
-      lpend = qud->lpend;
-      for(int i=offset;i<lpend;i++){
-           
-         pad = (pdata_t *)sc_array_index(gdata->particle_data,i);
-         if(pad->ifboundary)
-             continue;
+    pdata_t *pad;
+    size_t li, lpnum = gdata->particle_data->elem_count;
+     
+    double lmindt = 100, gmindt = 0;
+    double dt;
+    double speed,sc;
+    for(li = 0; li<lpnum; li++){
+       pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+       if(pad->ifboundary)
+           continue;
          sc = pad->soundspeed;
          speed = sqrt(pad->v[0]*pad->v[0]+pad->v[1]*pad->v[1]+pad->v[2]*pad->v[2]);
          dt = pad->localspacing/max(sc,speed);
          if(dt < lmindt || lmindt == 100){
             lmindt = dt;
-         }
-      }
-       offset = lpend;  
-    
+        }
     }
-  }
-
     int mpiret = MPI_Allreduce(&lmindt,&gmindt,1,MPI_DOUBLE,MPI_MIN,gdata->mpicomm);
 
     SC_CHECK_MPI (mpiret);

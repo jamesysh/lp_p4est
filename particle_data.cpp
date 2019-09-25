@@ -523,7 +523,7 @@ static bool ifOctantInsectBox(double lxyz[3],double bb[6],double l) //l:lenth of
 
 static bool ifOctantInsectBox2d(double lxyz[3],double bb[6],double l) //l:lenth of octant, lxyz:coord of octant
 {
-    int i,j,k;
+    int i,j;
     bool ifin;
     for(i = 0; i<2; i++){
         for( j = 0;j<2;j++){
@@ -545,7 +545,7 @@ static void createParticlesInOctant2d(p4est_iter_volume_info_t * info, void *use
     State* state = g->state;
     EOS* eos = g->eos;
     double x,y;
-    int i,j,k;
+    int i,j;
     double ls = g->initlocalspacing;
     double initr = g->initperturbation;
     p4est_locidx_t *lpnum = &g->lpnum; 
@@ -769,7 +769,8 @@ void Global_Data:: cleanUpArrays(){
   for (int i = 0; i < 2; ++i) {
     sc_array_destroy_null (&ilh[i]);
     sc_array_destroy_null (&jlh[i]);
-    sc_array_destroy_null (&klh[i]);
+    if(dimension == 3)
+        sc_array_destroy_null (&klh[i]);
   }
 }
 
@@ -1777,6 +1778,52 @@ void Global_Data::createViewForOctant(){
 }
 
 
+void Global_Data::cleanForTimeStep2d(){
+
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+
+  p4est_tree_t       *tree;
+  p4est_quadrant_t   *quad;
+  octant_data_t          *qud;
+
+  p4est_locidx_t   offset = 0,lpend;
+  pdata_t * pad;
+  for (tt = p4est->first_local_tree; tt <= p4est->last_local_tree; ++tt) {
+    tree = p4est_tree_array_index (p4est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p4est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      sc_array_destroy(qud->localneighbourid);
+      sc_array_destroy(qud->ghostneighbourid);
+    
+      lpend = qud->lpend;
+      for(int i=offset;i<lpend;i++){
+         pad = (pdata_t *)sc_array_index(particle_data,i);
+         if(pad->ifboundary)
+             continue;
+         sc_array_destroy(pad->neighbourparticle);
+         sc_array_destroy(pad->neighbourrightparticle);
+         sc_array_destroy(pad->neighbourleftparticle);
+         sc_array_destroy(pad->neighbourfrontparticle);
+         sc_array_destroy(pad->neighbourbackparticle);
+         sc_array_destroy(pad->ghostneighbour); 
+         }
+       offset = lpend;  
+    
+    }
+  }
+    sc_array_destroy(irecumu);
+    sc_array_destroy(irvcumu);
+
+    p4est_ghost_destroy (ghost2d);
+    P4EST_FREE (ghost_data);
+    ghost2d = NULL;
+    ghost_data = NULL;
+}
+
+
 void Global_Data::cleanForTimeStep(){
 
     p4est_topidx_t      tt;
@@ -2061,7 +2108,6 @@ void Global_Data:: searchNeighbourParticle(){
   double *position ;
   double x,y,z,x0,y0,z0,dx,dy,dz;
   double radius, dissquared;
-  double theta, phi;
   neighbour_info_t * nei_info;
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
@@ -2674,6 +2720,44 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
 
 }
 
+void Global_Data::fetchNeighbourParticle2d(pdata_t* pad, pdata_copy_t **padnei ,sc_array_t *neighbourlist, size_t index){
+
+  p4est_tree_t       *tree;
+  p4est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  neighbour_info_t *neiinfo;
+  size_t parid;
+  size_t quadid;
+
+  tree = p4est_tree_array_index (p4est->trees, 0);
+  neiinfo = (neighbour_info_t *) sc_array_index(neighbourlist, index);
+
+  if(neiinfo->ifghost){         //ghost neighbour
+      parid = neiinfo->parid;
+      *padnei = (pdata_copy_t*) sc_array_index(pad->ghostneighbour, parid);
+      
+  
+  }
+
+  else if(neiinfo -> ifremote){     //remote neighbour
+      quadid = neiinfo->quadid;
+      parid = neiinfo->parid;
+      qud = &ghost_data[quadid];
+      *padnei = &qud->localparticle[parid];     
+    
+  }
+  
+  else{              //local neighbour
+      quadid = neiinfo->quadid;
+      parid = neiinfo->parid;
+      quad = p4est_quadrant_array_index(&tree->quadrants,quadid);
+      qud = (octant_data_t *) quad->p.user_data;
+      *padnei = &qud->localparticle[parid];
+  }
+
+
+} 
+
 
 void Global_Data::fetchNeighbourParticle(pdata_t* pad, pdata_copy_t **padnei ,sc_array_t *neighbourlist, size_t index){
 
@@ -2732,6 +2816,55 @@ void Global_Data::addGhostParticle(pdata_copy_t * ghostnei, pdata_t *pad, double
 }
 
 
+void Global_Data::updateViewForOctant2d(int phase){
+
+    if(phase == 1)
+        return;
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+    p4est_locidx_t      offset = 0;
+  p4est_tree_t       *tree;
+  p4est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  pdata_t *pads;
+  pdata_copy_t *padd;
+  for (tt = p4est->first_local_tree; tt <= p4est->last_local_tree; ++tt) {
+    tree = p4est_tree_array_index (p4est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p4est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      qud->poctant = qud->lpend - offset;
+      
+      pads = (pdata_t *) sc_array_index(particle_data,(size_t)offset);
+      for(size_t i=0;i<(size_t) qud->poctant;i++){
+        
+        if(pads->ifboundary){
+            pads++;
+            continue;
+        }  
+        padd = &qud->localparticle[i];
+        if(phase == 0){
+            padd->pressure = pads->pressureT1;
+            padd->soundspeed = pads->soundspeedT1;
+            padd->volume = pads->volumeT1;
+        }
+        
+        pads++;
+      
+      } 
+          offset = qud->lpend;
+    
+    }
+  }
+
+    P4EST_FREE (ghost_data);
+    
+   // ghost_data = NULL;
+    
+    ghost_data = P4EST_ALLOC (octant_data_t, ghost2d->ghosts.elem_count);
+    p4est_ghost_exchange_data (p4est, ghost2d, ghost_data);
+}
 void Global_Data::updateViewForOctant(int phase){
 
     if(phase == 2)
@@ -2791,52 +2924,29 @@ void Global_Data::updateViewForOctant(int phase){
 void Global_Data::updateParticleStates(){
 
 
-    p4est_topidx_t      tt;
-  
-    p4est_locidx_t      lq;
-
-  p8est_tree_t       *tree;
-  p8est_quadrant_t   *quad;
-  octant_data_t          *qud;
-
-  p4est_locidx_t   offset = 0,lpend;
-  pdata_t * pad;
-  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
-    tree = p8est_tree_array_index (p8est->trees, tt);
-    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
-      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
-      qud = (octant_data_t *) quad->p.user_data;
-      lpend = qud->lpend;
-      for(int i=offset;i<lpend;i++){
-         pad = (pdata_t *)sc_array_index(particle_data,i);
-         if(pad->ifboundary)
+    pdata_t * pad;
+    size_t li, lpnum = particle_data->elem_count;
+     
+    for(li = 0; li<lpnum; li++){
+    
+         pad = (pdata_t *)sc_array_index(particle_data,li);
+        if(pad->ifboundary)
          {
              continue;
          }
-         swap(pad->pressure, pad->pressureT1);
-         swap(pad->soundspeed,pad->soundspeedT1);
-         swap(pad->volume, pad->volumeT1);
-         
+        if(dimension == 3){
+             swap(pad->pressure, pad->pressureT1);
+             swap(pad->soundspeed,pad->soundspeedT1);
+             swap(pad->volume, pad->volumeT1);
+        }
+        else if(dimension == 2){
+             swap(pad->pressure, pad->pressureT2);
+             swap(pad->soundspeed,pad->soundspeedT2);
+             swap(pad->volume, pad->volumeT2);
+        }
          swap(pad->v,pad->oldv);
-        /* 
-         v0 = pad->v[0];
-         v1 = pad->v[1];
-         v2 = pad->v[2];
-
-         pad->v[0] = pad->oldv[0];
-         pad->v[1] = pad->oldv[1];
-         pad->v[2] = pad->oldv[2];
-         pad->oldv[0] = v0;
-         pad->oldv[1] = v1;
-         pad->oldv[2] = v2;
          
-*/         
          }
-       offset = lpend;  
-    
-    }
-  }
-
 
 }
 

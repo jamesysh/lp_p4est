@@ -78,7 +78,7 @@ int main(){
      
     viewer->writeResult(0);
     double tstart = 0;
-    double tend = 0.01;
+    double tend = 0.0005;
     double nextwritetime = 0;
     while(tstart<tend)
     {
@@ -162,19 +162,20 @@ int main(){
         // gdata->testquad();
     lpsolver->computeCFLCondition();
     
-    for(int phase = 0;phase<3;phase++){
-    lpsolver->solve_upwind(phase);
-    MPI_Barrier(gdata->mpicomm); 
-    gdata->updateViewForOctant(phase);
-
-    MPI_Barrier(gdata->mpicomm); 
+    for(int phase = 0;phase< lpsolver->totalphase;phase++){
+        lpsolver->solve_upwind(phase);
+        MPI_Barrier(gdata->mpicomm);
+        if(gdata->dimension == 3)
+            gdata->updateViewForOctant(phase);
+        else if(gdata->dimension == 2)
+            gdata->updateViewForOctant2d(phase);
+        MPI_Barrier(gdata->mpicomm); 
     }
     gdata->updateParticleStates();
    
     lpsolver->updateLocalSpacing();
-    
+     
     lpsolver->moveParticle();
-
     if(tstart  >= nextwritetime)
     
     {
@@ -184,11 +185,13 @@ int main(){
     }
    
     MPI_Barrier(gdata->mpicomm); 
-   // gdata->cleanForTimeStep();
-   
+    
+    if(gdata->dimension == 3)
+        gdata->cleanForTimeStep();
+    else if(gdata->dimension == 2)
+        gdata->cleanForTimeStep2d();
     
     }
-    
     
     gdata->cleanUpArrays(); 
     
