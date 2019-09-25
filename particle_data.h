@@ -153,13 +153,18 @@ class Global_Data{
 
         void partitionParticles2d();
         void searchNeighbourOctant(); 
+        void searchNeighbourOctant2d(); 
         void searchNeighbourParticle();
+        void searchNeighbourParticle2d();
         void searchUpwindNeighbourParticle();
+        void searchUpwindNeighbourParticle2d();
         void initParticleNeighbour();
         void copyParticle(pdata_copy_t* d, pdata_t *s);
         void generateGhostParticle();
+        void generateGhostParticle2d();
         void fillArrayWithGhostParticle(sc_array_t * array, pdata_t * pad, int count,int dir);
         
+        void fillArrayWithGhostParticle2d(sc_array_t * array, pdata_t * pad, int count,int dir);
         void updateParticleStates();
         void updateViewForOctant(int phase);
         void addGhostParticle(pdata_copy_t * ghostnei, pdata_t *pad, double dx, double dy, double dz);
@@ -194,6 +199,7 @@ class Global_Data{
         double initlocalspacing;
         double initperturbation;
         size_t numrow1st;
+        size_t numrow1st2d;
 
         double dt;
         double endt;

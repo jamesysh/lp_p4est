@@ -138,16 +138,30 @@ int main(){
     else if(gdata->dimension == 2)
         gdata->createViewForOctant2d();
     
-   /* 
-    gdata->searchNeighbourOctant();
     
+    if(gdata->dimension == 3)
+        gdata->searchNeighbourOctant();
+    else if(gdata->dimension == 2)
+        gdata->searchNeighbourOctant2d();
 
-    gdata->searchNeighbourParticle();
+
+    if(gdata->dimension == 3)
+        gdata->searchNeighbourParticle();
+    else if(gdata->dimension == 2)
+        gdata->searchNeighbourParticle2d();
+    if(gdata->dimension == 3)
+        gdata->searchUpwindNeighbourParticle(); 
+    else if(gdata->dimension == 2)
+        gdata->searchUpwindNeighbourParticle2d(); 
     
-    gdata->searchUpwindNeighbourParticle(); 
-    gdata->generateGhostParticle();
-   // gdata->testquad();
+    if(gdata->dimension == 3)
+        gdata->generateGhostParticle();
+    else if(gdata->dimension == 2)
+        gdata->generateGhostParticle2d();
+
+        // gdata->testquad();
     lpsolver->computeCFLCondition();
+    
     for(int phase = 0;phase<3;phase++){
     lpsolver->solve_upwind(phase);
     MPI_Barrier(gdata->mpicomm); 
@@ -158,7 +172,7 @@ int main(){
     gdata->updateParticleStates();
    
     lpsolver->updateLocalSpacing();
-    */
+    
     lpsolver->moveParticle();
 
     if(tstart  >= nextwritetime)

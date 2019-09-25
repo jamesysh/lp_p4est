@@ -255,6 +255,7 @@ indata	particle_data.h	/^typedef enum indata{$/;"	g
 indata_t	particle_data.h	/^indata_t;$/;"	t	typeref:enum:indata
 initFluidParticles	particle_data.cpp	/^void Global_Data::initFluidParticles(){$/;"	f	class:Global_Data
 initNeighbourArray	particle_data.cpp	/^static void initNeighbourArray(p8est_iter_volume_info_t *info, void*user_data){$/;"	f	file:
+initNeighbourArray2d	particle_data.cpp	/^static void initNeighbourArray2d(p4est_iter_volume_info_t *info, void*user_data){$/;"	f	file:
 initlevel	initializer.h	/^        int initlevel ; \/\/init level of octree$/;"	m	class:Initializer
 initlevel	particle_data.h	/^        int initlevel;$/;"	m	class:Global_Data
 initlocalspacing	initializer.h	/^        double initlocalspacing;$/;"	m	class:Initializer
@@ -407,8 +408,11 @@ sc_array_index_begin	particle_data.cpp	/^void * Global_Data::sc_array_index_begi
 sc_array_paste	particle_data.cpp	/^void Global_Data::sc_array_paste (sc_array_t * dest, sc_array_t * src)$/;"	f	class:Global_Data
 schemeorder	particle_data.h	/^    double schemeorder;$/;"	m	struct:pdata
 searchNeighbourOctant	particle_data.cpp	/^void Global_Data::searchNeighbourOctant(){$/;"	f	class:Global_Data
+searchNeighbourOctant2d	particle_data.cpp	/^void Global_Data::searchNeighbourOctant2d(){$/;"	f	class:Global_Data
 searchNeighbourParticle	particle_data.cpp	/^void Global_Data:: searchNeighbourParticle(){$/;"	f	class:Global_Data
+searchNeighbourParticle2d	particle_data.cpp	/^void Global_Data:: searchNeighbourParticle2d(){$/;"	f	class:Global_Data
 searchUpwindNeighbourParticle	particle_data.cpp	/^void Global_Data::searchUpwindNeighbourParticle(){$/;"	f	class:Global_Data
+searchUpwindNeighbourParticle2d	particle_data.cpp	/^void Global_Data::searchUpwindNeighbourParticle2d(){$/;"	f	class:Global_Data
 send_req	particle_data.h	/^        sc_array_t *send_req; \/**< sc_MPI_Request for sending *\/$/;"	m	class:Global_Data
 setEOS	particle_data.cpp	/^void Global_Data::setEOS(){$/;"	f	class:Global_Data
 setInAndOutPointer	lp_solver.cpp	/^void LPSolver::setInAndOutPointer(pdata_t *pad, double **inpressure, double **outpressure, double **involume, double **outvolume,$/;"	f	class:LPSolver
@@ -432,6 +436,7 @@ stateTable	state/state.h	/^	std::unordered_map<std::string, StateCreateFunc> sta
 temperature	particle_data.h	/^    double temperature;$/;"	m	struct:pdata
 temperature	particle_data.h	/^    double temperature;$/;"	m	struct:pdata_copy
 testcornerside	particle_data.cpp	/^static void testcornerside( p8est_iter_corner_info_t * info, void *user_data){$/;"	f	file:
+testcornerside2d	particle_data.cpp	/^static void testcornerside2d( p4est_iter_corner_info_t * info, void *user_data){$/;"	f	file:
 testedgeside	octree_manager.cpp	/^static void testedgeside( p8est_iter_edge_info_t * info, void *user_data){$/;"	f	file:
 testfaceside	octree_manager.cpp	/^static void testfaceside( p8est_iter_face_info_t * info, void *user_data){$/;"	f	file:
 testquad	particle_data.cpp	/^void Global_Data::testquad(){$/;"	f	class:Global_Data
