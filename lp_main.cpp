@@ -138,7 +138,7 @@ int main(){
     else if(gdata->dimension == 2)
         gdata->createViewForOctant2d();
     
-    
+   /* 
     gdata->searchNeighbourOctant();
     
 
@@ -158,6 +158,7 @@ int main(){
     gdata->updateParticleStates();
    
     lpsolver->updateLocalSpacing();
+    */
     lpsolver->moveParticle();
 
     if(tstart  >= nextwritetime)
@@ -169,7 +170,7 @@ int main(){
     }
    
     MPI_Barrier(gdata->mpicomm); 
-    gdata->cleanForTimeStep();
+   // gdata->cleanForTimeStep();
    
     
     }

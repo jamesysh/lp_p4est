@@ -25,7 +25,7 @@ void LPSolver::moveParticle(){
        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
        if(pad->ifboundary)
            continue;
-       pad->xyz[0] +=  0.5*dt*(pad->oldv[0]+pad->v[0]);
+       pad->xyz[0] += 0.5*dt*(pad->oldv[0]+pad->v[0]);
        pad->xyz[1] += 0.5*dt*(pad->oldv[1]+pad->v[1]);
        pad->xyz[2] += 0.5*dt*(pad->oldv[2]+pad->v[2]);
   

@@ -535,7 +535,7 @@ static void createParticlesInOctant2d(p4est_iter_volume_info_t * info, void *use
                 pd->volume = 1./state->density(x,y,0);
                 pd->pressure = state->pressure(x,y,0);
                 pd->localspacing = ls;
-                pd->mass = ls*ls*ls/pd->volume/sqrt(2); 
+                pd->mass = ls*ls/pd->volume/2*sqrt(3); 
                 pd->soundspeed = eos->getSoundSpeed(pd->pressure,1./pd->volume);
                 pd->ifboundary = false;
                 pd->redocount = 0;

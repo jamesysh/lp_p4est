@@ -601,7 +601,6 @@ int Octree_Manager:: adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,
     g->ireindex += oud->premain;
     g->irv2 = g->irvindex;
     g->irvindex += oud->preceive;
-    
     return 1;
   }
   else {
@@ -615,6 +614,7 @@ int Octree_Manager:: adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,
     *irvcumu = g->irvindex;
     oud->octantid = g->octantid;
     g->octantid ++;
+    
     return 0;
   }
 
