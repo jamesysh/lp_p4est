@@ -971,8 +971,11 @@ void Global_Data::prerun(){
    for (int i = 0; i < 2; ++i) {
     ilh[i] = sc_array_new (sizeof (p4est_locidx_t));
     jlh[i] = sc_array_new (sizeof (p4est_locidx_t));
-    klh[i] = sc_array_new (sizeof (p4est_locidx_t));
-  }
+    if(dimension == 3) 
+        klh[i] = sc_array_new (sizeof (p4est_locidx_t));
+    else 
+        assert(klh[i] == NULL);
+   }
 }
 
 void Global_Data::presearch(){
