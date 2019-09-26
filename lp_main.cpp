@@ -159,7 +159,8 @@ int main(){
     else if(gdata->dimension == 2)
         gdata->generateGhostParticle2d();
 
-        // gdata->testquad();
+    
+    //gdata->testquad2d();
     lpsolver->computeCFLCondition();
     
     for(int phase = 0;phase< lpsolver->totalphase;phase++){
@@ -181,7 +182,7 @@ int main(){
     {
         nextwritetime += lpsolver->cfldt;    
         viewer->writeResult(tstart);
-    //    viewer->writeGhost(tstart);
+//        viewer->writeGhost(tstart);
     }
    
     MPI_Barrier(gdata->mpicomm); 

@@ -63,7 +63,6 @@ void LPSolver::updateLocalSpacing(){
 void LPSolver::solve_upwind(int phase){
     
     const int dir = m_vDirSplitTable[splitorder][phase];
-
     double realdt = gdata->dimension == 3? cfldt/3 : cfldt/2;
     sc_array_t *neighbourlist0;
     sc_array_t *neighbourlist1;
@@ -155,7 +154,7 @@ if(p_d_0>0){
             }
             else{
                 li--;
-                cout<<"refo upwind for a particle"<<endl;
+                cout<<"redo upwind for a particle"<<endl;
             }
 
             

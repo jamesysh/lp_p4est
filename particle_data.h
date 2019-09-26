@@ -176,6 +176,7 @@ class Global_Data{
         void cleanForTimeStep();
         void cleanForTimeStep2d();
         void testquad();
+        void testquad2d();
         void loopquad (p4est_topidx_t tt, p8est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]);
         
         void loopquad2d (p4est_topidx_t tt, p4est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]);

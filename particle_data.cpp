@@ -697,7 +697,7 @@ Global_Data:: Global_Data(Initializer* init){
     minlevel = init->minlevel; 
     initlocalspacing = init->initlocalspacing;
     numrow1st = 8;
-    numrow1st2d = 3;
+    numrow1st2d = 5;
     initperturbation = init->initperturbation;
     elem_particles = init->elem_particles;
     geometry = GeometryFactory::instance().createGeometry("disk"); 
@@ -1581,6 +1581,88 @@ void Global_Data:: partitionParticles(){
 
 }
 
+void Global_Data::testquad2d(){
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+
+  p4est_tree_t       *tree;
+  p4est_quadrant_t   *quad, *quad2;
+  octant_data_t          *qud,*qud2;
+  p4est_locidx_t   offset = 0,lpend;
+  pdata_t * pad;
+  pdata_copy_t *pad2;
+  neighbour_info_t * ninfo;
+/*  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+    tree = p8est_tree_array_index (p8est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      if(qud->poctant && lq>2000){
+          qud->flagboundary = 2000;
+        size_t cc = qud->localneighbourid->elem_count;
+        for(size_t i=0;i<cc;i++){
+            p4est_locidx_t* qid = (p4est_locidx_t *)sc_array_index(qud->localneighbourid,i);
+            if(*qid == lq)
+                continue;
+            quad2 = p8est_quadrant_array_index(&tree->quadrants,*qid);
+            
+            qud2 = (octant_data_t *) quad2->p.user_data;
+            qud2->flagboundary = 1000;
+        }
+        break;
+      }
+
+    }
+  }
+*/
+  for (tt = p4est->first_local_tree; tt <= p4est->last_local_tree; ++tt) {
+    tree = p4est_tree_array_index (p4est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p4est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+    lpend = qud->lpend;
+    if(lq>=0){
+    for(int i=offset;i<lpend;i++){
+        pad = (pdata_t *)sc_array_index(particle_data,i);
+        if(pad->ifboundary)
+            continue;
+        if(pad->ifhasghostneighbour == 0) 
+            continue;
+        printf("dest%f %f %f\n",pad->xyz[0],pad->xyz[1],0);
+        // cout<<pad->ifhasghostneighbour<<" ifhasghost "<<endl; 
+         // pad->flagboundary = 100;
+        size_t cc = pad->neighbourrightparticle->elem_count;
+        for(size_t i=0;i<cc;i++){
+              
+           fetchNeighbourParticle2d(pad, &pad2, pad->neighbourrightparticle, i);
+
+           ninfo = (neighbour_info_t *)sc_array_index(pad->neighbourrightparticle,i); 
+            /*
+            int qid = ninfo->quadid;
+            int pid = ninfo->parid;
+            quad2 = p8est_quadrant_array_index(&tree->quadrants,qid);
+            qud2= (octant_data_t *)quad2->p.user_data;
+            pad2 = &qud2->localparticle[pid];*/
+           // pad2->flagboundary = 10000;
+            if(ninfo->ifghost) 
+            printf("%f %f %f %d\n",pad2->xyz[0],pad2->xyz[1],0,9999);
+            else if(ninfo->ifremote)
+            printf("%f %f %f %d\n",pad2->xyz[0],pad2->xyz[1],0,2);
+            else
+            printf("%f %f %f %d\n",pad2->xyz[0],pad2->xyz[1],0,3);
+        
+        }
+      //  pad->flagboundary = (double)qud->flagboundary;
+      }
+    }
+       offset = lpend;  
+    
+    }
+  }
+
+}
+
 void Global_Data::testquad(){
     p4est_topidx_t      tt;
   
@@ -1629,12 +1711,14 @@ void Global_Data::testquad(){
             continue;
         if(pad->ifhasghostneighbour == 0) 
             continue;
+        
         printf("dest%f %f %f\n",pad->xyz[0],pad->xyz[1],pad->xyz[2]);
+        
         // cout<<pad->ifhasghostneighbour<<" ifhasghost "<<endl; 
          // pad->flagboundary = 100;
+        
         size_t cc = pad->neighbourleftparticle->elem_count;
         for(size_t i=0;i<cc;i++){
-              
            fetchNeighbourParticle(pad, &pad2, pad->neighbourleftparticle, i);
 
            ninfo = (neighbour_info_t *)sc_array_index(pad->neighbourleftparticle,i); 

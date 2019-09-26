@@ -64,7 +64,10 @@ void ParticleViewer:: writeGhost(double t){
 
         padd = (pdata_copy_t *)pad->ghostneighbour->array; 
         for(size_t j=0;j<ghostnum;j++){
-         fprintf(outfile,"%.16g %.16g %.16g\n",padd->xyz[0],padd->xyz[1],padd->xyz[2]);
+            if(gdata->dimension == 3)
+                fprintf(outfile,"%.16g %.16g %.16g\n",padd->xyz[0],padd->xyz[1],padd->xyz[2]);
+            else 
+                fprintf(outfile,"%.16g %.16g %.16g\n",padd->xyz[0],padd->xyz[1],0);
          padd++;
         }
     }
@@ -172,8 +175,11 @@ void ParticleViewer:: writeResult(double t){
     pad = (pdata_t *)gdata->particle_data->array;
     //pad = (pdata_t *)sc_array_index_begin(particle_data);
     for(li = 0; li<lpnum; li++){
-    fprintf(outfile,"%.16g %.16g %.16g\n",pad->xyz[0],pad->xyz[1],pad->xyz[2]);
-    pad++ ;
+        if(gdata->dimension == 3)
+            fprintf(outfile,"%.16g %.16g %.16g\n",pad->xyz[0],pad->xyz[1],pad->xyz[2]);
+        else 
+            fprintf(outfile,"%.16g %.16g %.16g\n",pad->xyz[0],pad->xyz[1],0);
+        pad++ ;
     }
   
     fprintf(outfile,"POINT_DATA %ld\n",(long int)lpnum);
@@ -183,8 +189,12 @@ void ParticleViewer:: writeResult(double t){
     pad = (pdata_t *)gdata->particle_data->array;
     //pad = (pdata_t *)sc_array_index_begin(particle_data);
     for(li = 0; li<lpnum; li++){
-    fprintf(outfile,"%.16g %.16g %.16g\n",pad->v[0],pad->v[1],pad->v[2]);
-    pad++ ;
+
+        if(gdata->dimension == 3)
+            fprintf(outfile,"%.16g %.16g %.16g\n",pad->v[0],pad->v[1],pad->v[2]);
+        else
+            fprintf(outfile,"%.16g %.16g %.16g\n",pad->v[0],pad->v[1],0);
+        pad++ ;
     }
 
 	fprintf(outfile,"SCALARS pressure double\n");
