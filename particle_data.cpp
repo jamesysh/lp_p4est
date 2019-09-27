@@ -2485,19 +2485,19 @@ void Global_Data::generateGhostParticle2d(){
 
         count = pad->neighbourrightparticle->elem_count;
         if(count<numrow1st2d)
-            fillArrayWithGhostParticle2d(pad->neighbourrightparticle,pad,numrow1st-count,3);
+            fillArrayWithGhostParticle2d(pad->neighbourrightparticle,pad,numrow1st2d-count,3);
 
         count = pad->neighbourleftparticle->elem_count;
         if(count<numrow1st2d)
-            fillArrayWithGhostParticle2d(pad->neighbourleftparticle,pad,numrow1st-count,4);
+            fillArrayWithGhostParticle2d(pad->neighbourleftparticle,pad,numrow1st2d-count,4);
 
         count = pad->neighbourfrontparticle->elem_count;
         if(count<numrow1st2d)
-            fillArrayWithGhostParticle2d(pad->neighbourfrontparticle,pad,numrow1st-count,5);
+            fillArrayWithGhostParticle2d(pad->neighbourfrontparticle,pad,numrow1st2d-count,5);
 
         count = pad->neighbourbackparticle->elem_count;
         if(count<numrow1st2d)
-            fillArrayWithGhostParticle2d(pad->neighbourbackparticle,pad,numrow1st-count,6);
+            fillArrayWithGhostParticle2d(pad->neighbourbackparticle,pad,numrow1st2d-count,6);
 
         }
   
