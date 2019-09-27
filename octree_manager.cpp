@@ -748,8 +748,10 @@ void Octree_Manager:: adapt_octree(){
   
 
     p8est_t *p8est = gdata->p8est;
-    gdata->ireindex2 = gdata->irvindex2 = 0;
-    p8est_coarsen_ext (p8est, 0, 1, adapt_coarsen, NULL, adapt_replace);
+    for(int i=0;i<3;i++){
+        gdata->ireindex2 = gdata->irvindex2 = 0;
+        p8est_coarsen_ext (p8est, 0, 1, adapt_coarsen, NULL, adapt_replace);
+    }
     gdata->flagrefine = 1;
     gdata->gflagrefine = 1;
     

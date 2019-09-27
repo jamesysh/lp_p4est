@@ -159,6 +159,7 @@ class Global_Data{
         void searchUpwindNeighbourParticle();
         void searchUpwindNeighbourParticle2d();
         void initParticleNeighbour();
+        void setUpwindNeighbourList(sc_array_t* nei0, sc_array_t *nei1, sc_array_t *neidest);
         void copyParticle(pdata_copy_t* d, pdata_t *s);
         void generateGhostParticle();
         void generateGhostParticle2d();
@@ -171,6 +172,7 @@ class Global_Data{
         void addGhostParticle(pdata_copy_t * ghostnei, pdata_t *pad, double dx, double dy, double dz);
         void fetchNeighbourParticle(pdata_t* pad, pdata_copy_t **padnei ,sc_array_t *neighbourlist, size_t index);
         void fetchNeighbourParticle2d(pdata_t* pad, pdata_copy_t **padnei ,sc_array_t *neighbourlist, size_t index);
+        void fetchParticle2d(pdata_t* pad, pdata_copy_t **padnei, neighbour_info_t *nei);
         void createViewForOctant();
         void createViewForOctant2d();
         void cleanForTimeStep();

@@ -2304,6 +2304,136 @@ void Global_Data::searchUpwindNeighbourParticle2d(){
   neighbour_info_t * nei_info, *nei_info2;
   double phi, sigma;
   size_t numnei, neiid;
+  double anglemin = 1.33;
+  double anglemax = M_PI-anglemin;
+  pdata_copy_t *padcopy;
+
+  sc_array_t *lf = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *lb = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *rf = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *rb = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *fl = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *fr = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *bl = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *br = sc_array_new(sizeof(neighbour_info_t));
+  for (tt = p4est->first_local_tree; tt <= p4est->last_local_tree; ++tt) {
+    tree = p4est_tree_array_index (p4est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p4est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      lpend = qud->lpend;
+    for(int i=offset;i<lpend;i++){
+        pad = (pdata_t *)sc_array_index(particle_data,i);
+        if(pad->ifboundary)
+            continue;
+        pad->neighbourrightparticle = sc_array_new(sizeof(neighbour_info_t));
+        pad->neighbourleftparticle = sc_array_new(sizeof(neighbour_info_t));
+        pad->neighbourfrontparticle = sc_array_new(sizeof(neighbour_info_t));
+        pad->neighbourbackparticle = sc_array_new(sizeof(neighbour_info_t));
+        
+        numnei = pad->neighbourparticle->elem_count;
+        for(neiid = 0; neiid<numnei; neiid++){
+            
+            nei_info = (neighbour_info_t *)sc_array_index(pad->neighbourparticle,neiid); 
+            phi = nei_info->phi;
+            sigma = nei_info->sigma;
+            fetchParticle2d(pad, &padcopy,nei_info);
+       //y- 
+            if(phi >= 0 && phi <= anglemin){
+                if(padcopy->xyz[0] > pad->xyz[0])  {
+                    nei_info2 = (neighbour_info_t *)sc_array_push(lf);
+                    copyNeighbourInfo(nei_info2,nei_info);
+                }
+                else
+                {
+                
+                    nei_info2 = (neighbour_info_t *)sc_array_push(lb);
+                    copyNeighbourInfo(nei_info2,nei_info);
+                }
+            }
+           //y+
+            if(phi >= anglemax && phi <=M_PI){
+                if(padcopy->xyz[0] > pad->xyz[0])  {
+                    nei_info2 = (neighbour_info_t *)sc_array_push(rf);
+                    copyNeighbourInfo(nei_info2,nei_info);
+                }
+                else
+                {
+                
+                    nei_info2 = (neighbour_info_t *)sc_array_push(rb);
+                    copyNeighbourInfo(nei_info2,nei_info);
+                }
+            }
+        //x-
+            if(sigma >= 0 && sigma <= anglemin){
+                if(padcopy->xyz[1] > pad->xyz[1])  {
+                    nei_info2 = (neighbour_info_t *)sc_array_push(br);
+                    copyNeighbourInfo(nei_info2,nei_info);
+                }
+                else
+                {
+                
+                    nei_info2 = (neighbour_info_t *)sc_array_push(bl);
+                    copyNeighbourInfo(nei_info2,nei_info);
+                }
+            }
+         //x+   
+            if(sigma >= anglemax && sigma <=M_PI){
+                if(padcopy->xyz[1] > pad->xyz[1])  {
+                    nei_info2 = (neighbour_info_t *)sc_array_push(fr);
+                    copyNeighbourInfo(nei_info2,nei_info);
+                }
+                else
+                {
+                
+                    nei_info2 = (neighbour_info_t *)sc_array_push(fl);
+                    copyNeighbourInfo(nei_info2,nei_info);
+                }
+            }
+        }
+    
+        setUpwindNeighbourList(lf, lb, pad->neighbourleftparticle);
+        setUpwindNeighbourList(rf, rb, pad->neighbourrightparticle);
+        setUpwindNeighbourList(fl, fr, pad->neighbourfrontparticle);
+        setUpwindNeighbourList(bl, br, pad->neighbourbackparticle);
+        sc_array_reset(lf); 
+        sc_array_reset(lb); 
+        sc_array_reset(rf); 
+        sc_array_reset(rb); 
+        sc_array_reset(bl); 
+        sc_array_reset(br); 
+        sc_array_reset(fl); 
+        sc_array_reset(fr); 
+    }
+     
+    offset = lpend; 
+    }
+  
+  }
+    sc_array_destroy(lf);
+    sc_array_destroy(lb);
+    sc_array_destroy(rf);
+    sc_array_destroy(rb);
+    sc_array_destroy(fl);
+    sc_array_destroy(fr);
+    sc_array_destroy(bl);
+    sc_array_destroy(br);
+}
+/*
+void Global_Data::searchUpwindNeighbourParticle2d(){
+
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+
+  p4est_tree_t       *tree;
+  p4est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  p4est_locidx_t   offset = 0,lpend;
+  pdata_t * pad;
+  neighbour_info_t * nei_info, *nei_info2;
+  double phi, sigma;
+  size_t numnei, neiid;
 
   for (tt = p4est->first_local_tree; tt <= p4est->last_local_tree; ++tt) {
     tree = p4est_tree_array_index (p4est->trees, tt);
@@ -2345,18 +2475,6 @@ void Global_Data::searchUpwindNeighbourParticle2d(){
                 copyNeighbourInfo(nei_info2,nei_info);
             }
         }
-/*
-    int c1 = pad->neighbourupparticle->elem_count;
-    int c2 = pad->neighbourdownparticle->elem_count;
-    int c3 = pad->neighbourleftparticle->elem_count;;
-    int c4 = pad->neighbourrightparticle->elem_count;
-    int c5 = pad->neighbourfrontparticle->elem_count;
-    int c6 = pad->neighbourbackparticle->elem_count;
-    int c7 = c1+c2+c3+c4+c5+c6;
-    printf("%d %d %d %d %d %d %d %d\n",pad->neighbourparticle->elem_count,c1,c2,c3,c4,c5,c6,c7); 
-    if(c7<pad->neighbourparticle->elem_count)
-        assert(false);
-    */
     }
   
     offset = lpend; 
@@ -2364,7 +2482,7 @@ void Global_Data::searchUpwindNeighbourParticle2d(){
   
   }
 }
-
+*/
 
 void Global_Data::searchUpwindNeighbourParticle(){
 
@@ -2434,18 +2552,6 @@ void Global_Data::searchUpwindNeighbourParticle(){
                 copyNeighbourInfo(nei_info2,nei_info);
             }
         }
-/*
-    int c1 = pad->neighbourupparticle->elem_count;
-    int c2 = pad->neighbourdownparticle->elem_count;
-    int c3 = pad->neighbourleftparticle->elem_count;;
-    int c4 = pad->neighbourrightparticle->elem_count;
-    int c5 = pad->neighbourfrontparticle->elem_count;
-    int c6 = pad->neighbourbackparticle->elem_count;
-    int c7 = c1+c2+c3+c4+c5+c6;
-    printf("%d %d %d %d %d %d %d %d\n",pad->neighbourparticle->elem_count,c1,c2,c3,c4,c5,c6,c7); 
-    if(c7<pad->neighbourparticle->elem_count)
-        assert(false);
-    */
     }
   
     offset = lpend; 
@@ -2807,6 +2913,44 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
 
 }
 
+
+void Global_Data::fetchParticle2d(pdata_t* pad, pdata_copy_t **padnei, neighbour_info_t *neiinfo){
+  
+
+  p4est_tree_t       *tree;
+  p4est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  size_t parid;
+  size_t quadid;
+
+  tree = p4est_tree_array_index (p4est->trees, 0);
+
+  if(neiinfo->ifghost){         //ghost neighbour
+      parid = neiinfo->parid;
+      *padnei = (pdata_copy_t*) sc_array_index(pad->ghostneighbour, parid);
+      
+  
+  }
+
+  else if(neiinfo -> ifremote){     //remote neighbour
+      quadid = neiinfo->quadid;
+      parid = neiinfo->parid;
+      qud = &ghost_data[quadid];
+      *padnei = &qud->localparticle[parid];     
+    
+  }
+  
+  else{              //local neighbour
+      quadid = neiinfo->quadid;
+      parid = neiinfo->parid;
+      quad = p4est_quadrant_array_index(&tree->quadrants,quadid);
+      qud = (octant_data_t *) quad->p.user_data;
+      *padnei = &qud->localparticle[parid];
+  }
+
+
+} 
+
 void Global_Data::fetchNeighbourParticle2d(pdata_t* pad, pdata_copy_t **padnei ,sc_array_t *neighbourlist, size_t index){
 
   p4est_tree_t       *tree;
@@ -2937,6 +3081,11 @@ void Global_Data::updateViewForOctant2d(int phase){
             padd->volume = pads->volumeT1;
         }
         
+        if(phase == 1){
+            padd->pressure = pads->pressureT2;
+            padd->soundspeed = pads->soundspeedT2;
+            padd->volume = pads->volumeT2;
+        }
         pads++;
       
       } 
@@ -3038,7 +3187,42 @@ void Global_Data::updateParticleStates(){
 }
 
 
+void Global_Data::setUpwindNeighbourList(sc_array_t* nei0, sc_array_t *nei1, sc_array_t *neidest){
+    
+    sc_array_t *neishort;
+    sc_array_t *neilong;
+    neighbour_info_t *nei_info0, *nei_info1, *nei_infod;
+    size_t count;
+    if(nei0->elem_count > nei1->elem_count){
+        neishort = nei1;
+        neilong = nei0;
+    }
+    else{
+    
+        neishort = nei0;
+        neilong = nei1;
+    }
 
+    count = neishort->elem_count;
+
+    for(size_t i=0; i<count; i++){
+        nei_info0 = (neighbour_info_t *)sc_array_index(neishort,i);
+        nei_infod = (neighbour_info_t *)sc_array_push(neidest);
+        copyNeighbourInfo(nei_infod,nei_info0);
+        nei_info1 = (neighbour_info_t *)sc_array_index(neilong,i);
+        nei_infod = (neighbour_info_t *)sc_array_push(neidest);
+        copyNeighbourInfo(nei_infod,nei_info1);
+    }
+    
+    for(size_t i=count;i<neilong->elem_count;i++){
+    
+        nei_info1 = (neighbour_info_t *)sc_array_index(neilong,i);
+        nei_infod = (neighbour_info_t *)sc_array_push(neidest);
+        copyNeighbourInfo(nei_infod,nei_info1);
+    
+    }
+
+}
 
 
 
