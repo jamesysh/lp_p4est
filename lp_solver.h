@@ -47,11 +47,12 @@ public:
 
 
 
-    double cfldt = 0.0001;
     Octree_Manager *octree;
     Global_Data * gdata; 
     ParticleViewer *viewer;
     
+    
+    double cfldt;
     double cflcoefficient;
 	std::vector<std::vector<int> > m_vDirSplitTable; 
     int splitorder;

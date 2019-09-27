@@ -19,7 +19,8 @@ state.o: state.h state.cpp
 	${CC} ${CFLAGS} state.cpp
 state_pellet.o: state.h state_pellet.h state_pellet.cpp
 	$(CC) $(CFLAGS) state_pellet.cpp
-
+state_gresho.o: state.h state_gresho.h state_gresho.cpp
+	$(CC) $(CFLAGS) state_gresho.cpp
 
 
 clean:

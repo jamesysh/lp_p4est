@@ -7,7 +7,7 @@ LPSolver::LPSolver(Global_Data *g, Octree_Manager *o, ParticleViewer *v){
     octree = o;
     viewer = v;
     splitorder = 0;
-    cflcoefficient = 0.5;
+    cflcoefficient = 0.2;
     invalidpressure = 0;
     if(gdata->dimension == 3){
         m_vDirSplitTable = vector<vector<int> >
@@ -559,7 +559,7 @@ void LPSolver:: solve_2d(){
 
     viewer->writeResult(0);
     double tstart = 0;
-    double tend = 0.0005;
+    double tend = 1;
     double nextwritetime = 0;
     while(tstart<tend)
     {
@@ -611,6 +611,7 @@ void LPSolver:: solve_2d(){
     //gdata->testquad2d();
         computeCFLCondition();
     
+        splitorder = (int) rand()%2;
     for(int phase = 0;phase < totalphase;phase++){
         solve_upwind(phase);
         MPI_Barrier(gdata->mpicomm);
@@ -625,7 +626,7 @@ void LPSolver:: solve_2d(){
     if(tstart  >= nextwritetime)
     
     {
-        nextwritetime += cfldt;    
+        nextwritetime += 0.01;    
         viewer->writeResult(tstart);
 //        viewer->writeGhost(tstart);
     }

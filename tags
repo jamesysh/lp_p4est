@@ -50,6 +50,8 @@ GeometryRegistrar	registrar.h	/^    GeometryRegistrar<Derived>::GeometryRegistra
 GeometryRegistrar	registrar.h	/^class GeometryRegistrar {$/;"	c
 Global_Data	particle_data.cpp	/^Global_Data:: Global_Data(Initializer* init){$/;"	f	class:Global_Data
 Global_Data	particle_data.h	/^class Global_Data{$/;"	c
+Gresho2DState	state/state_gresho.cpp	/^Gresho2DState::Gresho2DState(): $/;"	f	class:Gresho2DState
+Gresho2DState	state/state_gresho.h	/^class Gresho2DState: public State {$/;"	c
 INCS	boundary/makefile	/^INCS   = -I $(BOUNDARY_DIR) -I $(STATE_DIR) -I $(GEOMETRY_DIR) -I $(MAIN_DIR) -I $(P4EST_INC)$/;"	m
 INCS	geometry/makefile	/^INCS   = -I $(BOUNDARY_DIR) -I $(STATE_DIR) -I $(GEOMETRY_DIR) -I $(MAIN_DIR)$/;"	m
 INCS	makefile	/^INCS = -I $(P4EST_INC) -I $(BOUNDARY_DIR) -I $(STATE_DIR) -I $(GEOMETRY_DIR) -I $(MAIN_DIR)$/;"	m
@@ -68,7 +70,7 @@ LIBS	boundary/makefile	/^LIBS   = -L $(LAPACK_DIR) $/;"	m
 LIBS	geometry/makefile	/^LIBS   = -L $(LAPACK_DIR) $/;"	m
 LIBS	makefile	/^LIBS = -L $(P4EST_LIB)$/;"	m
 LIBS	state/makefile	/^LIBS   = -L $(LAPACK_DIR) $/;"	m
-LPSolver	lp_solver.cpp	/^LPSolver::LPSolver(Global_Data *g){$/;"	f	class:LPSolver
+LPSolver	lp_solver.cpp	/^LPSolver::LPSolver(Global_Data *g, Octree_Manager *o, ParticleViewer *v){$/;"	f	class:LPSolver
 LPSolver	lp_solver.h	/^class LPSolver {$/;"	c
 LSSolver	ls_solver.h	/^class LSSolver {$/;"	c
 MAIN_DIR	boundary/makefile	/^MAIN_DIR:=${CURDIR}\/..\/$/;"	m
@@ -107,7 +109,7 @@ STATE_DIR	boundary/makefile	/^STATE_DIR=$(MAIN_DIR)\/state\/$/;"	m
 STATE_DIR	geometry/makefile	/^STATE_DIR=$(MAIN_DIR)\/state\/$/;"	m
 STATE_DIR	makefile	/^STATE_DIR=$(MAIN_DIR)\/state\/$/;"	m
 STATE_DIR	state/makefile	/^STATE_DIR=$(MAIN_DIR)\/state\/$/;"	m
-STATE_OBJS	makefile	/^STATE_OBJS = state.o state_pellet.o $/;"	m
+STATE_OBJS	makefile	/^STATE_OBJS = state.o state_pellet.o state_gresho.o $/;"	m
 S_OBJS	makefile	/^S_OBJS = $(foreach OBJ,$(STATE_OBJS),$(addprefix $(STATE_DIR),$(OBJ)))$/;"	m
 State	state/state.h	/^class State {$/;"	c
 StateCreateFunc	state/state.h	/^	typedef State* (*StateCreateFunc)();$/;"	t	class:StateFactory
@@ -133,6 +135,7 @@ __OCTREE_MANAGER__	octree_manager.h	2;"	d
 __PARTICLE_DATA_H__	particle_data.h	2;"	d
 __PARTICLE_VIEWER_H__	particle_viewer.h	2;"	d
 __REGISTRAR_H__	registrar.h	2;"	d
+__STATE_GRESHO_H__	state/state_gresho.h	2;"	d
 __STATE_H__	state/state.h	3;"	d
 __STATE_PELLET_H__	state/state_pellet.h	2;"	d
 adapt_coarsen	octree_manager.cpp	/^int Octree_Manager:: adapt_coarsen (p8est_t * p8est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
@@ -172,7 +175,8 @@ compareneighbour_info	particle_data.cpp	/^static int compareneighbour_info(const
 compareoctant	particle_data.cpp	/^compareoctant (const void *p1, const void *p2)$/;"	f	file:
 computeA2D	lp_solver.cpp	/^void LPSolver::computeA2D(double *A, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, double distance){$/;"	f	class:LPSolver
 computeA3D	lp_solver.cpp	/^void LPSolver::computeA3D(double *A, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, double distance){$/;"	f	class:LPSolver
-computeB	lp_solver.cpp	/^void LPSolver::computeB(double *B, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, const double* indata, indata_t datatype, int dir){$/;"	f	class:LPSolver
+computeB2d	lp_solver.cpp	/^void LPSolver::computeB2d(double *B, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, const double* indata, indata_t datatype, int dir){$/;"	f	class:LPSolver
+computeB3d	lp_solver.cpp	/^void LPSolver::computeB3d(double *B, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, const double* indata, indata_t datatype, int dir){$/;"	f	class:LPSolver
 computeCFLCondition	lp_solver.cpp	/^void LPSolver:: computeCFLCondition(){$/;"	f	class:LPSolver
 computeSpatialDer	lp_solver.cpp	/^void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist, const double* inpressure, const double *invelocity,$/;"	f	class:LPSolver
 conn	particle_data.h	/^        p8est_connectivity_t *conn;$/;"	m	class:Global_Data
@@ -189,6 +193,7 @@ createParticlesInOctant2d	particle_data.cpp	/^static void createParticlesInOctan
 createState	state/state.cpp	/^State* StateFactory::createState(std::string name) {$/;"	f	class:StateFactory
 createViewForOctant	particle_data.cpp	/^void Global_Data::createViewForOctant(){$/;"	f	class:Global_Data
 createViewForOctant2d	particle_data.cpp	/^void Global_Data::createViewForOctant2d(){$/;"	f	class:Global_Data
+density	state/state_gresho.cpp	/^double Gresho2DState::density(double x, double y, double z) {$/;"	f	class:Gresho2DState
 density	state/state_pellet.cpp	/^double PelletState::density(double x, double y, double z){$/;"	f	class:PelletState
 dest_fixed	particle_data.h	/^      sc_array_t         *dest_fixed;       \/**< int Particle counts per quadrant *\/$/;"	m	class:Global_Data
 destroy_octree	octree_manager.cpp	/^void Octree_Manager:: destroy_octree(){$/;"	f	class:Octree_Manager
@@ -297,6 +302,7 @@ lpend	particle_data.h	/^    p4est_locidx_t      lpend;$/;"	m	struct:octant_data
 lpnum	particle_data.h	/^        p4est_locidx_t lpnum; \/\/number of particles on local processor$/;"	m	class:Global_Data
 lxyz	particle_data.h	/^        double lxyz[3],hxyz[3],dxyz[3]; \/\/boundingbox of octant$/;"	m	class:Global_Data
 m_fDen	state/state_pellet.h	/^	double m_fDen;$/;"	m	class:PelletState
+m_fDensity	state/state_gresho.h	/^	double m_fDensity;	$/;"	m	class:Gresho2DState
 m_fGamma	eos.h	/^    double m_fGamma;	$/;"	m	class:EOS
 m_fLimitR	ls_solver.h	/^	double m_fLimitR;\/\/\/< A specified scalar multiplier (<1) for trimming diagonal entry of R in the QR decomposition$/;"	m	class:QRSolver
 m_fPressure	state/state_pellet.h	/^	double m_fPressure;$/;"	m	class:PelletState
@@ -339,6 +345,7 @@ octant_data	particle_data.h	/^typedef struct octant_data$/;"	s
 octant_data_t	particle_data.h	/^octant_data_t;$/;"	t	typeref:struct:octant_data
 octantid	particle_data.h	/^        int octantid;  $/;"	m	class:Global_Data
 octantid	particle_data.h	/^    int octantid;$/;"	m	struct:octant_data
+octree	lp_solver.h	/^    Octree_Manager *octree;$/;"	m	class:LPSolver
 oldv	particle_data.h	/^    double oldv[3];$/;"	m	struct:pdata
 operator ()	geometry/geometry_disk.cpp	/^bool Disk::operator()(double x, double y, double z) const{$/;"	f	class:Disk
 operator ()	geometry/geometry_pellet.cpp	/^bool PelletLayer::operator()(double x, double y, double z) const{$/;"	f	class:PelletLayer
@@ -375,6 +382,7 @@ presearch	particle_data.cpp	/^void Global_Data::presearch(){$/;"	f	class:Global_
 presearch2d	particle_data.cpp	/^void Global_Data::presearch2d(){$/;"	f	class:Global_Data
 pressure	particle_data.h	/^    double pressure;$/;"	m	struct:pdata
 pressure	particle_data.h	/^    double pressure;$/;"	m	struct:pdata_copy
+pressure	state/state_gresho.cpp	/^double Gresho2DState::pressure(double x, double y, double z) {$/;"	f	class:Gresho2DState
 pressure	state/state_pellet.cpp	/^double PelletState::pressure(double x, double y, double z) {$/;"	f	class:PelletState
 pressureT1	particle_data.h	/^    double pressureT1;$/;"	m	struct:pdata
 pressureT2	particle_data.h	/^    double pressureT2;$/;"	m	struct:pdata
@@ -429,6 +437,8 @@ slocal_point2d	particle_data.cpp	/^slocal_point2d (p4est_t * p4est, p4est_topidx
 slocal_quad	particle_data.cpp	/^slocal_quad (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 slocal_quad2d	particle_data.cpp	/^slocal_quad2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 solve	ls_solver.cpp	/^int QRSolver::solve(double* result, double* b) {$/;"	f	class:QRSolver
+solve_2d	lp_solver.cpp	/^void LPSolver:: solve_2d(){$/;"	f	class:LPSolver
+solve_3d	lp_solver.cpp	/^void LPSolver::solve_3d(){$/;"	f	class:LPSolver
 solve_upwind	lp_solver.cpp	/^void LPSolver::solve_upwind(int phase){$/;"	f	class:LPSolver
 soundspeed	particle_data.h	/^    double soundspeed;$/;"	m	struct:pdata
 soundspeed	particle_data.h	/^    double soundspeed;$/;"	m	struct:pdata_copy
@@ -446,6 +456,7 @@ testcornerside2d	particle_data.cpp	/^static void testcornerside2d( p4est_iter_co
 testedgeside	octree_manager.cpp	/^static void testedgeside( p8est_iter_edge_info_t * info, void *user_data){$/;"	f	file:
 testfaceside	octree_manager.cpp	/^static void testfaceside( p8est_iter_face_info_t * info, void *user_data){$/;"	f	file:
 testquad	particle_data.cpp	/^void Global_Data::testquad(){$/;"	f	class:Global_Data
+testquad2d	particle_data.cpp	/^void Global_Data::testquad2d(){$/;"	f	class:Global_Data
 theta	particle_data.h	/^    double theta;          \/\/up and down$/;"	m	struct:neighbour_info
 timeIntegration	lp_solver.cpp	/^void LPSolver::timeIntegration($/;"	f	class:LPSolver
 timesearchingradius	initializer.h	/^        double timesearchingradius;$/;"	m	class:Initializer
@@ -457,7 +468,9 @@ updateViewForOctant	particle_data.cpp	/^void Global_Data::updateViewForOctant(in
 updateViewForOctant2d	particle_data.cpp	/^void Global_Data::updateViewForOctant2d(int phase){$/;"	f	class:Global_Data
 v	particle_data.h	/^    double v[3]; \/\/velocity$/;"	m	struct:pdata
 v	particle_data.h	/^    double v[3]; \/\/velocity$/;"	m	struct:pdata_copy
+velocity	state/state_gresho.cpp	/^void Gresho2DState::velocity(double x, double y, double z, double& vX, double& vY, double& vZ) {$/;"	f	class:Gresho2DState
 velocity	state/state_pellet.cpp	/^void PelletState::velocity(double x, double y, double z, double& vX, double& vY,double& vZ){$/;"	f	class:PelletState
+viewer	lp_solver.h	/^    ParticleViewer *viewer;$/;"	m	class:LPSolver
 volume	particle_data.h	/^    double volume;$/;"	m	struct:pdata
 volume	particle_data.h	/^    double volume;$/;"	m	struct:pdata_copy
 volumeT1	particle_data.h	/^    double volumeT1;$/;"	m	struct:pdata
@@ -481,6 +494,7 @@ zcen	state/state_pellet.h	/^	double zcen;$/;"	m	class:PelletState
 ~EOS	eos.h	/^	virtual ~EOS() {};$/;"	f	class:EOS
 ~Geometry	geometry/geometry.h	/^	virtual ~Geometry() {}$/;"	f	class:Geometry
 ~Global_Data	particle_data.cpp	/^Global_Data:: ~Global_Data(){$/;"	f	class:Global_Data
+~Gresho2DState	state/state_gresho.h	/^	virtual ~Gresho2DState() {};$/;"	f	class:Gresho2DState
 ~Initializer	initializer.h	/^        ~Initializer(){};$/;"	f	class:Initializer
 ~LPSolver	lp_solver.h	/^    ~LPSolver(){}$/;"	f	class:LPSolver
 ~LSSolver	ls_solver.h	/^	virtual ~LSSolver() {}$/;"	f	class:LSSolver
