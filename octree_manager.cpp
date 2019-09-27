@@ -559,7 +559,7 @@ void Octree_Manager:: adapt_replace (p8est_t * p8est, p4est_topidx_t which_tree,
 int Octree_Manager:: adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,
               p4est_quadrant_t * quadrant)
 {
- 
+  
   static p4est_locidx_t maxp = -1;  
   Global_Data      *g = (Global_Data *) p4est->user_pointer;
 
@@ -574,13 +574,13 @@ int Octree_Manager:: adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,
   quad = p4est_quadrant_array_index (&tree->quadrants, 0);
   octant_data_t          *oud = (octant_data_t *) quadrant->p.user_data;
   
-
+  
   if(g->flagstartrefine){
     maxp = -1;
+
     g->flagstartrefine = 0;
   
   }  
-  
   if(quad == quadrant)
   { 
       if(maxp <= g->elem_particles && maxp>-1)
@@ -590,15 +590,16 @@ int Octree_Manager:: adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,
       { 
           maxp = -1;
       }
-       
+      
       int  mpiret = sc_MPI_Allreduce (&g->flagrefine, &g->gflagrefine, 1, sc_MPI_INT,
                                sc_MPI_MAX, g->mpicomm);
-           
+      
       SC_CHECK_MPI (mpiret);
   }
   
-  if((oud->premain+oud->preceive) > maxp){
+  if((oud->premain+oud->preceive) >= maxp){
       maxp = oud->premain+oud->preceive;
+        
   }
 
 
@@ -615,6 +616,7 @@ int Octree_Manager:: adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,
     return 1;
   }
   else {
+
     /* maintain cumulative particle count for next quadrant */
     g->ireindex += oud->premain;
     g->irvindex += oud->preceive;
@@ -635,7 +637,7 @@ int Octree_Manager:: adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,
 int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,
               p8est_quadrant_t * quadrant)
 {
- 
+   
   static p4est_locidx_t maxp = -1;  
   Global_Data      *g = (Global_Data *) p8est->user_pointer;
 
@@ -713,13 +715,14 @@ void Octree_Manager:: adapt_octree2d(){
 
     p4est_t *p4est = gdata->p4est;
     gdata->ireindex2 = gdata->irvindex2 = 0;
-    p4est_coarsen_ext (p4est, 0, 1, adapt_coarsen2d, NULL, adapt_replace2d);
+    p4est_coarsen_ext (p4est, 0, 0, adapt_coarsen2d, NULL, adapt_replace2d);
     gdata->flagrefine = 1;
-    gdata->gflagrefine = 1;
+    gdata->gflagrefine = -1;
     
     gdata->flagstartrefine = 1;
 
-
+    if(p4est->local_num_quadrants == 0)
+        gdata->flagrefine = 0;
     while(true ){   
     
     gdata->irecumu = sc_array_new(sizeof(p4est_locidx_t));
@@ -735,7 +738,7 @@ void Octree_Manager:: adapt_octree2d(){
     sc_array_destroy(gdata->irecumu);
     sc_array_destroy(gdata->irvcumu);
     
-    }
+   }
 
    
 }

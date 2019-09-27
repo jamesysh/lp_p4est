@@ -430,7 +430,7 @@ part_weight2d (p4est_t * p4est,
   g->prevlp = qud->lpend;
   *(int *) sc_array_index (g->src_fixed, g->qcount++) =
     (int) (ilem_particles * sizeof (pdata_t));
-  return 1 + ilem_particles;
+  return 1+ ilem_particles;
 }
 static int
 part_weight (p8est_t * p4est,
@@ -690,7 +690,7 @@ Global_Data:: Global_Data(Initializer* init){
     gpnum = 0;
     gplost = 0; 
     flagrefine = 1;
-    dimension = 2;
+    dimension = 3;
     initlevel = init->initlevel;
     timesearchingradius = init->timesearchingradius;
     maxlevel = init->maxlevel;
@@ -700,7 +700,7 @@ Global_Data:: Global_Data(Initializer* init){
     numrow1st2d = 5;
     initperturbation = init->initperturbation;
     elem_particles = init->elem_particles;
-    geometry = GeometryFactory::instance().createGeometry("disk"); 
+    geometry = GeometryFactory::instance().createGeometry("pelletlayer"); 
     geometry->getBoundingBox(bb[0],bb[1],bb[2],bb[3],bb[4],bb[5]);
     state = StateFactory::instance().createState("pelletstate");
     boundary = BoundaryFactory::instance().createBoundary("inflowboundary");

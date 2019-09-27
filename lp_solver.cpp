@@ -2,8 +2,10 @@
 #include "lp_solver.h"
 
 using namespace std;
-LPSolver::LPSolver(Global_Data *g){
+LPSolver::LPSolver(Global_Data *g, Octree_Manager *o, ParticleViewer *v){
     gdata = g;
+    octree = o;
+    viewer = v;
     splitorder = 0;
     cflcoefficient = 0.5;
     invalidpressure = 0;
@@ -553,3 +555,172 @@ void LPSolver:: computeCFLCondition(){
 
 }
 
+void LPSolver:: solve_2d(){
+
+    viewer->writeResult(0);
+    double tstart = 0;
+    double tend = 0.0005;
+    double nextwritetime = 0;
+    while(tstart<tend)
+    {
+    tstart += cfldt;
+    
+    
+    
+    
+    //gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
+        gdata->presearch2d();
+        
+    gdata->packParticles();
+    
+    if(gdata->gpnum == 0)
+        
+    {
+      sc_array_destroy_null (&gdata->recevs);
+      sc_hash_destroy_null (&gdata->psend);
+      sc_array_destroy_null(&gdata->iremain);
+
+      gdata->psend = NULL;
+      sc_mempool_destroy (gdata->psmem);
+      gdata->psmem = NULL;
+        break;
+    }
+    gdata->communicateParticles();
+        gdata->postsearch2d();
+
+        octree->adapt_octree2d();
+    
+        octree->balance_octree2d(NULL,octree->balance_replace2d);
+    
+        gdata->regroupParticles2d(); 
+    
+        gdata->partitionParticles2d();
+    
+        gdata->createViewForOctant2d();
+    
+    
+        gdata->searchNeighbourOctant2d();
+
+
+        gdata->searchNeighbourParticle2d();
+        gdata->searchUpwindNeighbourParticle2d(); 
+    
+        gdata->generateGhostParticle2d();
+
+    
+    //gdata->testquad2d();
+        computeCFLCondition();
+    
+    for(int phase = 0;phase < totalphase;phase++){
+        solve_upwind(phase);
+        MPI_Barrier(gdata->mpicomm);
+        gdata->updateViewForOctant2d(phase);
+        MPI_Barrier(gdata->mpicomm); 
+    }
+    gdata->updateParticleStates();
+   
+    updateLocalSpacing();
+   
+     moveParticle();
+    if(tstart  >= nextwritetime)
+    
+    {
+        nextwritetime += cfldt;    
+        viewer->writeResult(tstart);
+//        viewer->writeGhost(tstart);
+    }
+   
+    MPI_Barrier(gdata->mpicomm); 
+    
+        gdata->cleanForTimeStep2d();
+    
+    }
+
+
+}
+
+
+void LPSolver::solve_3d(){
+
+
+    viewer->writeResult(0);
+    double tstart = 0;
+    double tend = 0.0005;
+    double nextwritetime = 0;
+    while(tstart<tend)
+    {
+    tstart += cfldt;
+    
+    
+    
+    
+    //gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
+    gdata->presearch();
+        
+    gdata->packParticles();
+    
+    if(gdata->gpnum == 0)
+        
+    {
+      sc_array_destroy_null (&gdata->recevs);
+      sc_hash_destroy_null (&gdata->psend);
+      sc_array_destroy_null(&gdata->iremain);
+
+      gdata->psend = NULL;
+      sc_mempool_destroy (gdata->psmem);
+      gdata->psmem = NULL;
+        break;
+    }
+    gdata->communicateParticles();
+        gdata->postsearch();
+
+        octree->adapt_octree(); 
+    
+        octree->balance_octree(NULL,octree->balance_replace);
+    
+        gdata->regroupParticles(); 
+    
+        gdata->partitionParticles();
+    
+        gdata->createViewForOctant();
+    
+        gdata->searchNeighbourOctant();
+
+
+        gdata->searchNeighbourParticle();
+        gdata->searchUpwindNeighbourParticle(); 
+    
+        gdata->generateGhostParticle();
+
+    
+    //gdata->testquad2d();
+        computeCFLCondition();
+    
+    for(int phase = 0;phase< totalphase;phase++){
+        solve_upwind(phase);
+        MPI_Barrier(gdata->mpicomm);
+        gdata->updateViewForOctant(phase);
+        MPI_Barrier(gdata->mpicomm); 
+    }
+    gdata->updateParticleStates();
+   
+    updateLocalSpacing();
+     
+    moveParticle();
+    if(tstart  >= nextwritetime)
+    
+    {
+        nextwritetime += cfldt;    
+        viewer->writeResult(tstart);
+//        viewer->writeGhost(tstart);
+    }
+   
+    MPI_Barrier(gdata->mpicomm); 
+    
+        gdata->cleanForTimeStep();
+    
+    }
+
+
+
+}

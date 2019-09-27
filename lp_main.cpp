@@ -73,9 +73,13 @@ int main(){
         gdata->resetOctantData2d();
    sc_array_destroy(gdata->ireceive);
     sc_array_destroy(gdata->iremain);
-    LPSolver * lpsolver = new LPSolver(gdata);
+    LPSolver * lpsolver = new LPSolver(gdata,octree,viewer);
     
-     
+    if(gdata->dimension == 3 )
+        lpsolver->solve_3d();
+    else if(gdata->dimension == 2)
+        lpsolver->solve_2d();
+  /*   
     viewer->writeResult(0);
     double tstart = 0;
     double tend = 0.0005;
@@ -193,7 +197,7 @@ int main(){
         gdata->cleanForTimeStep2d();
     
     }
-    
+    */
     gdata->cleanUpArrays(); 
     
     octree->destroy_octree();

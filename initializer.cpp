@@ -15,7 +15,7 @@ Initializer::Initializer(){
 
     initlocalspacing = 0.01;
     timesearchingradius = 4.;
-    initperturbation = 1;
+    initperturbation = 0.5;
     eoschoice = 1;
     pelletmaterial = 0;
     gamma = 1.67;

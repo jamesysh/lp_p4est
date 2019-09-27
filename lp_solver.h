@@ -4,13 +4,16 @@
 #include "particle_data.h"
 #include <vector>
 #include "ls_solver.h"
+#include "octree_manager.h"
+#include "particle_viewer.h"
 class LPSolver {
 
 public:
 	
-    LPSolver(Global_Data *g);
+    LPSolver(Global_Data *g, Octree_Manager *octree, ParticleViewer *viewer);
     
-    
+    void solve_2d(); 
+    void solve_3d();
     ~LPSolver(){}
     
     void moveParticle();
@@ -45,7 +48,10 @@ public:
 
 
     double cfldt = 0.0001;
+    Octree_Manager *octree;
     Global_Data * gdata; 
+    ParticleViewer *viewer;
+    
     double cflcoefficient;
 	std::vector<std::vector<int> > m_vDirSplitTable; 
     int splitorder;
