@@ -256,7 +256,6 @@ void LPSolver::setNeighbourListPointer(pdata_t *pad, sc_array_t** neilist0, sc_a
 void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist, const double* inpressure, const double *invelocity,
         double *vel_d, double *vel_dd, double *p_d, double *p_dd) {
     size_t numrow = pad->redocount + gdata->dimension == 3? gdata->numrow1st:gdata->numrow1st2d;
-    
     size_t numcol = gdata->dimension == 3? 3:2;
     double distance;
     int info;
@@ -607,12 +606,12 @@ void LPSolver:: solve_2d(){
     
         gdata->generateGhostParticle2d();
 
-    
+     //   gdata->testquad2d();
     //gdata->testquad2d();
         computeCFLCondition();
     
-        splitorder = (int) rand()%2;
-    for(int phase = 0;phase < totalphase;phase++){
+        splitorder = (int)rand()%2; 
+        for(int phase = 0;phase < totalphase;phase++){
         solve_upwind(phase);
         MPI_Barrier(gdata->mpicomm);
         gdata->updateViewForOctant2d(phase);
@@ -694,7 +693,6 @@ void LPSolver::solve_3d(){
         gdata->generateGhostParticle();
 
     
-    //gdata->testquad2d();
         computeCFLCondition();
     
     for(int phase = 0;phase< totalphase;phase++){

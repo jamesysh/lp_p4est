@@ -596,6 +596,8 @@ static void createParticlesInOctant2d(p4est_iter_volume_info_t * info, void *use
                 pd->mass = ls*ls/pd->volume/2*sqrt(3); 
                 pd->soundspeed = eos->getSoundSpeed(pd->pressure,1./pd->volume);
                 pd->ifboundary = false;
+                if((x*x+y*y)>1)
+                    pd->ifboundary = true;
                 pd->redocount = 0;
                 (*lpnum) ++;
                 }
@@ -696,8 +698,8 @@ Global_Data:: Global_Data(Initializer* init){
     maxlevel = init->maxlevel;
     minlevel = init->minlevel; 
     initlocalspacing = init->initlocalspacing;
-    numrow1st = 3;
-    numrow1st2d = 8;
+    numrow1st = 8;
+    numrow1st2d = 3;
     initperturbation = init->initperturbation;
     elem_particles = init->elem_particles;
     geometry = GeometryFactory::instance().createGeometry("disk"); 
@@ -1625,19 +1627,19 @@ void Global_Data::testquad2d(){
     if(lq>=0){
     for(int i=offset;i<lpend;i++){
         pad = (pdata_t *)sc_array_index(particle_data,i);
+        
         if(pad->ifboundary)
             continue;
-        if(pad->ifhasghostneighbour == 0) 
-            continue;
+        
         printf("dest%f %f %f\n",pad->xyz[0],pad->xyz[1],0);
         // cout<<pad->ifhasghostneighbour<<" ifhasghost "<<endl; 
          // pad->flagboundary = 100;
-        size_t cc = pad->neighbourrightparticle->elem_count;
+        size_t cc = pad->neighbourleftparticle->elem_count;
         for(size_t i=0;i<cc;i++){
               
-           fetchNeighbourParticle2d(pad, &pad2, pad->neighbourrightparticle, i);
+           fetchNeighbourParticle2d(pad, &pad2, pad->neighbourleftparticle, i);
 
-           ninfo = (neighbour_info_t *)sc_array_index(pad->neighbourrightparticle,i); 
+           ninfo = (neighbour_info_t *)sc_array_index(pad->neighbourleftparticle,i); 
             /*
             int qid = ninfo->quadid;
             int pid = ninfo->parid;
@@ -2304,7 +2306,7 @@ void Global_Data::searchUpwindNeighbourParticle2d(){
   neighbour_info_t * nei_info, *nei_info2;
   double phi, sigma;
   size_t numnei, neiid;
-  double anglemin = 1.33;
+  double anglemin = 0.8;
   double anglemax = M_PI-anglemin;
   pdata_copy_t *padcopy;
 
