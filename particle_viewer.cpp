@@ -223,6 +223,18 @@ void ParticleViewer:: writeResult(double t){
     pad++ ;
     }
     
+	fprintf(outfile,"SCALARS soundspeed double\n");
+	fprintf(outfile,"LOOKUP_TABLE default\n");
+    
+    pad = (pdata_t *)gdata->particle_data->array;
+    for(li = 0; li<lpnum; li++){
+    if(pad->ifboundary)
+ 
+    fprintf(outfile,"%.16g\n",(double)pad->soundspeed);
+    else
+   fprintf(outfile,"%.16g\n",(double)pad->soundspeed);
+    pad++ ;
+    }
 	fprintf(outfile,"SCALARS localspacing double\n");
 	fprintf(outfile,"LOOKUP_TABLE default\n");
     
@@ -230,9 +242,9 @@ void ParticleViewer:: writeResult(double t){
     for(li = 0; li<lpnum; li++){
     if(pad->ifboundary)
  
-    fprintf(outfile,"%.16g\n",1./(double)pad->localspacing);
+    fprintf(outfile,"%.16g\n",(double)pad->localspacing);
     else
-   fprintf(outfile,"%.16g\n",1./(double)pad->localspacing);
+   fprintf(outfile,"%.16g\n",(double)pad->localspacing);
     pad++ ;
     }
     fclose(outfile);

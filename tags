@@ -52,6 +52,7 @@ Global_Data	particle_data.cpp	/^Global_Data:: Global_Data(Initializer* init){$/;
 Global_Data	particle_data.h	/^class Global_Data{$/;"	c
 Gresho2DState	state/state_gresho.cpp	/^Gresho2DState::Gresho2DState(): $/;"	f	class:Gresho2DState
 Gresho2DState	state/state_gresho.h	/^class Gresho2DState: public State {$/;"	c
+GreshoSolidBoundary	boundary/boundary_gresho.h	/^class GreshoSolidBoundary: public Boundary{$/;"	c
 INCS	boundary/makefile	/^INCS   = -I $(BOUNDARY_DIR) -I $(STATE_DIR) -I $(GEOMETRY_DIR) -I $(MAIN_DIR) -I $(P4EST_INC)$/;"	m
 INCS	geometry/makefile	/^INCS   = -I $(BOUNDARY_DIR) -I $(STATE_DIR) -I $(GEOMETRY_DIR) -I $(MAIN_DIR)$/;"	m
 INCS	makefile	/^INCS = -I $(P4EST_INC) -I $(BOUNDARY_DIR) -I $(STATE_DIR) -I $(GEOMETRY_DIR) -I $(MAIN_DIR)$/;"	m
@@ -122,6 +123,7 @@ UpdateInflowBoundary	boundary/boundary.h	/^	virtual void UpdateInflowBoundary(Gl
 UpdateInflowBoundary	boundary/boundary_pellet.cpp	/^void PelletInflowBoundary::UpdateInflowBoundary(Global_Data* g, EOS* m_pEOS, double dt, double dx){$/;"	f	class:PelletInflowBoundary
 VELOCITY	particle_data.h	/^    VELOCITY$/;"	e	enum:indata
 Vinflow	boundary/boundary_pellet.h	/^	double Vinflow;\/\/inflow specific volume, constant$/;"	m	class:PelletInflowBoundary
+__BOUNDARY_GRESHO_H__	boundary/boundary_gresho.h	2;"	d
 __BOUNDARY_H__	boundary/boundary.h	2;"	d
 __BOUNDARY_PELLET_H__	boundary/boundary_pellet.h	3;"	d
 __EOS_H__	eos.h	3;"	d
@@ -158,7 +160,7 @@ boundary	particle_data.h	/^        Boundary *boundary; $/;"	m	class:Global_Data
 build_octree	octree_manager.cpp	/^void Octree_Manager:: build_octree(){$/;"	f	class:Octree_Manager
 cfl_coefficient	initializer.h	/^        double cfl_coefficient;$/;"	m	class:Initializer
 cflcoefficient	lp_solver.h	/^    double cflcoefficient;$/;"	m	class:LPSolver
-cfldt	lp_solver.h	/^    double cfldt = 0.0001;$/;"	m	class:LPSolver
+cfldt	lp_solver.h	/^    double cfldt;$/;"	m	class:LPSolver
 cfound	particle_data.h	/^        sc_array_t *cfound;   \/**< char Flag for received particles *\/$/;"	m	class:Global_Data
 cleanForTimeStep	particle_data.cpp	/^void Global_Data::cleanForTimeStep(){$/;"	f	class:Global_Data
 cleanForTimeStep2d	particle_data.cpp	/^void Global_Data::cleanForTimeStep2d(){$/;"	f	class:Global_Data
@@ -212,6 +214,7 @@ eoschoice	initializer.h	/^        int eoschoice;$/;"	m	class:Initializer
 eoschoice	particle_data.h	/^        int eoschoice;$/;"	m	class:Global_Data
 fetchNeighbourParticle	particle_data.cpp	/^void Global_Data::fetchNeighbourParticle(pdata_t* pad, pdata_copy_t **padnei ,sc_array_t *neighbourlist, size_t index){$/;"	f	class:Global_Data
 fetchNeighbourParticle2d	particle_data.cpp	/^void Global_Data::fetchNeighbourParticle2d(pdata_t* pad, pdata_copy_t **padnei ,sc_array_t *neighbourlist, size_t index){$/;"	f	class:Global_Data
+fetchParticle2d	particle_data.cpp	/^void Global_Data::fetchParticle2d(pdata_t* pad, pdata_copy_t **padnei, neighbour_info_t *neiinfo){$/;"	f	class:Global_Data
 fillArrayWithGhostParticle	particle_data.cpp	/^void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t * pad, int count, int dir){$/;"	f	class:Global_Data
 fillArrayWithGhostParticle2d	particle_data.cpp	/^void Global_Data::fillArrayWithGhostParticle2d(sc_array_t * neighbourlist, pdata_t * pad, int count, int dir){$/;"	f	class:Global_Data
 flagboundary	particle_data.h	/^    bool flagboundary;$/;"	m	struct:pdata_copy
@@ -400,6 +403,7 @@ qcount	particle_data.h	/^      p4est_locidx_t      qcount;   \/**< Count local q
 qreceive	particle_data.h	/^        p4est_locidx_t qremain, qreceive;$/;"	m	class:Global_Data
 qremain	particle_data.h	/^        p4est_locidx_t qremain, qreceive;$/;"	m	class:Global_Data
 quadid	particle_data.h	/^    size_t quadid;$/;"	m	struct:neighbour_info
+radius	boundary/boundary_gresho.h	/^        double radius;$/;"	m	class:GreshoSolidBoundary
 radius	geometry/geometry_disk.h	/^        double radius;$/;"	m	class:Disk
 rank	particle_data.h	/^  int                 rank;$/;"	m	struct:comm_prank
 rank	particle_data.h	/^  int                 rank;$/;"	m	struct:comm_psend
@@ -431,6 +435,7 @@ send_req	particle_data.h	/^        sc_array_t *send_req; \/**< sc_MPI_Request fo
 setEOS	particle_data.cpp	/^void Global_Data::setEOS(){$/;"	f	class:Global_Data
 setInAndOutPointer	lp_solver.cpp	/^void LPSolver::setInAndOutPointer(pdata_t *pad, double **inpressure, double **outpressure, double **involume, double **outvolume,$/;"	f	class:LPSolver
 setNeighbourListPointer	lp_solver.cpp	/^void LPSolver::setNeighbourListPointer(pdata_t *pad, sc_array_t** neilist0, sc_array_t **neilist1,int dir){$/;"	f	class:LPSolver
+setUpwindNeighbourList	particle_data.cpp	/^void Global_Data::setUpwindNeighbourList(sc_array_t* nei0, sc_array_t *nei1, sc_array_t *neidest){$/;"	f	class:Global_Data
 sigma	particle_data.h	/^    double sigma; \/\/front and back$/;"	m	struct:neighbour_info
 slocal_point	particle_data.cpp	/^slocal_point (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 slocal_point2d	particle_data.cpp	/^slocal_point2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
@@ -458,6 +463,7 @@ testfaceside	octree_manager.cpp	/^static void testfaceside( p8est_iter_face_info
 testquad	particle_data.cpp	/^void Global_Data::testquad(){$/;"	f	class:Global_Data
 testquad2d	particle_data.cpp	/^void Global_Data::testquad2d(){$/;"	f	class:Global_Data
 theta	particle_data.h	/^    double theta;          \/\/up and down$/;"	m	struct:neighbour_info
+thickness	boundary/boundary_gresho.h	/^        double thickness;$/;"	m	class:GreshoSolidBoundary
 timeIntegration	lp_solver.cpp	/^void LPSolver::timeIntegration($/;"	f	class:LPSolver
 timesearchingradius	initializer.h	/^        double timesearchingradius;$/;"	m	class:Initializer
 timesearchingradius	particle_data.h	/^        double timesearchingradius;$/;"	m	class:Global_Data

@@ -707,7 +707,7 @@ Global_Data:: Global_Data(Initializer* init){
     state = StateFactory::instance().createState("gresho2dstate");
     boundary = BoundaryFactory::instance().createBoundary("inflowboundary");
     eoschoice = init->eoschoice;
-    gamma = 1.4;
+    gamma = 1.67;
     setEOS();    
 
 
@@ -2306,7 +2306,7 @@ void Global_Data::searchUpwindNeighbourParticle2d(){
   neighbour_info_t * nei_info, *nei_info2;
   double phi, sigma;
   size_t numnei, neiid;
-  double anglemin = 0.8;
+  double anglemin = 1.3;
   double anglemax = M_PI-anglemin;
   pdata_copy_t *padcopy;
 
@@ -3209,11 +3209,20 @@ void Global_Data::setUpwindNeighbourList(sc_array_t* nei0, sc_array_t *nei1, sc_
 
     for(size_t i=0; i<count; i++){
         nei_info0 = (neighbour_info_t *)sc_array_index(neishort,i);
+        nei_info1 = (neighbour_info_t *)sc_array_index(neilong,i);
+        if(nei_info0->distance < nei_info1->distance){
         nei_infod = (neighbour_info_t *)sc_array_push(neidest);
         copyNeighbourInfo(nei_infod,nei_info0);
-        nei_info1 = (neighbour_info_t *)sc_array_index(neilong,i);
         nei_infod = (neighbour_info_t *)sc_array_push(neidest);
         copyNeighbourInfo(nei_infod,nei_info1);
+        }
+        else{
+        nei_infod = (neighbour_info_t *)sc_array_push(neidest);
+        copyNeighbourInfo(nei_infod,nei_info1);
+        nei_infod = (neighbour_info_t *)sc_array_push(neidest);
+        copyNeighbourInfo(nei_infod,nei_info0);
+        }
+
     }
     
     for(size_t i=count;i<neilong->elem_count;i++){
