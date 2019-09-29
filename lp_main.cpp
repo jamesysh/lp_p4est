@@ -37,6 +37,7 @@ refine_init2d (p4est_t * p4est, p4est_topidx_t which_tree,
 
 
 int main(){
+    double t1 = MPI_Wtime();
     Initializer *init = new Initializer();
 
     Global_Data *gdata = new Global_Data(init);
@@ -92,5 +93,8 @@ int main(){
     delete init;
 
     mpiret = sc_MPI_Finalize ();
+
+    double t2 = MPI_Wtime();
+    printf( "Elapsed time is %f\n", t2 - t1 ); 
     return 0;
 }
