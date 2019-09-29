@@ -7,7 +7,7 @@ LPSolver::LPSolver(Global_Data *g, Octree_Manager *o, ParticleViewer *v){
     octree = o;
     viewer = v;
     splitorder = 0;
-    cflcoefficient = 0.2;
+    cflcoefficient = 0.5;
     invalidpressure = 0;
     if(gdata->dimension == 3){
         m_vDirSplitTable = vector<vector<int> >
