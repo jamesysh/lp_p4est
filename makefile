@@ -14,7 +14,7 @@ CFLAGS = -Wall -std=c++11 -c  $(DEBUG) $(INCS) $(LIBS)
 LFLAGS = -Wall  $(DEBUG) $(INCS) $(LIBS)
 vpath %.h $(GEOMETRY_DIR) $(STATE_DIR) $(BOUNDARY_DIR)
 
-MAIN_OBJS = lp_main.o particle_data.o initializer.o octree_manager.o registrar.o lp_solver.o eos.o particle_viewer.o ls_solver.o
+MAIN_OBJS = lp_main.o particle_data.o initializer.o octree_manager.o registrar.o lp_solver.o eos.o particle_viewer.o ls_solver.o hexagonal_packing.o
 GEOMETRY_OBJS = geometry.o geometry_pellet.o geometry_disk.o
 STATE_OBJS = state.o state_pellet.o state_gresho.o 
 BOUNDARY_OBJS = boundary.o boundary_pellet.o
@@ -57,7 +57,8 @@ particle_viewer.o: particle_data.h particle_viewer.cpp particle_viewer.h
 	$(CC) $(CFLAGS) particle_viewer.cpp
 ls_solver.o: ls_solver.h ls_solver.cpp
 	$(CC) $(CFLAGS) ls_solver.cpp
-
+hexagonal_packing.o: hexagonal_packing.h hexagonal_packing.cpp
+	$(CC) $(CFLAGS) hexagonal_packing.cpp
 
 
 clean:

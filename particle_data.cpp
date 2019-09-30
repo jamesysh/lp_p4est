@@ -718,7 +718,11 @@ Global_Data:: ~Global_Data(){
 
 }
 
+void Global_Data::initFluidParticles(double initperturbation){
+    
 
+
+}
 void Global_Data::initFluidParticles(){
    
    int mpiret;
@@ -2306,7 +2310,7 @@ void Global_Data::searchUpwindNeighbourParticle2d(){
   neighbour_info_t * nei_info, *nei_info2;
   double phi, sigma;
   size_t numnei, neiid;
-  double anglemin = 1.3;
+  double anglemin = 1.3734;
   double anglemax = M_PI-anglemin;
   pdata_copy_t *padcopy;
 
