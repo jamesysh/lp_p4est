@@ -714,8 +714,11 @@ void Octree_Manager:: adapt_octree2d(){
   
 
     p4est_t *p4est = gdata->p4est;
-    gdata->ireindex2 = gdata->irvindex2 = 0;
-    p4est_coarsen_ext (p4est, 0, 0, adapt_coarsen2d, NULL, adapt_replace2d);
+
+    for(int i=0;i<3;i++){
+        gdata->ireindex2 = gdata->irvindex2 = 0;
+        p4est_coarsen_ext (p4est, 0, 0, adapt_coarsen2d, NULL, adapt_replace2d);
+    }
     gdata->flagrefine = 1;
     gdata->gflagrefine = -1;
     

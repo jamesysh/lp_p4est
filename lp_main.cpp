@@ -59,23 +59,13 @@ int main(){
 
     octree->partition_octree(1);
     gdata->prerun(); 
-//    gdata->initFluidParticles_distributed();
-    gdata->initFluidParticles_hexagonal();
+    gdata->initFluidParticles_distributed();
+//    gdata->initFluidParticles_hexagonal();
     //gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
-/*
-    if(gdata->dimension == 3 ) 
-        octree->adapt_octree(); 
-    else if(gdata->dimension == 2)
-        octree->adapt_octree2d();
-  */  
-//    sc_array_destroy(gdata->irecumu);
-//    sc_array_destroy(gdata->irvcumu);
     if(gdata->dimension == 3)
        gdata->resetOctantData(); 
     else if(gdata->dimension == 2)
         gdata->resetOctantData2d();
-//    sc_array_destroy(gdata->ireceive);
-//    sc_array_destroy(gdata->iremain);
     LPSolver * lpsolver = new LPSolver(gdata,octree,viewer);
     if(gdata->dimension == 3 )
         lpsolver->solve_3d();

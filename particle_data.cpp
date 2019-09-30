@@ -1048,11 +1048,9 @@ void Global_Data::split_by_coord ( sc_array_t * in,
 void Global_Data::prerun(){
 
    
-//    ireceive = sc_array_new(sizeof(p4est_locidx_t));    
 
 
    particle_data = sc_array_new(sizeof( pdata_t ));
-//   iremain = sc_array_new(sizeof(p4est_locidx_t));
    for (int i = 0; i < 2; ++i) {
     ilh[i] = sc_array_new (sizeof (p4est_locidx_t));
     jlh[i] = sc_array_new (sizeof (p4est_locidx_t));

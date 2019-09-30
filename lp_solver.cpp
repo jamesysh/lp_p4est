@@ -562,7 +562,8 @@ void LPSolver:: solve_2d(){
     double nextwritetime = 0;
     while(tstart<tend)
     {
-    tstart += cfldt;
+    
+        tstart += cfldt;
     
     
     
@@ -570,21 +571,21 @@ void LPSolver:: solve_2d(){
     //gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
         gdata->presearch2d();
         
-    gdata->packParticles();
+        gdata->packParticles();
     
-    if(gdata->gpnum == 0)
-        
-    {
-      sc_array_destroy_null (&gdata->recevs);
-      sc_hash_destroy_null (&gdata->psend);
-      sc_array_destroy_null(&gdata->iremain);
+        if(gdata->gpnum == 0)
+            
+        {
+          sc_array_destroy_null (&gdata->recevs);
+          sc_hash_destroy_null (&gdata->psend);
+          sc_array_destroy_null(&gdata->iremain);
 
-      gdata->psend = NULL;
-      sc_mempool_destroy (gdata->psmem);
-      gdata->psmem = NULL;
-        break;
-    }
-    gdata->communicateParticles();
+          gdata->psend = NULL;
+          sc_mempool_destroy (gdata->psmem);
+          gdata->psmem = NULL;
+            break;
+        }
+        gdata->communicateParticles();
         gdata->postsearch2d();
 
         octree->adapt_octree2d();
@@ -606,9 +607,9 @@ void LPSolver:: solve_2d(){
     
         gdata->generateGhostParticle2d();
 
-     //   gdata->testquad2d();
     //gdata->testquad2d();
         computeCFLCondition();
+        P4EST_GLOBAL_ESSENTIALF ("Current Time: %f milliseconds.\n", tstart);
         splitorder = (int)rand()%2;
         MPI_Bcast(&splitorder,1,MPI_INT,0,gdata->mpicomm);
         for(int phase = 0;phase < totalphase;phase++){
