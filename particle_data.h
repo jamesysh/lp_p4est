@@ -137,8 +137,8 @@ class Global_Data{
         
         void sc_array_paste (sc_array_t * dest, sc_array_t * src);
         void adjustCoordByDomain( double xyz[3]);
-        void initFluidParticles();
-        void initFluidParticles(double);
+        void initFluidParticles_distributed();
+        void initFluidParticles_hexagonal();
         void prerun();
         void presearch();
         void presearch2d();

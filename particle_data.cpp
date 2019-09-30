@@ -558,7 +558,6 @@ static void createParticlesInOctant2d(p4est_iter_volume_info_t * info, void *use
     pdata_t *pd;
     octant_data_t *oud = (octant_data_t *)quad->p.user_data;
     p4est_qcoord_t qh;
-    p4est_locidx_t *remainid;   
 
     oud->premain = oud->preceive =  oud->poctant = 0;
     qh = P4EST_QUADRANT_LEN (quad->level);
@@ -583,8 +582,6 @@ static void createParticlesInOctant2d(p4est_iter_volume_info_t * info, void *use
             if(geom->operator()(x,y,0)){
        
                 pd = (pdata_t *) sc_array_push_count (g->particle_data,1);
-                remainid = (p4est_locidx_t *) sc_array_push_count(g->iremain,1);
-                *remainid = *lpnum;
                 pd->xyz[0] = x;
                 pd->xyz[1] = y;
                 pd->xyz[2] = 0;
@@ -632,7 +629,6 @@ static void createParticlesInOctant(p8est_iter_volume_info_t * info, void *user_
     octant_data_t *oud = (octant_data_t *)quad->p.user_data;
     p4est_qcoord_t qh;
    
-    p4est_locidx_t      *remainid;
 
 
     oud->premain = oud->preceive =  oud->poctant = 0;
@@ -661,8 +657,6 @@ static void createParticlesInOctant(p8est_iter_volume_info_t * info, void *user_
             if(geom->operator()(x,y,z)){
        
                 pd = (pdata_t *) sc_array_push_count (g->particle_data,1);
-                remainid = (p4est_locidx_t *) sc_array_push_count(g->iremain,1);
-                *remainid = *lpnum;
                 pd->xyz[0] = x;
                 pd->xyz[1] = y;
                 pd->xyz[2] = z;
@@ -717,16 +711,16 @@ Global_Data:: ~Global_Data(){
 
 }
 
-void Global_Data::initFluidParticles(double initperturbation){
+void Global_Data::initFluidParticles_hexagonal(){
 
     pdata_t *pd;
 	double h_r = 0.5*initlocalspacing;
     Geometry *geom  = geometry;
     double xmin, xmax, ymin, ymax, zmin, zmax;
     lpnum = 0;
-    p4est_locidx_t *remainid;   
+ //   p4est_locidx_t *remainid;   
     srand(1);
-    if(mpirank == mpisize-1){
+    if(mpirank == 0){
     if(dimension == 2){
         xmin = bb[0];
         xmax = bb[1];
@@ -798,17 +792,17 @@ void Global_Data::initFluidParticles(double initperturbation){
                 }
             }
          }
-    
+   //TO do 3d 
     gpnum = lpnum;
 
         }
 
-    MPI_Bcast(&gpnum,1,MPI_INT,mpisize-1,mpicomm);
+    MPI_Bcast(&gpnum,1,MPI_INT,0,mpicomm);
 
     P4EST_GLOBAL_ESSENTIALF ("Created %lld fluid particles \n",   (long long) gpnum);
     }
 
-void Global_Data::initFluidParticles(){
+void Global_Data::initFluidParticles_distributed(){
    
    int mpiret;
    
@@ -1054,11 +1048,11 @@ void Global_Data::split_by_coord ( sc_array_t * in,
 void Global_Data::prerun(){
 
    
-    ireceive = sc_array_new(sizeof(p4est_locidx_t));    
+//    ireceive = sc_array_new(sizeof(p4est_locidx_t));    
 
 
    particle_data = sc_array_new(sizeof( pdata_t ));
-   iremain = sc_array_new(sizeof(p4est_locidx_t));
+//   iremain = sc_array_new(sizeof(p4est_locidx_t));
    for (int i = 0; i < 2; ++i) {
     ilh[i] = sc_array_new (sizeof (p4est_locidx_t));
     jlh[i] = sc_array_new (sizeof (p4est_locidx_t));

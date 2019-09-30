@@ -52,7 +52,7 @@ public:
     ParticleViewer *viewer;
     
     
-    double cfldt;
+    double cfldt = 0;
     double cflcoefficient;
 	std::vector<std::vector<int> > m_vDirSplitTable; 
     int splitorder;

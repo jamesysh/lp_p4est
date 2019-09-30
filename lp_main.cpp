@@ -51,31 +51,31 @@ int main(){
     Octree_Manager *octree = new Octree_Manager(gdata);
 
     octree->build_octree();
-/*
+
     if(gdata->dimension == 3) 
         octree->refine_octree(1,refine_init,NULL,NULL);  //initial refinement of octree
     else if(gdata->dimension == 2)
         octree->refine_octree2d(1,refine_init2d,NULL,NULL);  //initial refinement of octree
-*/
+
     octree->partition_octree(1);
     gdata->prerun(); 
-    //gdata->initFluidParticles();
-    gdata->initFluidParticles(init->initperturbation);
+//    gdata->initFluidParticles_distributed();
+    gdata->initFluidParticles_hexagonal();
     //gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
-
+/*
     if(gdata->dimension == 3 ) 
         octree->adapt_octree(); 
     else if(gdata->dimension == 2)
         octree->adapt_octree2d();
-    
-    sc_array_destroy(gdata->irecumu);
-    sc_array_destroy(gdata->irvcumu);
+  */  
+//    sc_array_destroy(gdata->irecumu);
+//    sc_array_destroy(gdata->irvcumu);
     if(gdata->dimension == 3)
        gdata->resetOctantData(); 
     else if(gdata->dimension == 2)
         gdata->resetOctantData2d();
-    sc_array_destroy(gdata->ireceive);
-    sc_array_destroy(gdata->iremain);
+//    sc_array_destroy(gdata->ireceive);
+//    sc_array_destroy(gdata->iremain);
     LPSolver * lpsolver = new LPSolver(gdata,octree,viewer);
     if(gdata->dimension == 3 )
         lpsolver->solve_3d();
