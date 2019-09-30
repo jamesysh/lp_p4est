@@ -760,8 +760,8 @@ void Global_Data::initFluidParticles(double initperturbation){
                         pd->ifboundary = true;
                     pd->redocount = 0;
                     
-                    remainid = (p4est_locidx_t *) sc_array_push_count(iremain,1);
-                    *remainid = lpnum;
+                  //  remainid = (p4est_locidx_t *) sc_array_push_count(iremain,1);
+                  //  *remainid = lpnum;
                     lpnum ++;
                 }
             }
@@ -791,8 +791,8 @@ void Global_Data::initFluidParticles(double initperturbation){
                         pd->ifboundary = true;
                     pd->redocount = 0;
                     
-                    remainid = (p4est_locidx_t *) sc_array_push_count(iremain,1);
-                    *remainid = lpnum;
+                 //   remainid = (p4est_locidx_t *) sc_array_push_count(iremain,1);
+                  //  *remainid = lpnum;
                     lpnum ++;
                     }
                 }
