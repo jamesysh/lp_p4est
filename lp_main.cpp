@@ -61,6 +61,7 @@ int main(){
     gdata->prerun(); 
     gdata->initFluidParticles();
     //gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
+
     if(gdata->dimension == 3 ) 
         octree->adapt_octree(); 
     else if(gdata->dimension == 2)
@@ -75,7 +76,6 @@ int main(){
     sc_array_destroy(gdata->ireceive);
     sc_array_destroy(gdata->iremain);
     LPSolver * lpsolver = new LPSolver(gdata,octree,viewer);
-    
     if(gdata->dimension == 3 )
         lpsolver->solve_3d();
     else if(gdata->dimension == 2)

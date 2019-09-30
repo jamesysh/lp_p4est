@@ -557,9 +557,7 @@ static void createParticlesInOctant2d(p4est_iter_volume_info_t * info, void *use
     pdata_t *pd;
     octant_data_t *oud = (octant_data_t *)quad->p.user_data;
     p4est_qcoord_t qh;
-   
-    p4est_locidx_t      *remainid;
-
+    p4est_locidx_t *remainid;   
 
     oud->premain = oud->preceive =  oud->poctant = 0;
     qh = P4EST_QUADRANT_LEN (quad->level);
@@ -692,7 +690,7 @@ Global_Data:: Global_Data(Initializer* init){
     gpnum = 0;
     gplost = 0; 
     flagrefine = 1;
-    dimension = 2;
+    dimension = 3;
     initlevel = init->initlevel;
     timesearchingradius = init->timesearchingradius;
     maxlevel = init->maxlevel;
@@ -702,9 +700,9 @@ Global_Data:: Global_Data(Initializer* init){
     numrow1st2d = 3;
     initperturbation = init->initperturbation;
     elem_particles = init->elem_particles;
-    geometry = GeometryFactory::instance().createGeometry("disk"); 
+    geometry = GeometryFactory::instance().createGeometry("pelletlayer"); 
     geometry->getBoundingBox(bb[0],bb[1],bb[2],bb[3],bb[4],bb[5]);
-    state = StateFactory::instance().createState("gresho2dstate");
+    state = StateFactory::instance().createState("pelletstate");
     boundary = BoundaryFactory::instance().createBoundary("inflowboundary");
     eoschoice = init->eoschoice;
     gamma = 1.67;
@@ -717,12 +715,40 @@ Global_Data:: Global_Data(Initializer* init){
 Global_Data:: ~Global_Data(){
 
 }
-
+/*
 void Global_Data::initFluidParticles(double initperturbation){
-    
 
+    pdata_t *pd;
+	double h_r = 0.5*m_fInitParticleSpacing;
+    Geometry *geom  = geometry;
+    double xmin, xmax, ymin, ymax, zmin, zmax;
+    lnum = 0;
+    srand(1);
+    if(dimension == 2){
+        xmin = bb[0];
+        xmax = bb[1];
+        ymin = bb[2];
+        ymax = bb[3];
+	    HexagonalPacking2D hex2D(xmin,xmax,ymin,ymax,h_r);
+    
+	    size_t m0, m1, n0_odd, n1_odd, n0_even, n1_even;
+        hex2D.getParameters(m0, m1, n0_odd, n1_odd, n0_even, n1_even);
+        hex2D.getInitialPerturbation(initperturbation);
+    
+        for(size_t j=m0; j<=m1; j++) { 
+            if((j+1)%2 != 0) { // odd-numbered rows 
+                for(size_t k=n0_odd; k<=n1_odd; k++) { 
+                    double x = hex2D.computeX(0,k);
+                    double y = hex2D.computeY(j);
+                    if(!geom->operator()(x,y,0)) continue;
+                    
+                    pd = (pdata_t *) sc_array_push_count (g->particle_data,1);
+    
+                }
 
 }
+*/
+
 void Global_Data::initFluidParticles(){
    
    int mpiret;
