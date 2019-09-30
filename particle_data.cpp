@@ -6,6 +6,7 @@
 #include "particle_data.h"
 #include "geometry_pellet.h"
 #include "sc_notify.h"
+#include "hexagonal_packing.h"
 #include <math.h>
 #include <cassert>
 using namespace std;
@@ -690,7 +691,7 @@ Global_Data:: Global_Data(Initializer* init){
     gpnum = 0;
     gplost = 0; 
     flagrefine = 1;
-    dimension = 3;
+    dimension = 2;
     initlevel = init->initlevel;
     timesearchingradius = init->timesearchingradius;
     maxlevel = init->maxlevel;
@@ -700,9 +701,9 @@ Global_Data:: Global_Data(Initializer* init){
     numrow1st2d = 3;
     initperturbation = init->initperturbation;
     elem_particles = init->elem_particles;
-    geometry = GeometryFactory::instance().createGeometry("pelletlayer"); 
+    geometry = GeometryFactory::instance().createGeometry("disk"); 
     geometry->getBoundingBox(bb[0],bb[1],bb[2],bb[3],bb[4],bb[5]);
-    state = StateFactory::instance().createState("pelletstate");
+    state = StateFactory::instance().createState("gresho2dstate");
     boundary = BoundaryFactory::instance().createBoundary("inflowboundary");
     eoschoice = init->eoschoice;
     gamma = 1.67;
@@ -715,15 +716,17 @@ Global_Data:: Global_Data(Initializer* init){
 Global_Data:: ~Global_Data(){
 
 }
-/*
+
 void Global_Data::initFluidParticles(double initperturbation){
 
     pdata_t *pd;
-	double h_r = 0.5*m_fInitParticleSpacing;
+	double h_r = 0.5*initlocalspacing;
     Geometry *geom  = geometry;
     double xmin, xmax, ymin, ymax, zmin, zmax;
-    lnum = 0;
+    lpnum = 0;
+    p4est_locidx_t *remainid;   
     srand(1);
+    if(mpirank == mpisize-1){
     if(dimension == 2){
         xmin = bb[0];
         xmax = bb[1];
@@ -742,12 +745,68 @@ void Global_Data::initFluidParticles(double initperturbation){
                     double y = hex2D.computeY(j);
                     if(!geom->operator()(x,y,0)) continue;
                     
-                    pd = (pdata_t *) sc_array_push_count (g->particle_data,1);
-    
+                    pd = (pdata_t *) sc_array_push_count (particle_data,1);
+                    pd->xyz[0] = x;
+                    pd->xyz[1] = y;
+                    pd->xyz[2] = 0;
+                    state->velocity(x,y,0,pd->v[0],pd->v[1],pd->v[2]);                
+                    pd->volume = 1./state->density(x,y,0);
+                    pd->pressure = state->pressure(x,y,0);
+                    pd->localspacing = initlocalspacing;
+                    pd->mass = sqrt(3)*2*h_r*h_r/pd->volume; 
+                    pd->soundspeed = eos->getSoundSpeed(pd->pressure,1./pd->volume);
+                    pd->ifboundary = false;
+                    if((x*x+y*y)>1)
+                        pd->ifboundary = true;
+                    pd->redocount = 0;
+                    
+                    remainid = (p4est_locidx_t *) sc_array_push_count(iremain,1);
+                    *remainid = lpnum;
+                    lpnum ++;
                 }
+            }
+            else{ // even-numbered rows
+                for(size_t k=n0_even; k<=n1_even; k++) {
+                    double x = hex2D.computeX(1,k);
+//                                                if(x-0.6*h_r>0) x=x-0.6*h_r;
+//                                                double multi=1.0;
+//                                                if(x>0) multi=8.0;
+//                                                x*=multi;
+                    double y = hex2D.computeY(j);
+                    if(!geom->operator()(x,y,0)) continue; 	
+//                                                if((!objs[p]->operator()(8*x,y,0))&&x>0)        continue;
+                
+                    pd = (pdata_t *) sc_array_push_count (particle_data,1);
+                    pd->xyz[0] = x;
+                    pd->xyz[1] = y;
+                    pd->xyz[2] = 0;
+                    state->velocity(x,y,0,pd->v[0],pd->v[1],pd->v[2]);                
+                    pd->volume = 1./state->density(x,y,0);
+                    pd->pressure = state->pressure(x,y,0);
+                    pd->localspacing = initlocalspacing;
+                    pd->mass = sqrt(3)*2*h_r*h_r/pd->volume; 
+                    pd->soundspeed = eos->getSoundSpeed(pd->pressure,1./pd->volume);
+                    pd->ifboundary = false;
+                    if((x*x+y*y)>1)
+                        pd->ifboundary = true;
+                    pd->redocount = 0;
+                    
+                    remainid = (p4est_locidx_t *) sc_array_push_count(iremain,1);
+                    *remainid = lpnum;
+                    lpnum ++;
+                    }
+                }
+            }
+         }
+    
+    gpnum = lpnum;
 
-}
-*/
+        }
+
+    MPI_Bcast(&gpnum,1,MPI_INT,mpisize-1,mpicomm);
+
+    P4EST_GLOBAL_ESSENTIALF ("Created %lld fluid particles \n",   (long long) gpnum);
+    }
 
 void Global_Data::initFluidParticles(){
    
