@@ -18,7 +18,8 @@ boundary.o: boundary.h boundary.cpp
 	${CC} ${CFLAGS} boundary.cpp
 boundary_pellet.o: boundary.h boundary_pellet.h boundary_pellet.cpp
 	${CC} ${CFLAGS} boundary_pellet.cpp
-
+boundary_gresho.o: boundary.h boudary_gresho.h boundary_gresho.cpp
+	$(CC) $(CFLGAS) boundary_gresho.cpp
 
 
 

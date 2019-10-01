@@ -2599,10 +2599,10 @@ void Global_Data::searchUpwindNeighbourParticle2d(){
             }
         }
     
-        setUpwindNeighbourList(lf, lb, pad->neighbourleftparticle);
-        setUpwindNeighbourList(rf, rb, pad->neighbourrightparticle);
-        setUpwindNeighbourList(fl, fr, pad->neighbourfrontparticle);
-        setUpwindNeighbourList(bl, br, pad->neighbourbackparticle);
+        setUpwindNeighbourList2d(lf, lb, pad->neighbourleftparticle);
+        setUpwindNeighbourList2d(rf, rb, pad->neighbourrightparticle);
+        setUpwindNeighbourList2d(fl, fr, pad->neighbourfrontparticle);
+        setUpwindNeighbourList2d(bl, br, pad->neighbourbackparticle);
         sc_array_reset(lf); 
         sc_array_reset(lb); 
         sc_array_reset(rf); 
@@ -2705,7 +2705,38 @@ void Global_Data::searchUpwindNeighbourParticle(){
   neighbour_info_t * nei_info, *nei_info2;
   double theta, phi, sigma;
   size_t numnei, neiid;
+  double anglemin = 0.96;
+  double anglemax = M_PI-anglemin;
+  
+  pdata_copy_t *padcopy;
 
+  sc_array_t *fru = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *frd = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *flu = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *fld = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *bru = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *brd = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *blu = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *bld = sc_array_new(sizeof(neighbour_info_t));
+
+  sc_array_t *rfu = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *rfd = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *lfu = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *lfd = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *rbu = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *rbd = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *lbu = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *lbd = sc_array_new(sizeof(neighbour_info_t));
+  
+  sc_array_t *ufr = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *dfr = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *ufl = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *dfl = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *ubr = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *dbr = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *ubl = sc_array_new(sizeof(neighbour_info_t));
+  sc_array_t *dbl = sc_array_new(sizeof(neighbour_info_t));
+  
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
     tree = p8est_tree_array_index (p8est->trees, tt);
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
@@ -2730,31 +2761,301 @@ void Global_Data::searchUpwindNeighbourParticle(){
             theta = nei_info->theta;
             phi = nei_info->phi;
             sigma = nei_info->sigma;
-            if(theta >= 0 && theta <=0.96){
+            fetchParticle(pad, &padcopy,nei_info);
+            
+            if(theta >= 0 && theta <=anglemin){
+                if(padcopy->xyz[0] <= pad->xyz[0]){
+                    if(padcopy->xyz[1] <= pad->xyz[1]){
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(dbl);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                    else{
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(dbr);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                }
+                else{
+                    if(padcopy->xyz[1] <= pad->xyz[1]){
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(dfl);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                    else{
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(dfr);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                } 
+            }
+
+            if(theta >= anglemax && theta <=M_PI){
+                if(padcopy->xyz[0] <= pad->xyz[0]){
+                    if(padcopy->xyz[1] <= pad->xyz[1]){
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(ubl);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                    else{
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(ubr);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                }
+                else{
+                    if(padcopy->xyz[1] <= pad->xyz[1]){
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(ufl);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                    else{
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(ufr);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                } 
+            }
+        
+        
+            if(phi >= 0 && phi <= anglemin){
+                if(padcopy->xyz[0] <= pad->xyz[0]){
+                    if(padcopy->xyz[2] <= pad->xyz[2]){
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(lbd);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                    else{
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(lbu);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                }
+                else{
+                    if(padcopy->xyz[2] <= pad->xyz[2]){
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(lfd);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                    else{
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(lfu);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                } 
+            }
+            if(phi >= anglemax && phi <=M_PI){
+                if(padcopy->xyz[0] <= pad->xyz[0]){
+                    if(padcopy->xyz[2] <= pad->xyz[2]){
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(rbd);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                    else{
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(rbu);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                }
+                else{
+                    if(padcopy->xyz[2] <= pad->xyz[2]){
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(rfd);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                    else{
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(rfu);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                } 
+            }
+        
+            if(sigma >= 0 && sigma <= anglemin){
+                if(padcopy->xyz[2] <= pad->xyz[2]){
+                    if(padcopy->xyz[1] <= pad->xyz[1]){
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(bld);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                    else{
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(brd);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                }
+                else{
+                    if(padcopy->xyz[1] <= pad->xyz[1]){
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(blu);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                    else{
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(bru);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                } 
+            }
+            if(sigma >= anglemax && sigma <=M_PI){
+                if(padcopy->xyz[2] <= pad->xyz[2]){
+                    if(padcopy->xyz[1] <= pad->xyz[1]){
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(fld);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                    else{
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(frd);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                }
+                else{
+                    if(padcopy->xyz[1] <= pad->xyz[1]){
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(flu);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                    else{
+                    
+                        nei_info2 = (neighbour_info_t *)sc_array_push(fru);
+                        copyNeighbourInfo(nei_info2,nei_info);
+                    }
+                } 
+            }
+        }
+        
+        setUpwindNeighbourList(fru,frd,flu,fld,pad->neighbourfrontparticle);
+        setUpwindNeighbourList(bru,brd,blu,bld,pad->neighbourbackparticle);
+        setUpwindNeighbourList(rfu,rfd,rbu,rbd,pad->neighbourrightparticle);
+        setUpwindNeighbourList(lfu,lfd,lbu,lbd,pad->neighbourleftparticle);
+        setUpwindNeighbourList(ufr,ubr,ufl,ubl,pad->neighbourupparticle);
+        setUpwindNeighbourList(dfr,dbr,dfl,dbl,pad->neighbourdownparticle);
+    
+        sc_array_reset(fru);
+        sc_array_reset(frd);
+        sc_array_reset(flu);
+        sc_array_reset(fld);
+        sc_array_reset(bru);
+        sc_array_reset(brd);
+        sc_array_reset(blu);
+        sc_array_reset(bld);
+        sc_array_reset(rfu);
+        sc_array_reset(rfd);
+        sc_array_reset(rbu);
+        sc_array_reset(rbd);
+        sc_array_reset(lfu);
+        sc_array_reset(lfd);
+        sc_array_reset(lbu);
+        sc_array_reset(lbd);
+        sc_array_reset(ufr);
+        sc_array_reset(ubr);
+        sc_array_reset(ufl);
+        sc_array_reset(ubl);
+        sc_array_reset(dfr);
+        sc_array_reset(dbr);
+        sc_array_reset(dfl);
+        sc_array_reset(dbl);
+    }
+  
+    offset = lpend; 
+    }
+  
+  }
+
+        sc_array_destroy(fru);
+        sc_array_destroy(frd);
+        sc_array_destroy(flu);
+        sc_array_destroy(fld);
+        sc_array_destroy(bru);
+        sc_array_destroy(brd);
+        sc_array_destroy(blu);
+        sc_array_destroy(bld);
+        sc_array_destroy(rfu);
+        sc_array_destroy(rfd);
+        sc_array_destroy(rbu);
+        sc_array_destroy(rbd);
+        sc_array_destroy(lfu);
+        sc_array_destroy(lfd);
+        sc_array_destroy(lbu);
+        sc_array_destroy(lbd);
+        sc_array_destroy(ufr);
+        sc_array_destroy(ubr);
+        sc_array_destroy(ufl);
+        sc_array_destroy(ubl);
+        sc_array_destroy(dfr);
+        sc_array_destroy(dbr);
+        sc_array_destroy(dfl);
+        sc_array_destroy(dbl);
+}
+
+/*
+void Global_Data::searchUpwindNeighbourParticle(){
+
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+
+  p8est_tree_t       *tree;
+  p8est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  p4est_locidx_t   offset = 0,lpend;
+  pdata_t * pad;
+  neighbour_info_t * nei_info, *nei_info2;
+  double theta, phi, sigma;
+  size_t numnei, neiid;
+  double anglemin = 0.96;
+  double anglemax = M_PI-anglemin;
+  
+  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+    tree = p8est_tree_array_index (p8est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      lpend = qud->lpend;
+    for(int i=offset;i<lpend;i++){
+        pad = (pdata_t *)sc_array_index(particle_data,i);
+        if(pad->ifboundary)
+            continue;
+        pad->neighbourupparticle = sc_array_new(sizeof(neighbour_info_t));
+        pad->neighbourdownparticle = sc_array_new(sizeof(neighbour_info_t));
+        pad->neighbourrightparticle = sc_array_new(sizeof(neighbour_info_t));
+        pad->neighbourleftparticle = sc_array_new(sizeof(neighbour_info_t));
+        pad->neighbourfrontparticle = sc_array_new(sizeof(neighbour_info_t));
+        pad->neighbourbackparticle = sc_array_new(sizeof(neighbour_info_t));
+        
+        numnei = pad->neighbourparticle->elem_count;
+        for(neiid = 0; neiid<numnei; neiid++){
+            
+            nei_info = (neighbour_info_t *)sc_array_index(pad->neighbourparticle,neiid); 
+            theta = nei_info->theta;
+            phi = nei_info->phi;
+            sigma = nei_info->sigma;
+            if(theta >= 0 && theta <=anglemin){
                 nei_info2 = (neighbour_info_t *)sc_array_push(pad->neighbourdownparticle);
                 copyNeighbourInfo(nei_info2,nei_info);
             }
 
-            if(theta >= 2.19 && theta <=M_PI){
+            if(theta >= anglemax && theta <=M_PI){
                 nei_info2 = (neighbour_info_t *)sc_array_push(pad->neighbourupparticle);
                 copyNeighbourInfo(nei_info2,nei_info);
             }
         
         
-            if(phi >= 0 && phi <= 0.96){
+            if(phi >= 0 && phi <= anglemin){
                 nei_info2 = (neighbour_info_t *)sc_array_push(pad->neighbourleftparticle);
                 copyNeighbourInfo(nei_info2,nei_info);
             }
-            if(phi >= 2.19 && phi <=M_PI){
+            if(phi >= anglemax && phi <=M_PI){
                 nei_info2 = (neighbour_info_t *)sc_array_push(pad->neighbourrightparticle);
                 copyNeighbourInfo(nei_info2,nei_info);
             }
         
-            if(sigma >= 0 && sigma <= 0.96){
+            if(sigma >= 0 && sigma <= anglemin){
                 nei_info2 = (neighbour_info_t *)sc_array_push(pad->neighbourbackparticle);
                 copyNeighbourInfo(nei_info2,nei_info);
             }
-            if(sigma >= 2.19 && sigma <=M_PI){
+            if(sigma >= anglemax && sigma <=M_PI){
                 nei_info2 = (neighbour_info_t *)sc_array_push(pad->neighbourfrontparticle);
                 copyNeighbourInfo(nei_info2,nei_info);
             }
@@ -2766,7 +3067,7 @@ void Global_Data::searchUpwindNeighbourParticle(){
   
   }
 }
-
+*/
 void Global_Data::generateGhostParticle2d(){
 
 
@@ -3121,6 +3422,43 @@ void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t
 }
 
 
+void Global_Data::fetchParticle(pdata_t* pad, pdata_copy_t **padnei, neighbour_info_t *neiinfo){
+  
+
+  p8est_tree_t       *tree;
+  p8est_quadrant_t   *quad;
+  octant_data_t          *qud;
+  size_t parid;
+  size_t quadid;
+
+  tree = p8est_tree_array_index (p8est->trees, 0);
+
+  if(neiinfo->ifghost){         //ghost neighbour
+      parid = neiinfo->parid;
+      *padnei = (pdata_copy_t*) sc_array_index(pad->ghostneighbour, parid);
+      
+  
+  }
+
+  else if(neiinfo -> ifremote){     //remote neighbour
+      quadid = neiinfo->quadid;
+      parid = neiinfo->parid;
+      qud = &ghost_data[quadid];
+      *padnei = &qud->localparticle[parid];     
+    
+  }
+  
+  else{              //local neighbour
+      quadid = neiinfo->quadid;
+      parid = neiinfo->parid;
+      quad = p8est_quadrant_array_index(&tree->quadrants,quadid);
+      qud = (octant_data_t *) quad->p.user_data;
+      *padnei = &qud->localparticle[parid];
+  }
+
+
+} 
+
 void Global_Data::fetchParticle2d(pdata_t* pad, pdata_copy_t **padnei, neighbour_info_t *neiinfo){
   
 
@@ -3242,10 +3580,10 @@ void Global_Data::addGhostParticle(pdata_copy_t * ghostnei, pdata_t *pad, double
                 ghostnei->xyz[0] = pad->xyz[0] - dx; 
                 ghostnei->xyz[1] = pad->xyz[1] - dy; 
                 ghostnei->xyz[2] = pad->xyz[2] - dz; 
-                ghostnei->v[0] = 0;//pad->v[0];
-                ghostnei->v[1] = 0;//pad->v[1];
-                ghostnei->v[2] = 0;//pad->v[2];
-                ghostnei->pressure = 3+4*log(2.0);//pad->pressure; 
+                ghostnei->v[0] = pad->v[0];
+                ghostnei->v[1] = pad->v[1];
+                ghostnei->v[2] = pad->v[2];
+                ghostnei->pressure = 0.64;//pad->pressure; 
                 ghostnei->volume = 1.0e6; 
                 ghostnei->soundspeed = pad->soundspeed; 
                 ghostnei->mass = 0; 
@@ -3393,8 +3731,51 @@ void Global_Data::updateParticleStates(){
 
 }
 
+void Global_Data::setUpwindNeighbourList(sc_array_t *list0, sc_array_t *list1, sc_array_t *list2, sc_array_t *list3, sc_array_t *neidest){
+    size_t n0, n1, n2, n3;
+    size_t i0 = 0, i1 = 0, i2 = 0, i3 = 0;
+    neighbour_info_t *nei_infos, *nei_infod;
+    n0 = list0->elem_count;
+    n1 = list1->elem_count;
+    n2 = list2->elem_count;
+    n3 = list3->elem_count;
+    while(true){
+       if(i0<n0){
+            nei_infos = (neighbour_info_t *)sc_array_index(list0,i0);
+            nei_infod = (neighbour_info_t *)sc_array_push(neidest);
+            copyNeighbourInfo(nei_infod,nei_infos);
+            i0 ++;
+       } 
+    
+       if(i1<n1){
+            nei_infos = (neighbour_info_t *)sc_array_index(list1,i1);
+            nei_infod = (neighbour_info_t *)sc_array_push(neidest);
+            copyNeighbourInfo(nei_infod,nei_infos);
+            i1 ++;
+       } 
+       if(i2<n2){
+            nei_infos = (neighbour_info_t *)sc_array_index(list2,i2);
+            nei_infod = (neighbour_info_t *)sc_array_push(neidest);
+            copyNeighbourInfo(nei_infod,nei_infos);
+            i2 ++;
+       } 
+       if(i3<n3){
+            nei_infos = (neighbour_info_t *)sc_array_index(list3,i3);
+            nei_infod = (neighbour_info_t *)sc_array_push(neidest);
+            copyNeighbourInfo(nei_infod,nei_infos);
+            i3 ++;
+       } 
+       if(i0 == n0 && i1 == n1 && i2 == n2 && i3 == n3){
+            
+           assert(neidest->elem_count == n0+n1+n2+n3);
+           break;
 
-void Global_Data::setUpwindNeighbourList(sc_array_t* nei0, sc_array_t *nei1, sc_array_t *neidest){
+       } 
+    }
+
+}
+
+void Global_Data::setUpwindNeighbourList2d(sc_array_t* nei0, sc_array_t *nei1, sc_array_t *neidest){
     
     sc_array_t *neishort;
     sc_array_t *neilong;

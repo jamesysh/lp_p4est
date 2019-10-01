@@ -5,7 +5,7 @@
 #include "geometry_disk.h"
 #include "boundary_pellet.h"
 #include "state_gresho.h"
-
+#include "boundary_gresho.h"
 namespace{
 
     GeometryRegistrar<PelletLayer> g1("pelletlayer");
@@ -13,5 +13,5 @@ namespace{
     BoundaryRegistrar<PelletInflowBoundary> b1("inflowboundary");
     GeometryRegistrar<Disk> g2("disk");
     StateRegistrar<Gresho2DState> s2("gresho2dstate");
-
+    BoundaryRegistrar<Gresho2DSolidBoundary> b2("gresho2dboundary");
 }
