@@ -18,7 +18,7 @@ Global_Data:: Global_Data(Initializer* init){
     gpnum = 0;
     gplost = 0; 
     flagrefine = 1;
-    dimension = 3;
+    dimension = 2;
     initlevel = init->initlevel;
     timesearchingradius = init->timesearchingradius;
     maxlevel = init->maxlevel;
@@ -28,14 +28,14 @@ Global_Data:: Global_Data(Initializer* init){
     numrow1st2d = 3;
     initperturbation = init->initperturbation;
     elem_particles = init->elem_particles;
-    geometry = GeometryFactory::instance().createGeometry("pelletlayer"); 
+    geometry = GeometryFactory::instance().createGeometry("disk"); 
     geometry->getBoundingBox(bb[0],bb[1],bb[2],bb[3],bb[4],bb[5]);
-    state = StateFactory::instance().createState("pelletstate");
+    state = StateFactory::instance().createState("yee2dstate");
     boundary = BoundaryFactory::instance().createBoundary("inflowboundary");
     eoschoice = init->eoschoice;
     gamma = 1.67;
     setEOS();    
-
+    flagdelete = true;
 
 }
 
@@ -322,8 +322,11 @@ psearch_point2d (p4est_t * p4est, p4est_topidx_t which_tree,
   Global_Data      *g = (Global_Data *) p4est->user_pointer;
   octant_data_t          *qud;
   pdata_t          *pad = (pdata_t *) point;
-
   /* access location of particle to be searched */
+  if(pad->ifboundary){
+    if(pad->flagdelete == g->flagdelete)
+        return 0;
+  }
   x = pad->xyz;
 
   /* due to roundoff we call this even for a local leaf */
@@ -624,8 +627,14 @@ static void createParticlesInOctant2d(p4est_iter_volume_info_t * info, void *use
                 pd->mass = ls*ls/pd->volume/2*sqrt(3); 
                 pd->soundspeed = eos->getSoundSpeed(pd->pressure,1./pd->volume);
                 pd->ifboundary = false;
-                if((x*x+y*y)>1)
+                if((x*x+y*y)>5){
                     pd->ifboundary = true;
+                    pd->flagdelete = !g->flagdelete;
+                    pd->pressure = 1;
+                    double r = 2*5-sqrt(x*x+y*y);
+                    pd->v[0] = 2.5/M_PI*exp(0.5-0.5*r*r)*(-y);
+                    pd->v[1] = 2.5/M_PI*exp(0.5-0.5*r*r)*(x);
+                }
                 pd->redocount = 0;
                 (*lpnum) ++;
                 }
@@ -3821,6 +3830,10 @@ void Global_Data::setUpwindNeighbourList2d(sc_array_t* nei0, sc_array_t *nei1, s
 
 }
 
+void Global_Data::switchFlagDelete(){
+    
+    flagdelete = !flagdelete;
 
+}
 
 

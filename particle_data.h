@@ -27,6 +27,7 @@ typedef struct pdata{
     double flagboundary;
     bool ifhasghostneighbour;
     bool ifboundary;   //if a boundary particle
+    bool flagdelete;   // delete boundary particle at current timestep: delete if its not the same as flag in gdata
     double schemeorder;
     int32_t redocount;
     sc_array_t * ghostneighbour;   //pdata_copy_t
@@ -187,12 +188,13 @@ class Global_Data{
         void loopquad2d (p4est_topidx_t tt, p4est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]);
 
         void split_by_coord ( sc_array_t * in,
-                sc_array_t * out[2], pa_mode_t mode, int component,
-                const double lxyz[3], const double dxyz[3]);
+        sc_array_t * out[2], pa_mode_t mode, int component,
+        const double lxyz[3], const double dxyz[3]);
         void cleanUpArrays();
         void writeVTKFiles();
         void setEOS();
-
+        void switchFlagDelete();
+        
         sc_MPI_Comm mpicomm;
         int dimension;
         int mpisize,mpirank;
@@ -219,7 +221,8 @@ class Global_Data{
         Geometry* geometry;
         State* state;        
         EOS* eos;        
-        Boundary *boundary; 
+        Boundary *boundary;
+        bool flagdelete; 
         p4est_locidx_t lpnum; //number of particles on local processor
         p4est_gloidx_t gpnum, gplost; //number of particles on all processor, number of particles on all processers which left domain
         p4est_locidx_t lghostnum;

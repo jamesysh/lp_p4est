@@ -14,4 +14,5 @@ namespace{
     GeometryRegistrar<Disk> g2("disk");
     StateRegistrar<Gresho2DState> s2("gresho2dstate");
     BoundaryRegistrar<Gresho2DSolidBoundary> b2("gresho2dboundary");
+    StateRegistrar<Yee2DState> s3("yee2dstate");
 }
