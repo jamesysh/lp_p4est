@@ -60,7 +60,7 @@ int main(){
     octree->partition_octree(1);
     gdata->prerun(); 
     gdata->initFluidParticles_distributed();
-//    gdata->initFluidParticles_hexagonal();
+ //   gdata->initFluidParticles_hexagonal();
     //gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
     if(gdata->dimension == 3)
        gdata->resetOctantData(); 

@@ -11,6 +11,38 @@
 #include <cassert>
 using namespace std;
 
+
+Global_Data:: Global_Data(Initializer* init){
+    
+    lpnum = 0;
+    gpnum = 0;
+    gplost = 0; 
+    flagrefine = 1;
+    dimension = 3;
+    initlevel = init->initlevel;
+    timesearchingradius = init->timesearchingradius;
+    maxlevel = init->maxlevel;
+    minlevel = init->minlevel; 
+    initlocalspacing = init->initlocalspacing;
+    numrow1st = 8;
+    numrow1st2d = 3;
+    initperturbation = init->initperturbation;
+    elem_particles = init->elem_particles;
+    geometry = GeometryFactory::instance().createGeometry("pelletlayer"); 
+    geometry->getBoundingBox(bb[0],bb[1],bb[2],bb[3],bb[4],bb[5]);
+    state = StateFactory::instance().createState("pelletstate");
+    boundary = BoundaryFactory::instance().createBoundary("inflowboundary");
+    eoschoice = init->eoschoice;
+    gamma = 1.67;
+    setEOS();    
+
+
+}
+
+
+Global_Data:: ~Global_Data(){
+
+}
 static void testcornerside2d( p4est_iter_corner_info_t * info, void *user_data){
 
     octant_data_t *ghost_data = (octant_data_t *)user_data;
@@ -679,38 +711,6 @@ static void createParticlesInOctant(p8est_iter_volume_info_t * info, void *user_
    oud->poctant = oud->premain;
 };
 
-Global_Data:: Global_Data(Initializer* init){
-    
-    lpnum = 0;
-    gpnum = 0;
-    gplost = 0; 
-    flagrefine = 1;
-    dimension = 2;
-    initlevel = init->initlevel;
-    timesearchingradius = init->timesearchingradius;
-    maxlevel = init->maxlevel;
-    minlevel = init->minlevel; 
-    initlocalspacing = init->initlocalspacing;
-    numrow1st = 8;
-    numrow1st2d = 3;
-    initperturbation = init->initperturbation;
-    elem_particles = init->elem_particles;
-    geometry = GeometryFactory::instance().createGeometry("disk"); 
-    geometry->getBoundingBox(bb[0],bb[1],bb[2],bb[3],bb[4],bb[5]);
-    state = StateFactory::instance().createState("gresho2dstate");
-    boundary = BoundaryFactory::instance().createBoundary("inflowboundary");
-    eoschoice = init->eoschoice;
-    gamma = 1.67;
-    setEOS();    
-
-
-}
-
-
-Global_Data:: ~Global_Data(){
-
-}
-
 void Global_Data::initFluidParticles_hexagonal(){
 
     pdata_t *pd;
@@ -793,6 +793,130 @@ void Global_Data::initFluidParticles_hexagonal(){
             }
          }
    //TO do 3d 
+        else if(dimension == 3){
+            xmin = bb[0];
+            xmax = bb[1];
+            ymin = bb[2];
+            ymax = bb[3];
+            zmin = bb[4];
+            zmax = bb[5];
+			HexagonalPacking3D hex3D(xmin, xmax, ymin, ymax, zmin, zmax, h_r);
+			hex3D.getInitialPerturbation(initperturbation);
+			size_t l0,l1;
+			size_t m0_odd, m1_odd, m0_even, m1_even, n0_odd, n1_odd, n0_even, n1_even;
+			size_t nn0_odd, nn1_odd, nn0_even, nn1_even; 
+			hex3D.getParameters(l0, l1, m0_odd, m1_odd, m0_even, m1_even, 
+								n0_odd, n1_odd, n0_even, n1_even, 
+								nn0_odd, nn1_odd, nn0_even, nn1_even);	
+        
+			for(size_t i=l0; i<=l1; i++) { 
+				if((i+1)%2 != 0) { //odd-numbered layers
+					for(size_t j=m0_odd; j<=m1_odd; j++) { 
+						if((j+1)%2 != 0) { //odd-numbered rows 
+							for(size_t k=n0_odd; k<=n1_odd; k++) {
+								double x = hex3D.computeX(0,k);
+								double y = hex3D.computeY(0,j);
+								double z = hex3D.computeZ(i);
+//                                                if(x-0.3*h_r>-0.0001) x=x-0.3*h_r;
+								if(!geom->operator()(x,y,z)) continue;	
+								
+                                    pd = (pdata_t *) sc_array_push_count (particle_data,1);
+                                    pd->xyz[0] = x;
+                                    pd->xyz[1] = y;
+                                    pd->xyz[2] = z;
+                                    state->velocity(x,y,z,pd->v[0],pd->v[1],pd->v[2]);                
+                                    pd->volume = 1./state->density(x,y,z);
+                                    pd->pressure = state->pressure(x,y,z);
+                                    pd->localspacing = initlocalspacing;
+                                    pd->mass = sqrt(2)*4*h_r*h_r*h_r/pd->volume; 
+                                    pd->soundspeed = eos->getSoundSpeed(pd->pressure,1./pd->volume);
+                                    pd->ifboundary = false;
+                                    pd->redocount = 0;
+                                    lpnum ++;
+							}
+						} 
+						else{ //even-numbered rows
+							for(size_t k=n0_even; k<=n1_even; k++) {
+								double x = hex3D.computeX(1,k);
+								double y = hex3D.computeY(0,j);
+								double z = hex3D.computeZ(i);
+//                                                if(x-0.3*h_r>-0.0001) x=x-0.3*h_r;
+								if(!geom->operator()(x,y,z)) continue;	
+                                    pd = (pdata_t *) sc_array_push_count (particle_data,1);
+                                    pd->xyz[0] = x;
+                                    pd->xyz[1] = y;
+                                    pd->xyz[2] = z;
+                                    state->velocity(x,y,z,pd->v[0],pd->v[1],pd->v[2]);                
+                                    pd->volume = 1./state->density(x,y,z);
+                                    pd->pressure = state->pressure(x,y,z);
+                                    pd->localspacing = initlocalspacing;
+                                    pd->mass = sqrt(2)*4*h_r*h_r*h_r/pd->volume; 
+                                    pd->soundspeed = eos->getSoundSpeed(pd->pressure,1./pd->volume);
+                                    pd->ifboundary = false;
+                                    pd->redocount = 0;
+                                    lpnum ++;
+							}
+						}
+					}
+						
+				} 
+				else { //even-numbered layers
+					for(size_t j=m0_even; j<=m1_even; j++) { 
+						if((j+1)%2 != 0) { //odd-numbered rows
+							for(size_t k=nn0_odd; k<=nn1_odd; k++) { 
+								double x = hex3D.computeX(1,k);
+								double y = hex3D.computeY(1,j);
+								double z = hex3D.computeZ(i);
+//                                                if(x-0.3*h_r>-0.0001) x=x-0.3*h_r;
+								if(!geom->operator()(x,y,z)) continue;
+								
+                                    pd = (pdata_t *) sc_array_push_count (particle_data,1);
+                                    pd->xyz[0] = x;
+                                    pd->xyz[1] = y;
+                                    pd->xyz[2] = z;
+                                    state->velocity(x,y,z,pd->v[0],pd->v[1],pd->v[2]);                
+                                    pd->volume = 1./state->density(x,y,z);
+                                    pd->pressure = state->pressure(x,y,z);
+                                    pd->localspacing = initlocalspacing;
+                                    pd->mass = sqrt(2)*4*h_r*h_r*h_r/pd->volume; 
+                                    pd->soundspeed = eos->getSoundSpeed(pd->pressure,1./pd->volume);
+                                    pd->ifboundary = false;
+                                    pd->redocount = 0;
+                                    lpnum ++;
+							}
+						} 
+						else { //even-numbered rows
+							for(size_t k=nn0_even; k<=nn1_even; k++) {
+								double x = hex3D.computeX(0,k);
+								double y = hex3D.computeY(1,j);
+								double z = hex3D.computeZ(i);
+//                                                if(x-0.3*h_r>-0.0001) x=x-0.3*h_r;
+								if(!geom->operator()(x,y,z)) continue; 	
+								
+                                    pd = (pdata_t *) sc_array_push_count (particle_data,1);
+                                    pd->xyz[0] = x;
+                                    pd->xyz[1] = y;
+                                    pd->xyz[2] = z;
+                                    state->velocity(x,y,z,pd->v[0],pd->v[1],pd->v[2]);                
+                                    pd->volume = 1./state->density(x,y,z);
+                                    pd->pressure = state->pressure(x,y,z);
+                                    pd->localspacing = initlocalspacing;
+                                    pd->mass = sqrt(2)*4*h_r*h_r*h_r/pd->volume; 
+                                    pd->soundspeed = eos->getSoundSpeed(pd->pressure,1./pd->volume);
+                                    pd->ifboundary = false;
+                                    pd->redocount = 0;
+                                    lpnum ++;
+							}
+						}
+					}	
+				}    
+			}
+        
+        
+        
+        }
+    
+
     gpnum = lpnum;
 
         }

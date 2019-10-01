@@ -631,7 +631,6 @@ void LPSolver:: solve_2d(){
 //        viewer->writeGhost(tstart);
     }
    
-    MPI_Barrier(gdata->mpicomm); 
     
         gdata->cleanForTimeStep2d();
     
