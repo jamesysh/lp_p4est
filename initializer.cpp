@@ -13,7 +13,7 @@ Initializer::Initializer(){
     minlevel = 0;
     elem_particles = 200;
 
-    initlocalspacing = 0.2;
+    initlocalspacing = 0.15;
     timesearchingradius = 4.;
     initperturbation = 1;
     eoschoice = 1;

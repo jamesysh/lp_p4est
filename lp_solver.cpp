@@ -650,7 +650,7 @@ void LPSolver::solve_3d(){
 
 
     double tstart = 0;
-    double tend = 1;
+    double tend = 5;
     double nextwritetime = 0;
     
     computeLocalBoundaryAndFluidNum();
@@ -697,9 +697,9 @@ void LPSolver::solve_3d(){
         gdata->searchNeighbourOctant();
 
 
+        
         gdata->searchNeighbourParticle();
         gdata->searchUpwindNeighbourParticle(); 
-    
         gdata->generateGhostParticle();
 
     

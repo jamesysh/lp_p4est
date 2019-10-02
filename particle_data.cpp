@@ -474,7 +474,7 @@ part_weight2d (p4est_t * p4est,
   g->prevlp = qud->lpend;
   *(int *) sc_array_index (g->src_fixed, g->qcount++) =
     (int) (ilem_particles * sizeof (pdata_t));
-  return 1+ ilem_particles;
+  return 1+ qud->fluidnum;
 }
 static int
 part_weight (p8est_t * p4est,
@@ -490,7 +490,8 @@ part_weight (p8est_t * p4est,
   g->prevlp = qud->lpend;
   *(int *) sc_array_index (g->src_fixed, g->qcount++) =
     (int) (ilem_particles * sizeof (pdata_t));
-  return 1 + ilem_particles;
+  return 1 + qud->fluidnum;
+  
 }
 static int
 comm_prank_compare (const void *v1, const void *v2)
@@ -1507,6 +1508,8 @@ void Global_Data::regroupParticles2d(){
       quad = p4est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
       qboth = qud->premain + qud->preceive;
+      
+      qud->fluidnum = 0;
       if (qboth == 0) {
         qud->lpend = prev;
         qud->premain = qud->preceive = 0;
@@ -1516,11 +1519,17 @@ void Global_Data::regroupParticles2d(){
       prev += qboth;
       for (li = 0; li < qud->premain; ++li) {
         ppos = *premain++;
-        memcpy (pad++, sc_array_index (particle_data, ppos), sizeof (pdata_t));
+        memcpy (pad, sc_array_index (particle_data, ppos), sizeof (pdata_t));
+        if(!pad->ifboundary)
+            qud->fluidnum ++;
+        pad ++;
       }
       for (li = 0; li < qud->preceive; ++li) {
         ppos = *preceive++;
-        memcpy (pad++, sc_array_index (prebuf, ppos), sizeof (pdata_t));
+        memcpy (pad, sc_array_index (prebuf, ppos), sizeof (pdata_t));
+        if(!pad->ifboundary)
+            qud->fluidnum ++;
+        pad ++;
       }
       qud->lpend = prev;
       qud->poctant = qboth;
@@ -1570,6 +1579,7 @@ void Global_Data::regroupParticles(){
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
       qboth = qud->premain + qud->preceive;
+      qud->fluidnum = 0;
       if (qboth == 0) {
         qud->lpend = prev;
         qud->premain = qud->preceive = 0;
@@ -1579,11 +1589,18 @@ void Global_Data::regroupParticles(){
       prev += qboth;
       for (li = 0; li < qud->premain; ++li) {
         ppos = *premain++;
-        memcpy (pad++, sc_array_index (particle_data, ppos), sizeof (pdata_t));
+        memcpy (pad, sc_array_index (particle_data, ppos), sizeof (pdata_t));
+        if(!pad->ifboundary)
+            qud->fluidnum ++;
+        pad ++;
       }
       for (li = 0; li < qud->preceive; ++li) {
         ppos = *preceive++;
-        memcpy (pad++, sc_array_index (prebuf, ppos), sizeof (pdata_t));
+        memcpy (pad, sc_array_index (prebuf, ppos), sizeof (pdata_t));
+       
+        if(!pad->ifboundary)
+            qud->fluidnum ++;
+        pad ++;
       }
       qud->lpend = prev;
       qud->poctant = qboth;
@@ -2695,7 +2712,7 @@ void Global_Data::searchUpwindNeighbourParticle2d(){
   }
 }
 */
-
+/*
 void Global_Data::searchUpwindNeighbourParticle(){
 
     p4est_topidx_t      tt;
@@ -2993,8 +3010,8 @@ void Global_Data::searchUpwindNeighbourParticle(){
         sc_array_destroy(dfl);
         sc_array_destroy(dbl);
 }
+*/
 
-/*
 void Global_Data::searchUpwindNeighbourParticle(){
 
     p4est_topidx_t      tt;
@@ -3072,7 +3089,7 @@ void Global_Data::searchUpwindNeighbourParticle(){
   
   }
 }
-*/
+
 void Global_Data::generateGhostParticle2d(){
 
 

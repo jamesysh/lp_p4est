@@ -68,6 +68,8 @@ typedef struct octant_data
     pdata_copy_t localparticle[200];
     int octantid;
     int mpirank;
+    
+    p4est_locidx_t    fluidnum; //number of fluid particle
     p4est_locidx_t    poctant;
   /** Offset into local array of all particles after this quadrant */
     p4est_locidx_t      lpend;
