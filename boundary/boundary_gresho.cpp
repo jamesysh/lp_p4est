@@ -121,7 +121,6 @@ void Yee2DSolidBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, d
     double xb,yb,zb,vxb,vyb,vzb,pressureb;
     int ifin;
     pdata_t *pad, *padb;
-    
     n = g->particle_data->elem_count;
         
     for(i = 0; i<n; i++){

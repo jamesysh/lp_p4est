@@ -140,6 +140,7 @@ void ParticleViewer:: writeResult(double t){
    static bool FIRST = true;
    size_t lpnum = gdata->particle_data->elem_count;
    size_t li;
+   size_t lfluidnum = gdata->lfluidnum;
    int mpirank = gdata->mpirank;
    string filename_t = outputfilename + rightFlush(numdigit)+"_";
    string filename = filename_t + to_string(mpirank) + ".vtk";
@@ -147,18 +148,7 @@ void ParticleViewer:: writeResult(double t){
     
 	FILE *outfile;
 
-    gdata->lfluidnum = gdata->gfluidnum = 0;
     //pad = (pdata_t *)sc_array_index_begin(particle_data);
-    for(li = 0; li<lpnum; li++){
-    pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
-    if(!pad->ifboundary){
-        gdata->lfluidnum ++;
-    }
-
-    }
-    p4est_gloidx_t lfn = (p4est_gloidx_t) gdata->lfluidnum; 
-    int mpiret = sc_MPI_Allreduce (&lfn, &gdata->gfluidnum, 1, P4EST_MPI_GLOIDX, sc_MPI_SUM, gdata->mpicomm);
-    SC_CHECK_MPI (mpiret);
     
     outfile = fopen(filename.c_str(), "w");
 	if(outfile==nullptr) {
@@ -170,82 +160,74 @@ void ParticleViewer:: writeResult(double t){
 	fprintf(outfile,"ASCII\n");
 	fprintf(outfile,"DATASET POLYDATA\n");
 	
-	fprintf(outfile,"POINTS %ld double\n",(long int)lpnum);
+	fprintf(outfile,"POINTS %ld double\n",(long int)lfluidnum);
     
-    pad = (pdata_t *)gdata->particle_data->array;
     //pad = (pdata_t *)sc_array_index_begin(particle_data);
     for(li = 0; li<lpnum; li++){
+        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+        if(pad->ifboundary) continue;
         if(gdata->dimension == 3)
             fprintf(outfile,"%.16g %.16g %.16g\n",pad->xyz[0],pad->xyz[1],pad->xyz[2]);
         else 
             fprintf(outfile,"%.16g %.16g %.16g\n",pad->xyz[0],pad->xyz[1],0);
-        pad++ ;
     }
   
-    fprintf(outfile,"POINT_DATA %ld\n",(long int)lpnum);
+    fprintf(outfile,"POINT_DATA %ld\n",(long int)lfluidnum);
 
 	fprintf(outfile,"VECTORS Velocity double\n");
     
-    pad = (pdata_t *)gdata->particle_data->array;
     //pad = (pdata_t *)sc_array_index_begin(particle_data);
     for(li = 0; li<lpnum; li++){
 
+        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+        if(pad->ifboundary) continue;
         if(gdata->dimension == 3)
             fprintf(outfile,"%.16g %.16g %.16g\n",pad->v[0],pad->v[1],pad->v[2]);
         else
             fprintf(outfile,"%.16g %.16g %.16g\n",pad->v[0],pad->v[1],0);
-        pad++ ;
     }
 
 	fprintf(outfile,"SCALARS pressure double\n");
 	fprintf(outfile,"LOOKUP_TABLE default\n");
     
-    pad = (pdata_t *)gdata->particle_data->array;
     for(li = 0; li<lpnum; li++){
-    if(pad->ifboundary)
- 
-    fprintf(outfile,"%.16g\n",(double)pad->pressure);
-    else
-   fprintf(outfile,"%.16g\n",(double)pad->pressure);
-    pad++ ;
+    
+        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+        if(pad->ifboundary) continue;
+        
+        fprintf(outfile,"%.16g\n",(double)pad->pressure);
     }
     
 	fprintf(outfile,"SCALARS density double\n");
 	fprintf(outfile,"LOOKUP_TABLE default\n");
     
-    pad = (pdata_t *)gdata->particle_data->array;
     for(li = 0; li<lpnum; li++){
-    if(pad->ifboundary)
- 
-    fprintf(outfile,"%.16g\n",1./(double)pad->volume);
-    else
-   fprintf(outfile,"%.16g\n",1./(double)pad->volume);
-    pad++ ;
+    
+        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+        if(pad->ifboundary) continue;
+        
+        fprintf(outfile,"%.16g\n",1./(double)pad->volume);
     }
     
 	fprintf(outfile,"SCALARS soundspeed double\n");
 	fprintf(outfile,"LOOKUP_TABLE default\n");
     
-    pad = (pdata_t *)gdata->particle_data->array;
     for(li = 0; li<lpnum; li++){
-    if(pad->ifboundary)
- 
-    fprintf(outfile,"%.16g\n",(double)pad->soundspeed);
-    else
-   fprintf(outfile,"%.16g\n",(double)pad->soundspeed);
-    pad++ ;
+    
+        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+        if(pad->ifboundary) continue;
+        
+        fprintf(outfile,"%.16g\n",(double)pad->soundspeed);
     }
 	fprintf(outfile,"SCALARS localspacing double\n");
 	fprintf(outfile,"LOOKUP_TABLE default\n");
     
-    pad = (pdata_t *)gdata->particle_data->array;
     for(li = 0; li<lpnum; li++){
-    if(pad->ifboundary)
- 
-    fprintf(outfile,"%.16g\n",(double)pad->localspacing);
-    else
-   fprintf(outfile,"%.16g\n",(double)pad->localspacing);
-    pad++ ;
+    
+        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+        if(pad->ifboundary) continue;
+        
+        fprintf(outfile,"%.16g\n",(double)pad->localspacing);
     }
     fclose(outfile);
     if(mpirank == 0){

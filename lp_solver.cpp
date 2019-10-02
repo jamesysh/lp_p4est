@@ -556,6 +556,8 @@ void LPSolver:: computeCFLCondition(){
 
 void LPSolver:: solve_2d(){
 
+
+    computeLocalBoundaryAndFluidNum();
     viewer->writeResult(0);
     double tstart = 0;
     double tend = 1;
@@ -569,9 +571,10 @@ void LPSolver:: solve_2d(){
     
         gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
     
-    //gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
-        gdata->presearch2d();
         
+    //gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
+        
+        gdata->presearch2d();
         gdata->packParticles();
     
         if(gdata->gpnum == 0)
@@ -602,15 +605,14 @@ void LPSolver:: solve_2d(){
     
         gdata->searchNeighbourOctant2d();
 
-
         gdata->searchNeighbourParticle2d();
         gdata->searchUpwindNeighbourParticle2d(); 
     
         gdata->generateGhostParticle2d();
-
+        
     //gdata->testquad2d();
         computeCFLCondition();
-        P4EST_GLOBAL_ESSENTIALF ("Current Time: %f milliseconds.\n", tstart);
+        P4EST_GLOBAL_ESSENTIALF ("Current Time: %f .\n", tstart);
         splitorder = (int)rand()%2;
         MPI_Bcast(&splitorder,1,MPI_INT,0,gdata->mpicomm);
         for(int phase = 0;phase < totalphase;phase++){
@@ -627,6 +629,8 @@ void LPSolver:: solve_2d(){
     if(tstart  >= nextwritetime)
     
     {
+
+        computeLocalBoundaryAndFluidNum();
         nextwritetime += 0.01;    
         viewer->writeResult(tstart);
 //        viewer->writeGhost(tstart);
@@ -645,6 +649,7 @@ void LPSolver:: solve_2d(){
 void LPSolver::solve_3d(){
 
 
+    computeLocalBoundaryAndFluidNum();
     viewer->writeResult(0);
     double tstart = 0;
     double tend = 0.0005;
@@ -711,6 +716,8 @@ void LPSolver::solve_3d(){
     if(tstart  >= nextwritetime)
     
     {
+
+        computeLocalBoundaryAndFluidNum();
         nextwritetime += cfldt;    
         viewer->writeResult(tstart);
 //        viewer->writeGhost(tstart);
@@ -726,3 +733,22 @@ void LPSolver::solve_3d(){
 
 
 }
+
+
+void LPSolver:: computeLocalBoundaryAndFluidNum(){
+
+    pdata_t *pad;
+    size_t li, lpnum = gdata->particle_data->elem_count;
+    size_t boundarycount = 0, fluidcount = 0; 
+
+    for(li = 0; li<lpnum; li++){
+       pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+       if(pad->ifboundary)
+           boundarycount ++;
+       else
+           fluidcount ++;
+    }
+    gdata->lfluidnum = fluidcount;
+    gdata->lboundarynum = boundarycount;
+}
+
