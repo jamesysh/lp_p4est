@@ -15,4 +15,5 @@ namespace{
     StateRegistrar<Gresho2DState> s2("gresho2dstate");
     BoundaryRegistrar<Gresho2DSolidBoundary> b2("gresho2dboundary");
     StateRegistrar<Yee2DState> s3("yee2dstate");
+    BoundaryRegistrar<Yee2DSolidBoundary> b3("yee2dboundary");
 }

@@ -11,16 +11,17 @@ INCS   = -I $(BOUNDARY_DIR) -I $(STATE_DIR) -I $(GEOMETRY_DIR) -I $(MAIN_DIR) -I
 LIBS   = -L $(LAPACK_DIR) 
 CFLAGS = -Wall -c -std=c++11 $(DEBUG) $(OMP) $(INCS)
 LFLAGS = -Wall  $(DEBUG) $(INCS) $(LIBS) $(OMP)
-OBJS = boundary.o boundary_pellet.o 
+OBJS = boundary.o boundary_pellet.o boundary_gresho.o 
 all: $(OBJS)
 
 boundary.o: boundary.h boundary.cpp
 	${CC} ${CFLAGS} boundary.cpp
-boundary_pellet.o: boundary.h boundary_pellet.h boundary_pellet.cpp
-	${CC} ${CFLAGS} boundary_pellet.cpp
-boundary_gresho.o: boundary.h boudary_gresho.h boundary_gresho.cpp
-	$(CC) $(CFLGAS) boundary_gresho.cpp
 
+boundary_pellet.o: boundary_pellet.h boundary_pellet.cpp boundary.h
+	$(CC) ${CFLAGS} boundary_pellet.cpp
+
+boundary_gresho.o: boundary_gresho.h boundary_gresho.cpp boundary.h
+	$(CC) $(CFLAGS) boundary_gresho.cpp
 
 
 clean:

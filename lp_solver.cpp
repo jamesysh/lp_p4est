@@ -7,7 +7,7 @@ LPSolver::LPSolver(Global_Data *g, Octree_Manager *o, ParticleViewer *v){
     octree = o;
     viewer = v;
     splitorder = 0;
-    cflcoefficient = 0.3;
+    cflcoefficient = 0.5;
     invalidpressure = 0;
     if(gdata->dimension == 3){
         m_vDirSplitTable = vector<vector<int> >
@@ -567,6 +567,7 @@ void LPSolver:: solve_2d(){
     
     
     
+        gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
     
     //gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
         gdata->presearch2d();
@@ -634,6 +635,7 @@ void LPSolver:: solve_2d(){
     
         gdata->cleanForTimeStep2d();
     
+        gdata->switchFlagDelete();
     }
 
 
@@ -717,7 +719,8 @@ void LPSolver::solve_3d(){
     MPI_Barrier(gdata->mpicomm); 
     
         gdata->cleanForTimeStep();
-    
+
+        gdata->switchFlagDelete();
     }
 
 
