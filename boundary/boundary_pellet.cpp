@@ -67,7 +67,7 @@ void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS,
         pad->localspacing = dx;
         pad->mass = 19950523;
         pad->ifboundary = true;
-
+        pad->flagdelete = !gdata->flagdelete;
         pad->soundspeed = m_pEOS->getSoundSpeed(pad->pressure,1./pad->volume);
 		}
 

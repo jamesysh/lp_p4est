@@ -229,6 +229,7 @@ class Global_Data{
         p4est_gloidx_t gghostnum;
         p4est_locidx_t lfluidnum;
         p4est_gloidx_t gfluidnum;
+        p4est_gloidx_t lboundarynum;
         p4est_locidx_t qremain, qreceive;
         int flagrefine, gflagrefine, flagstartrefine;
         octant_data_t *ghost_data; 
