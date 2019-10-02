@@ -651,7 +651,6 @@ void LPSolver::solve_3d(){
     double nextwritetime = 0;
     while(tstart<tend)
     {
-    tstart += cfldt;
     
     
     
@@ -697,6 +696,7 @@ void LPSolver::solve_3d(){
     
         computeCFLCondition();
     
+        tstart += cfldt;
     for(int phase = 0;phase< totalphase;phase++){
         solve_upwind(phase);
         MPI_Barrier(gdata->mpicomm);

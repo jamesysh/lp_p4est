@@ -398,6 +398,12 @@ psearch_point (p8est_t * p4est, p4est_topidx_t which_tree,
   octant_data_t          *qud;
   pdata_t          *pad = (pdata_t *) point;
 
+  if(pad->ifboundary){
+    if(pad->flagdelete == g->flagdelete)
+    { 
+        return 0;
+    }
+  }
   /* access location of particle to be searched */
   x = pad->xyz;
 
