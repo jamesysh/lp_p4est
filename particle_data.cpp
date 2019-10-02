@@ -18,7 +18,7 @@ Global_Data:: Global_Data(Initializer* init){
     gpnum = 0;
     gplost = 0; 
     flagrefine = 1;
-    dimension = 2;
+    dimension = 3;
     initlevel = init->initlevel;
     timesearchingradius = init->timesearchingradius;
     maxlevel = init->maxlevel;
@@ -28,12 +28,12 @@ Global_Data:: Global_Data(Initializer* init){
     numrow1st2d = 3;
     initperturbation = init->initperturbation;
     elem_particles = init->elem_particles;
-    geometry = GeometryFactory::instance().createGeometry("disk"); 
+    geometry = GeometryFactory::instance().createGeometry("cylinder"); 
     geometry->getBoundingBox(bb[0],bb[1],bb[2],bb[3],bb[4],bb[5]);
     state = StateFactory::instance().createState("yee2dstate");
-    boundary = BoundaryFactory::instance().createBoundary("yee2dboundary");
+    boundary = BoundaryFactory::instance().createBoundary("yee3dboundary");
     eoschoice = init->eoschoice;
-    gamma = 1.67;
+    gamma = 1.4;
     setEOS();    
     flagdelete = true;
 
@@ -2710,7 +2710,7 @@ void Global_Data::searchUpwindNeighbourParticle(){
   neighbour_info_t * nei_info, *nei_info2;
   double theta, phi, sigma;
   size_t numnei, neiid;
-  double anglemin = 0.96;
+  double anglemin = 1.374;
   double anglemax = M_PI-anglemin;
   
   pdata_copy_t *padcopy;

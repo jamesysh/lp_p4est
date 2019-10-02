@@ -11,7 +11,9 @@ INCS   = -I $(BOUNDARY_DIR) -I $(STATE_DIR) -I $(GEOMETRY_DIR) -I $(MAIN_DIR) -I
 LIBS   = -L $(LAPACK_DIR) 
 CFLAGS = -Wall -c -std=c++11 $(DEBUG) $(OMP) $(INCS)
 LFLAGS = -Wall  $(DEBUG) $(INCS) $(LIBS) $(OMP)
-OBJS = boundary.o boundary_pellet.o boundary_gresho.o 
+
+SRC_FILES := $(wildcard *.cpp) 
+OBJS = $(SRC_FILES:.cpp=.o)
 all: $(OBJS)
 
 boundary.o: boundary.h boundary.cpp

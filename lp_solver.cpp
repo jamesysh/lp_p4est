@@ -649,16 +649,20 @@ void LPSolver:: solve_2d(){
 void LPSolver::solve_3d(){
 
 
-    computeLocalBoundaryAndFluidNum();
-    viewer->writeResult(0);
     double tstart = 0;
-    double tend = 0.0005;
+    double tend = 1;
     double nextwritetime = 0;
+    
+    computeLocalBoundaryAndFluidNum();
+    
+    viewer->writeResult(0);
     while(tstart<tend)
     {
     
     
     
+    
+    gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
     
     //gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
     gdata->presearch();
@@ -718,7 +722,7 @@ void LPSolver::solve_3d(){
     {
 
         computeLocalBoundaryAndFluidNum();
-        nextwritetime += cfldt;    
+        nextwritetime += 0.01;    
         viewer->writeResult(tstart);
 //        viewer->writeGhost(tstart);
     }

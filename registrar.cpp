@@ -6,6 +6,7 @@
 #include "boundary_pellet.h"
 #include "state_gresho.h"
 #include "boundary_gresho.h"
+#include "geometry_cylinder.h"
 namespace{
 
     GeometryRegistrar<PelletLayer> g1("pelletlayer");
@@ -16,4 +17,6 @@ namespace{
     BoundaryRegistrar<Gresho2DSolidBoundary> b2("gresho2dboundary");
     StateRegistrar<Yee2DState> s3("yee2dstate");
     BoundaryRegistrar<Yee2DSolidBoundary> b3("yee2dboundary");
+    GeometryRegistrar<Cylinder> g3("cylinder");
+    BoundaryRegistrar<Yee3DSolidBoundary> b4("yee3dboundary");
 }
