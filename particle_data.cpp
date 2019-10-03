@@ -30,13 +30,13 @@ Global_Data:: Global_Data(Initializer* init){
     elem_particles = init->elem_particles;
     geometry = GeometryFactory::instance().createGeometry("disk"); 
     geometry->getBoundingBox(bb[0],bb[1],bb[2],bb[3],bb[4],bb[5]);
-    state = StateFactory::instance().createState("yee2dstate");
-    boundary = BoundaryFactory::instance().createBoundary("yee2dboundary");
+    state = StateFactory::instance().createState("gresho2dstate");
+    boundary = BoundaryFactory::instance().createBoundary("gresho2dboundary");
     eoschoice = init->eoschoice;
     gamma = 1.4;
     setEOS();    
     flagdelete = true;
-
+    iffreeboundary = true;
 }
 
 
@@ -2124,7 +2124,8 @@ void Global_Data::cleanForTimeStep2d(){
          sc_array_destroy(pad->neighbourleftparticle);
          sc_array_destroy(pad->neighbourfrontparticle);
          sc_array_destroy(pad->neighbourbackparticle);
-         sc_array_destroy(pad->ghostneighbour); 
+         if(iffreeboundary)
+            sc_array_destroy(pad->ghostneighbour); 
          }
        offset = lpend;  
     
@@ -2174,7 +2175,8 @@ void Global_Data::cleanForTimeStep(){
          sc_array_destroy(pad->neighbourleftparticle);
          sc_array_destroy(pad->neighbourfrontparticle);
          sc_array_destroy(pad->neighbourbackparticle);
-         sc_array_destroy(pad->ghostneighbour); 
+         if(iffreeboundary)
+            sc_array_destroy(pad->ghostneighbour); 
          }
        offset = lpend;  
     
@@ -3617,8 +3619,6 @@ void Global_Data::addGhostParticle(pdata_copy_t * ghostnei, pdata_t *pad, double
 
 void Global_Data::updateViewForOctant2d(int phase){
 
-    if(phase == 1)
-        return;
     p4est_topidx_t      tt;
   
     p4est_locidx_t      lq;
@@ -3650,9 +3650,9 @@ void Global_Data::updateViewForOctant2d(int phase){
         }
         
         if(phase == 1){
-            padd->pressure = pads->pressureT2;
-            padd->soundspeed = pads->soundspeedT2;
-            padd->volume = pads->volumeT2;
+            padd->pressure = pads->pressure;
+            padd->soundspeed = pads->soundspeed;
+            padd->volume = pads->volume;
         }
         pads++;
       
@@ -3671,8 +3671,6 @@ void Global_Data::updateViewForOctant2d(int phase){
 }
 void Global_Data::updateViewForOctant(int phase){
 
-    if(phase == 2)
-        return;
     p4est_topidx_t      tt;
   
     p4est_locidx_t      lq;
@@ -3709,6 +3707,12 @@ void Global_Data::updateViewForOctant(int phase){
             padd->volume = pads->volumeT2;
         }
         
+        else if(phase == 2 ){
+        
+            padd->pressure = pads->pressure;
+            padd->soundspeed = pads->soundspeed;
+            padd->volume = pads->volume;
+        }
         pads++;
       
       } 

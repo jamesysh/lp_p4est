@@ -18,7 +18,7 @@ public:
     
     void moveParticle();
     void solve_upwind(int phase);
-     
+    void solve_laxwendroff(); 
     void setInAndOutPointer(pdata_t *pad, double **inpressure, double **outpressure, double **involume, double **outvolume,
         double** invelocity, double **outvelocity, double **insoundspeed, double **outsoundspeed, int dir, int phase);
 
@@ -27,6 +27,9 @@ public:
     void computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist, const double* inpressure, const double *invelocity,
         double *vel_d, double *vel_dd, double *p_d, double *p_dd);
 
+    void computeSpatialDer(pdata_t *pad, const double* inPressure,  const double* inVolume,
+           const double* inVelocityU, const double* inVelocityV, const double* inVelocityW,
+             double* Pd, double *volumed, double* Ud, double* Vd, double* Wd);
 
     void updateLocalSpacing();
     void timeIntegration(
@@ -36,6 +39,9 @@ public:
 	double vel_d_1, double vel_dd_1, double p_d_1, double p_dd_1,
 	double* outVolume, double* outVelocity, double* outPressure);
 
+    void timeIntegration( double gravity, double inVolume, double inVelocityU, double inVelocityV, double inVelocityW, double inPressure, double inSoundSpeed,
+                                      double* Volumed, double* Ud, double* Vd, double *Wd, double *Pd,
+                                                        double* outVolume, double* outVelocityU, double* outVelocityV, double* outVelocityW, double* outPressure);
     void computeA3D(double *A ,pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, double distance);
     void computeA2D(double *A ,pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, double distance);
 
@@ -46,7 +52,7 @@ public:
     void computeCFLCondition();
     
     void computeLocalBoundaryAndFluidNum();
-
+    void reorderNeighbourList();
 
     Octree_Manager *octree;
     Global_Data * gdata; 
@@ -59,6 +65,13 @@ public:
     int splitorder;
     double invalidpressure;
     int totalphase;
+    size_t numrow2nd;
+    size_t numrow2nd2d;
+
+
+    double pinf;
+
+
 };
 
 

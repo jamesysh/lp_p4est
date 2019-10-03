@@ -89,8 +89,8 @@ pa_mode_t;
 
 typedef enum indata{
     PRESSURE,
-    VELOCITY
-
+    VELOCITY,
+    VOLUME
 }
 indata_t;
 typedef struct neighbour_info{
@@ -206,7 +206,9 @@ class Global_Data{
         int minlevel; 
         int elem_particles; //max number of particles per octant
         int eoschoice;
+        bool iffreeboundary;
         int pelletmaterial;
+        
         double gamma;
         
         double initlocalspacing;

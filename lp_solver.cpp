@@ -7,7 +7,7 @@ LPSolver::LPSolver(Global_Data *g, Octree_Manager *o, ParticleViewer *v){
     octree = o;
     viewer = v;
     splitorder = 0;
-    cflcoefficient = 0.5;
+    cflcoefficient = 0.3;
     invalidpressure = 0;
     if(gdata->dimension == 3){
         m_vDirSplitTable = vector<vector<int> >
@@ -25,6 +25,19 @@ LPSolver::LPSolver(Global_Data *g, Octree_Manager *o, ParticleViewer *v){
           {1,0}});
         totalphase = 2;
     }
+    
+    numrow2nd = 54;
+    numrow2nd2d = 36;
+
+
+
+
+
+
+
+
+    pinf = 0;
+
 }
 
 void LPSolver::moveParticle(){
@@ -143,6 +156,10 @@ if(p_d_0>0){
              redo  = true;
          }
         if(std::isnan(*outvolume) || std::isnan(*outvelocity) || std::isnan(*outpressure)) 
+        {
+                redo = true;}
+
+        if(std::isinf(*outvolume) || std::isinf(*outvelocity) || std::isinf(*outpressure)) 
         {
                 redo = true;}
 
@@ -461,6 +478,17 @@ void LPSolver::computeB3d(double *B, pdata_t *pad, sc_array_t *neighbourlist, si
         }   
     
     }
+
+    else if(datatype == VOLUME){
+    
+        for(size_t i=0; i<numrow; i++){
+            gdata->fetchNeighbourParticle(pad,&padnei,neighbourlist,i);
+            B[i] = padnei->volume - *indata;  
+        }   
+    
+    }
+
+
 }
 void LPSolver::computeB2d(double *B, pdata_t *pad, sc_array_t *neighbourlist, size_t numrow, const double* indata, indata_t datatype, int dir){
     pdata_copy_t *padnei;
@@ -607,8 +635,8 @@ void LPSolver:: solve_2d(){
 
         gdata->searchNeighbourParticle2d();
         gdata->searchUpwindNeighbourParticle2d(); 
-    
-        gdata->generateGhostParticle2d();
+        if(gdata->iffreeboundary) 
+            gdata->generateGhostParticle2d();
         
     //gdata->testquad2d();
         computeCFLCondition();
@@ -621,9 +649,12 @@ void LPSolver:: solve_2d(){
         gdata->updateViewForOctant2d(phase);
         MPI_Barrier(gdata->mpicomm); 
     }
-    gdata->updateParticleStates();
+    
+        solve_laxwendroff();
+        gdata->updateParticleStates();
    
-    updateLocalSpacing();
+   
+        updateLocalSpacing();
    
      moveParticle();
     if(tstart  >= nextwritetime)
@@ -702,9 +733,9 @@ void LPSolver::solve_3d(){
         gdata->searchNeighbourParticle();
         
         gdata->searchUpwindNeighbourParticle(); 
-        
-        gdata->generateGhostParticle();
-
+        if(gdata->iffreeboundary){ 
+            gdata->generateGhostParticle();
+        }
     
         computeCFLCondition();
     
@@ -761,4 +792,381 @@ void LPSolver:: computeLocalBoundaryAndFluidNum(){
     gdata->lfluidnum = fluidcount;
     gdata->lboundarynum = boundarycount;
 }
+
+void LPSolver::reorderNeighbourList(){
+
+
+
+}
+
+void LPSolver::solve_laxwendroff(){
+    
+    const double *invelocityu, *invelocityv, *invelocityw;
+    const double *inpressure, *involume, *insoundspeed;
+    
+    double *outvelocityu, *outvelocityv, *outvelocityw;
+    double *outpressure, *outvolume, *outsoundspeed;
+
+    int number_of_derivative = gdata->dimension==3? 9:5;
+    double Ud[number_of_derivative],Vd[number_of_derivative],Wd[number_of_derivative],
+           Pd[number_of_derivative],Volumed[number_of_derivative];
+    pdata_t * pad;
+
+    size_t li, lpnum = gdata->particle_data->elem_count;
+
+    for(li = 0; li<lpnum; li++){
+    
+       pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+       if(pad->ifboundary)
+           continue;
+       if(gdata->iffreeboundary){
+           if(pad->ifhasghostneighbour){
+               continue;
+           }
+       }
+
+       bool redo = false;
+       
+       inpressure = &pad->pressure;
+       insoundspeed = &pad->soundspeed;
+       involume = &pad->volume;
+       invelocityu = &pad->v[0];
+       invelocityv = &pad->v[1];
+       if(gdata->dimension == 3)
+           invelocityw = &pad->v[2];
+        
+       if(gdata->dimension == 3){
+          outpressure = &pad->pressureT1;
+          outsoundspeed = &pad->soundspeedT1;
+          outvolume = &pad->volumeT1;
+       }
+       else if(gdata->dimension == 2){
+           outpressure = &pad->pressureT1;
+           outsoundspeed = &pad->soundspeedT1;
+           outvolume = &pad->volumeT1;
+       }
+        
+       outvelocityu = &pad->oldv[0];
+       outvelocityv = &pad->oldv[1];
+       if(gdata->dimension == 3)
+           outvelocityw = &pad->oldv[2];
+    
+
+       if(*insoundspeed == 0 || *involume == 0){
+            pad->schemeorder = 0;
+            *outvolume = *involume;
+            *outpressure = *inpressure;
+            *outsoundspeed = *insoundspeed;
+            *outvelocityu = *invelocityu;
+            *outvelocityv = *invelocityv;
+            if(gdata->dimension == 3)
+                *outvelocityw = *invelocityw;
+            printf("Detect a particle which has 0 volume or 0 soundspeed!!!.\n"); 
+      }
+        
+    
+       pad->schemeorder = 2;
+        
+       computeSpatialDer(pad, inpressure, involume, invelocityu, invelocityv, invelocityw,
+          Pd, Volumed, Ud, Vd, Wd);
+
+       double gravity = 0;
+       if(gdata->dimension == 3){   
+            timeIntegration( gravity, *involume, *invelocityu, *invelocityv, *invelocityw, *inpressure, *insoundspeed,
+                            Volumed, Ud, Vd, Wd, Pd,
+                            outvolume, outvelocityu, outvelocityv, outvelocityw, outpressure); // output 
+       }
+
+       else if(gdata->dimension == 2){
+            double temp1 = 0, temp2; 
+       
+            timeIntegration( gravity, *involume, *invelocityu, *invelocityv, temp1, *inpressure, *insoundspeed,
+                            Volumed, Ud, Vd, Wd, Pd,
+                            outvolume, outvelocityu, outvelocityv, &temp2, outpressure); // output 
+       }
+   
+    
+         if(*outpressure < invalidpressure || 1./(*outvolume)<0)
+         {
+             redo  = true;
+         }
+        if(std::isnan(*outvolume) || std::isnan(*outvelocityu) || std::isnan(*outvelocityv) || std::isnan(*outpressure)) 
+        
+        {
+            redo = true;
+            if(gdata->dimension == 3){
+                if(isnan(*outvelocityw))
+                    redo = true;
+            }
+
+        }
+
+        if(std::isinf(*outvolume) || std::isinf(*outvelocityu) || std::isinf(*outvelocityv) || std::isinf(*outpressure)) 
+        {
+            redo = true;
+            if(gdata->dimension == 3){
+                if(isinf(*outvelocityw))
+                    redo = true;
+            }
+        }
+    
+        if(redo == true){
+
+            pad->redocount++;
+            
+            if(pad->redocount >4){
+                pad->schemeorder = 0;
+            }
+            else{
+                li--;
+                cout<<"redo laxwendroff for a particle"<<endl;
+            }
+
+            
+        }
+        else{
+        
+        
+            *outsoundspeed = gdata->eos->getSoundSpeed(*outpressure, 1./(*outvolume));
+            pad->redocount = 0;        
+        }
+
+        if(pad->schemeorder == 0)
+        {
+            pad->redocount = 0;
+            *outvolume = *involume;
+            *outpressure = *inpressure;
+            *outsoundspeed = *insoundspeed;
+            *outvelocityu = *invelocityu;
+            *outvelocityv = *invelocityv;
+            if(gdata->dimension == 3)
+                *outvelocityw = *invelocityw;
+        }
+    
+    
+    }
+
+}
+
+
+
+// for lw scheme
+void LPSolver::computeSpatialDer(pdata_t *pad, const double* inPressure,  const double* inVolume,
+        const double* inVelocityU, const double* inVelocityV, const double* inVelocityW,
+         double* Pd, double *Volumed, double* Ud, double* Vd, double* Wd){
+
+    
+    size_t offset = gdata->dimension == 3? 3:2;
+    size_t numrow = pad->redocount + gdata->dimension == 3? numrow2nd:numrow2nd2d;
+    size_t numcol = gdata->dimension == 3? 9:5;
+    double distance;
+    int info;
+    neighbour_info_t *ninfo;
+    sc_array_t *neighbourlist = pad->neighbourparticle;
+    
+    while(true){
+   
+        for(size_t i=0;i<numcol;i++)
+        {
+                Pd[i]=0.0;
+                Ud[i]=0.0;
+                Vd[i]=0.0;
+                Wd[i]=0.0;
+                Volumed[i]=0.0;
+        }
+        if(neighbourlist->elem_count < numrow){
+            pad->schemeorder = 0;
+            break;
+        }
+    
+        ninfo = (neighbour_info_t *)sc_array_index(neighbourlist,0);
+        distance = ninfo->distance;
+        double A[numrow*numcol];
+        if(gdata->dimension == 3)
+            computeA3D(A, pad, neighbourlist,numrow,distance);
+        else if(gdata->dimension == 2)
+            computeA2D(A, pad, neighbourlist,numrow,distance);
+    
+         double B[numrow];
+        if(gdata->dimension == 3)
+            computeB3d(B, pad, neighbourlist, numrow, inPressure ,PRESSURE, -1); //-1 is meaning less
+        else if(gdata->dimension == 2)
+            computeB2d(B, pad, neighbourlist, numrow, inPressure ,PRESSURE, -1);
+        QRSolver qrSolver(numrow,numcol,A);
+		
+		double result[numcol];
+	    info = qrSolver.solve(result,B);
+        
+        if(info != 0){
+            numrow ++;
+        } 
+        else{
+       
+            for(size_t i=0;i<numcol;i++){
+                
+                if(i<offset)
+                    Pd[i] = result[i]/distance;
+                else
+                    Pd[i] = result[i]/distance/distance;
+            
+            }
+        
+             
+        if(gdata->dimension == 3)
+            {computeB3d(B, pad, neighbourlist, numrow, inVelocityU ,VELOCITY, 0);}
+        else if(gdata->dimension == 2)
+            {computeB2d(B, pad, neighbourlist, numrow, inVelocityU ,VELOCITY, 0);}
+
+		
+	    info = qrSolver.solve(result,B);
+        for(size_t i=0;i<numcol;i++){
+            
+            if(i<offset)
+                Ud[i] = result[i]/distance;
+            else
+                Ud[i] = result[i]/distance/distance;
+            
+            }
+        if(gdata->dimension == 3)
+            {computeB3d(B, pad, neighbourlist, numrow, inVelocityV ,VELOCITY, 1);}
+        else if(gdata->dimension == 2)
+            {computeB2d(B, pad, neighbourlist, numrow, inVelocityV ,VELOCITY, 1);}
+
+		
+	    info = qrSolver.solve(result,B);
+        for(size_t i=0;i<numcol;i++){
+            
+            if(i<offset)
+                Vd[i] = result[i]/distance;
+            else
+                Vd[i] = result[i]/distance/distance;
+            
+            }
+
+        if(gdata->dimension == 3){
+            computeB3d(B, pad, neighbourlist, numrow, inVelocityW ,VELOCITY, 2);
+
+            info = qrSolver.solve(result,B);
+            for(size_t i=0;i<numcol;i++){
+                
+                if(i<offset)
+                    Wd[i] = result[i]/distance;
+                else
+                    Wd[i] = result[i]/distance/distance;
+                
+                }
+            }
+
+        if(gdata->dimension == 3)
+            {computeB3d(B, pad, neighbourlist, numrow, inVolume ,VOLUME, -1);}
+        else if(gdata->dimension == 2)
+            {computeB2d(B, pad, neighbourlist, numrow, inVolume ,VOLUME, -1);}
+
+        info = qrSolver.solve(result,B);
+        for(size_t i=0;i<numcol;i++){
+            
+            if(i<offset)
+                Volumed[i] = result[i]/distance;
+            else
+                Volumed[i] = result[i]/distance/distance;
+            
+            }
+
+        bool success = true;
+        for(size_t i=0; i<numcol; i++){
+            if(std::isnan(Pd[i]) || std::isnan(Ud[i]) || std::isnan(Vd[i]) || std::isnan(Wd[i]) || std::isnan(Volumed[i]) ||
+               std::isinf(Pd[i]) || std::isinf(Ud[i]) || std::isinf(Vd[i]) || std::isinf(Wd[i])|| std::isnan(Volumed[i])) 
+            {
+                success = false;
+            }
+        
+        }
+    
+        if(success)
+            break;
+        else
+            numrow ++;
+        }
+    }
+
+}
+
+
+
+//for laxwendroff
+void LPSolver::timeIntegration( double gravity, double inVolume, double inVelocityU, double inVelocityV, double inVelocityW, double inPressure, double inSoundSpeed,
+                                      double* Volumed, double* Ud, double* Vd, double *Wd, double *Pd,
+                                                        double* outVolume, double* outVelocityU, double* outVelocityV, double* outVelocityW, double* outPressure){
+
+      double gamma=inSoundSpeed*inSoundSpeed/inVolume/inPressure;
+      double Pinf = pinf;
+      double Dt = cfldt;
+      if(gdata->dimension==3)
+        {
+
+                double div=Ud[0]+Vd[1]+Wd[2];
+                double cross=Ud[0]*Ud[0]+Vd[1]*Vd[1]+Wd[2]*Wd[2]+2*Ud[1]*Vd[0]+2*Ud[2]*Wd[0]+2*Vd[2]*Wd[1];
+                double Volumet=inVolume*div;
+                double VelocityUt=-inVolume*Pd[0];
+                double VelocityVt=-inVolume*Pd[1];
+                double VelocityWt=-inVolume*Pd[2];
+                double Pt=-gamma*(inPressure+Pinf)*div;
+                double Volumett=inVolume*(div*div-Volumed[0]*Pd[0]-Volumed[1]*Pd[1]-Volumed[2]*Pd[2]-inVolume*(Pd[3]+Pd[4]+Pd[5])-cross);
+                double VelocityUtt=inVolume*((gamma-1)*Pd[0]*div+gamma*(inPressure+Pinf)*(Ud[3]+Vd[6]+Wd[7])+Ud[0]*Pd[0]+Vd[0]*Pd[1]+Wd[0]*Pd[2]);
+                double VelocityVtt=inVolume*((gamma-1)*Pd[1]*div+gamma*(inPressure+Pinf)*(Ud[6]+Vd[4]+Wd[8])+Ud[1]*Pd[0]+Vd[1]*Pd[1]+Wd[1]*Pd[2]);
+                double VelocityWtt=inVolume*((gamma-1)*Pd[2]*div+gamma*(inPressure+Pinf)*(Ud[7]+Vd[8]+Wd[5])+Ud[2]*Pd[0]+Vd[2]*Pd[1]+Wd[2]*Pd[2]);
+                double Ptt=gamma*gamma*(inPressure+Pinf)*div*div+gamma*(inPressure+Pinf)*(Volumed[0]*Pd[0]+Volumed[1]*Pd[1]+Volumed[2]*Pd[2]+inVolume*(Pd[3]+Pd[4]+Pd[5])+cross);
+                (*outVolume)=inVolume+Dt*Volumet+0.5*Dt*Dt*Volumett;
+                (*outVelocityU)=inVelocityU+Dt*VelocityUt+0.5*Dt*Dt*VelocityUtt;
+                (*outVelocityV)=inVelocityV+Dt*VelocityVt+0.5*Dt*Dt*VelocityVtt+Dt*gravity;//TODO: MODIFIED GRAVITY DIRECTION
+                (*outVelocityW)=inVelocityW+Dt*VelocityWt+0.5*Dt*Dt*VelocityWtt;
+                (*outPressure)=inPressure+Dt*Pt+0.5*Dt*Dt*Ptt;
+                if(std::isnan(*outVolume) || std::isinf(*outVolume) ||
+                   std::isnan(*outPressure) || std::isinf(*outPressure) ||
+                 std::isnan(*outVelocityU) || std::isinf(*outVelocityU) ||std::isnan(*outVelocityV) || std::isinf(*outVelocityV) ||std::isnan(*outVelocityW) || std::isinf(*outVelocityW)) {
+                        assert(false);
+                }
+
+        }
+      else if(gdata->dimension==2)
+        {
+
+                double div=Ud[0]+Vd[1];
+                double cross=Ud[0]*Ud[0]+Vd[1]*Vd[1]+2*Ud[1]*Vd[0];
+                double Volumet=inVolume*div;
+                double VelocityUt=-inVolume*Pd[0];
+                double VelocityVt=-inVolume*Pd[1];
+                double Pt=-gamma*(inPressure+Pinf)*div;
+                double Volumett=inVolume*(div*div-Volumed[0]*Pd[0]-Volumed[1]*Pd[1]-inVolume*(Pd[2]+Pd[3])-cross);
+                double VelocityUtt=inVolume*((gamma-1)*Pd[0]*div+gamma*(inPressure+Pinf)*(Ud[2]+Vd[4])+Ud[0]*Pd[0]+Vd[0]*Pd[1]);
+                double VelocityVtt=inVolume*((gamma-1)*Pd[1]*div+gamma*(inPressure+Pinf)*(Ud[4]+Vd[3])+Ud[1]*Pd[0]+Vd[1]*Pd[1]);
+                double Ptt=gamma*gamma*(inPressure+Pinf)*div*div+gamma*(inPressure+Pinf)*(Volumed[0]*Pd[0]+Volumed[1]*Pd[1]+inVolume*(Pd[2]+Pd[3])+cross);
+                (*outVolume)=inVolume+Dt*Volumet+0.5*Dt*Dt*Volumett;
+                (*outVelocityU)=inVelocityU+Dt*VelocityUt+0.5*Dt*Dt*VelocityUtt;
+                (*outVelocityV)=inVelocityV+Dt*VelocityVt+0.5*Dt*Dt*VelocityVtt+Dt*gravity;
+
+                (*outPressure)=inPressure+Dt*Pt+0.5*Dt*Dt*Ptt;
+                if(std::isnan(*outVolume) || std::isinf(*outVolume) ||
+                   std::isnan(*outPressure) || std::isinf(*outPressure) ||
+                 std::isnan(*outVelocityU) || std::isinf(*outVelocityU) ||std::isnan(*outVelocityV) || std::isinf(*outVelocityV)) {
+                        assert(false);
+                }
+                Pd[3]=gamma*(inPressure+Pinf)*(inVolume*(Pd[2]+Pd[3]));
+                Pd[4]=gamma*gamma*(inPressure+Pinf)*div*div+gamma*(inPressure+Pinf)*(Volumed[0]*Pd[0]+Volumed[1]*Pd[1]+cross);
+                Pd[2]=-gamma*(inPressure+Pinf)*div;
+
+        }
+}
+
+
+
+
+
+
+
+
+
+
+
+
 

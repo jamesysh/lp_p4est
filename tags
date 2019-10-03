@@ -129,7 +129,8 @@ StateRegistrar	registrar.h	/^class StateRegistrar {$/;"	c
 Uinflow	boundary/boundary_pellet.h	/^	double Uinflow;\/\/inflow velocity, calculated using energy absorb rate$/;"	m	class:PelletInflowBoundary
 UpdateInflowBoundary	boundary/boundary.h	/^	virtual void UpdateInflowBoundary(Global_Data* gdata, EOS* m_pEOS, double dt, double m_fInitParticleSpacing){return ;}$/;"	f	class:Boundary
 UpdateInflowBoundary	boundary/boundary_pellet.cpp	/^void PelletInflowBoundary::UpdateInflowBoundary(Global_Data* g, EOS* m_pEOS, double dt, double dx){$/;"	f	class:PelletInflowBoundary
-VELOCITY	particle_data.h	/^    VELOCITY$/;"	e	enum:indata
+VELOCITY	particle_data.h	/^    VELOCITY,$/;"	e	enum:indata
+VOLUME	particle_data.h	/^    VOLUME$/;"	e	enum:indata
 Vinflow	boundary/boundary_pellet.h	/^	double Vinflow;\/\/inflow specific volume, constant$/;"	m	class:PelletInflowBoundary
 Yee2DSolidBoundary	boundary/boundary_gresho.cpp	/^Yee2DSolidBoundary::Yee2DSolidBoundary():radius(5.), thickness(3.0) {$/;"	f	class:Yee2DSolidBoundary
 Yee2DSolidBoundary	boundary/boundary_gresho.h	/^class Yee2DSolidBoundary: public Boundary {$/;"	c
@@ -201,6 +202,7 @@ computeB3d	lp_solver.cpp	/^void LPSolver::computeB3d(double *B, pdata_t *pad, sc
 computeCFLCondition	lp_solver.cpp	/^void LPSolver:: computeCFLCondition(){$/;"	f	class:LPSolver
 computeLocalBoundaryAndFluidNum	lp_solver.cpp	/^void LPSolver:: computeLocalBoundaryAndFluidNum(){$/;"	f	class:LPSolver
 computeSpatialDer	lp_solver.cpp	/^void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist, const double* inpressure, const double *invelocity,$/;"	f	class:LPSolver
+computeSpatialDer	lp_solver.cpp	/^void LPSolver::computeSpatialDer(pdata_t *pad, const double* inPressure,  const double* inVolume,$/;"	f	class:LPSolver
 computeX	hexagonal_packing.h	/^	double computeX(int tag, size_t k) {$/;"	f	class:HexagonalPacking2D
 computeX	hexagonal_packing.h	/^	double computeX(int tag, size_t k) {$/;"	f	class:HexagonalPacking3D
 computeY	hexagonal_packing.h	/^	double computeY(int tag, size_t j) {$/;"	f	class:HexagonalPacking3D
@@ -228,7 +230,7 @@ destroy_octree	octree_manager.cpp	/^void Octree_Manager:: destroy_octree(){$/;"	
 diagnosis	eos.h	/^    virtual void diagnosis(double rho0, double rho1, double t0, double t1){};$/;"	f	class:PolytropicGasEOS
 dimension	particle_data.h	/^        int dimension;$/;"	m	class:Global_Data
 distance	particle_data.h	/^    double distance;$/;"	m	struct:neighbour_info
-domain_len	particle_data.h	/^        double domain_len = 16; $/;"	m	class:Global_Data
+domain_len	particle_data.h	/^        double domain_len = 32; $/;"	m	class:Global_Data
 dt	particle_data.h	/^        double dt;$/;"	m	class:Global_Data
 dxyz	particle_data.h	/^        double lxyz[3],hxyz[3],dxyz[3]; \/\/boundingbox of octant$/;"	m	class:Global_Data
 elem_particles	initializer.h	/^        int elem_particles; \/\/max number of particles per octant$/;"	m	class:Initializer
@@ -251,6 +253,7 @@ flagdelete	particle_data.h	/^        bool flagdelete; $/;"	m	class:Global_Data
 flagdelete	particle_data.h	/^    bool flagdelete;   \/\/ delete boundary particle at current timestep: delete if its not the same as flag in gdata$/;"	m	struct:pdata
 flagrefine	particle_data.h	/^        int flagrefine, gflagrefine, flagstartrefine;$/;"	m	class:Global_Data
 flagstartrefine	particle_data.h	/^        int flagrefine, gflagrefine, flagstartrefine;$/;"	m	class:Global_Data
+fluidnum	particle_data.h	/^    p4est_locidx_t    fluidnum; \/\/number of fluid particle$/;"	m	struct:octant_data
 gamma	initializer.h	/^        int gamma;$/;"	m	class:Initializer
 gamma	particle_data.h	/^        double gamma;$/;"	m	class:Global_Data
 gdata	lp_solver.h	/^    Global_Data * gdata; $/;"	m	class:LPSolver
@@ -299,6 +302,7 @@ ifPointInsideBox	particle_data.cpp	/^static bool ifPointInsideBox(double x, doub
 ifPointInsideBox2d	particle_data.cpp	/^static bool ifPointInsideBox2d(double x, double y, double bb[6]) {$/;"	f	file:
 ifboundary	particle_data.h	/^    bool ifboundary;   \/\/if a boundary particle$/;"	m	struct:pdata
 ifboundary	particle_data.h	/^    bool ifboundary; $/;"	m	struct:pdata_copy
+iffreeboundary	particle_data.h	/^        bool iffreeboundary;$/;"	m	class:Global_Data
 ifghost	particle_data.h	/^    bool ifghost;        \/\/ if the particle is a ghost particle       $/;"	m	struct:neighbour_info
 ifhasghostneighbour	particle_data.h	/^    bool ifhasghostneighbour;$/;"	m	struct:pdata
 ifremote	particle_data.h	/^    bool ifremote;        \/\/ if the particle is in remote processer$/;"	m	struct:neighbour_info
@@ -409,6 +413,8 @@ nn1_odd	hexagonal_packing.h	/^	size_t nn0_odd, nn1_odd, nn0_even, nn1_even;		$/;
 numdigit	particle_viewer.h	/^	int numdigit;\/\/\/< The number of digits for the indexing of output file name $/;"	m	class:ParticleViewer
 numrow1st	particle_data.h	/^        size_t numrow1st;$/;"	m	class:Global_Data
 numrow1st2d	particle_data.h	/^        size_t numrow1st2d;$/;"	m	class:Global_Data
+numrow2nd	lp_solver.h	/^    size_t numrow2nd;$/;"	m	class:LPSolver
+numrow2nd2d	lp_solver.h	/^    size_t numrow2nd2d;$/;"	m	class:LPSolver
 octant_data	particle_data.h	/^typedef struct octant_data$/;"	s
 octant_data_t	particle_data.h	/^octant_data_t;$/;"	t	typeref:struct:octant_data
 octantid	particle_data.h	/^        int octantid;  $/;"	m	class:Global_Data
@@ -443,6 +449,7 @@ pelletmaterial	initializer.h	/^        int pelletmaterial;$/;"	m	class:Initializ
 pelletmaterial	particle_data.h	/^        int pelletmaterial;$/;"	m	class:Global_Data
 pfound	particle_data.h	/^        sc_array_t *pfound; \/\/target process of particle$/;"	m	class:Global_Data
 phi	particle_data.h	/^    double phi;         \/\/right and left$/;"	m	struct:neighbour_info
+pinf	lp_solver.h	/^    double pinf;$/;"	m	class:LPSolver
 poctant	particle_data.h	/^    p4est_locidx_t    poctant;$/;"	m	struct:octant_data
 postsearch	particle_data.cpp	/^void Global_Data::postsearch(){$/;"	f	class:Global_Data
 postsearch2d	particle_data.cpp	/^void Global_Data::postsearch2d(){$/;"	f	class:Global_Data
@@ -492,6 +499,7 @@ registerGeometry	geometry/geometry.cpp	/^void GeometryFactory::registerGeometry(
 registerState	state/state.cpp	/^void StateFactory::registerState(std::string name, StateCreateFunc func) {$/;"	f	class:StateFactory
 regroupParticles	particle_data.cpp	/^void Global_Data::regroupParticles(){$/;"	f	class:Global_Data
 regroupParticles2d	particle_data.cpp	/^void Global_Data::regroupParticles2d(){$/;"	f	class:Global_Data
+reorderNeighbourList	lp_solver.cpp	/^void LPSolver::reorderNeighbourList(){$/;"	f	class:LPSolver
 resetOctantData	particle_data.cpp	/^void Global_Data::resetOctantData(){$/;"	f	class:Global_Data
 resetOctantData2d	particle_data.cpp	/^void Global_Data::resetOctantData2d(){$/;"	f	class:Global_Data
 rightFlush	particle_viewer.cpp	/^string ParticleViewer::rightFlush(size_t numDigits) {$/;"	f	class:ParticleViewer
@@ -518,6 +526,7 @@ slocal_quad2d	particle_data.cpp	/^slocal_quad2d (p4est_t * p4est, p4est_topidx_t
 solve	ls_solver.cpp	/^int QRSolver::solve(double* result, double* b) {$/;"	f	class:QRSolver
 solve_2d	lp_solver.cpp	/^void LPSolver:: solve_2d(){$/;"	f	class:LPSolver
 solve_3d	lp_solver.cpp	/^void LPSolver::solve_3d(){$/;"	f	class:LPSolver
+solve_laxwendroff	lp_solver.cpp	/^void LPSolver::solve_laxwendroff(){$/;"	f	class:LPSolver
 solve_upwind	lp_solver.cpp	/^void LPSolver::solve_upwind(int phase){$/;"	f	class:LPSolver
 soundspeed	particle_data.h	/^    double soundspeed;$/;"	m	struct:pdata
 soundspeed	particle_data.h	/^    double soundspeed;$/;"	m	struct:pdata_copy
@@ -541,6 +550,7 @@ theta	particle_data.h	/^    double theta;          \/\/up and down$/;"	m	struct:
 thickness	boundary/boundary_gresho.h	/^	double thickness;$/;"	m	class:Gresho2DSolidBoundary
 thickness	boundary/boundary_gresho.h	/^        double thickness;$/;"	m	class:Yee2DSolidBoundary
 thickness	boundary/boundary_gresho.h	/^        double thickness;$/;"	m	class:Yee3DSolidBoundary
+timeIntegration	lp_solver.cpp	/^void LPSolver::timeIntegration( double gravity, double inVolume, double inVelocityU, double inVelocityV, double inVelocityW, double inPressure, double inSoundSpeed,$/;"	f	class:LPSolver
 timeIntegration	lp_solver.cpp	/^void LPSolver::timeIntegration($/;"	f	class:LPSolver
 timesearchingradius	initializer.h	/^        double timesearchingradius;$/;"	m	class:Initializer
 timesearchingradius	particle_data.h	/^        double timesearchingradius;$/;"	m	class:Global_Data
