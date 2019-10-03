@@ -4,7 +4,7 @@
 Disk::Disk(){
     xcen = 0;
     ycen = 0;
-    radius = 1;
+    radius = 5;
 
 }
 

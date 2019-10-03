@@ -18,7 +18,7 @@ Global_Data:: Global_Data(Initializer* init){
     gpnum = 0;
     gplost = 0; 
     flagrefine = 1;
-    dimension = 2;
+    dimension = 3;
     initlevel = init->initlevel;
     timesearchingradius = init->timesearchingradius;
     maxlevel = init->maxlevel;
@@ -28,10 +28,10 @@ Global_Data:: Global_Data(Initializer* init){
     numrow1st2d = 3;
     initperturbation = init->initperturbation;
     elem_particles = init->elem_particles;
-    geometry = GeometryFactory::instance().createGeometry("disk"); 
+    geometry = GeometryFactory::instance().createGeometry("cylinder"); 
     geometry->getBoundingBox(bb[0],bb[1],bb[2],bb[3],bb[4],bb[5]);
-    state = StateFactory::instance().createState("gresho2dstate");
-    boundary = BoundaryFactory::instance().createBoundary("gresho2dboundary");
+    state = StateFactory::instance().createState("yee2dstate");
+    boundary = BoundaryFactory::instance().createBoundary("yee3dboundary");
     eoschoice = init->eoschoice;
     gamma = 1.4;
     setEOS();    
@@ -659,7 +659,7 @@ static void createParticlesInOctant(p8est_iter_volume_info_t * info, void *user_
     EOS* eos = g->eos;
     double x,y,z;
     int i,j,k;
-    double ls = g->initlocalspacing;
+    double ls = g->initlocalspacing *sqrt(3)/2;
     double initr = g->initperturbation;
     p4est_locidx_t *lpnum = &g->lpnum; 
     p4est_locidx_t oldnum = *lpnum;

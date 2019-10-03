@@ -643,6 +643,7 @@ void LPSolver:: solve_2d(){
         P4EST_GLOBAL_ESSENTIALF ("Current Time: %f .\n", tstart);
         splitorder = (int)rand()%2;
         MPI_Bcast(&splitorder,1,MPI_INT,0,gdata->mpicomm);
+       
         for(int phase = 0;phase < totalphase;phase++){
         solve_upwind(phase);
         MPI_Barrier(gdata->mpicomm);
@@ -711,7 +712,7 @@ void LPSolver::solve_3d(){
       sc_mempool_destroy (gdata->psmem);
       gdata->psmem = NULL;
         break;
-    }
+    } 
     gdata->communicateParticles();
         gdata->postsearch();
 
@@ -743,12 +744,16 @@ void LPSolver::solve_3d(){
         P4EST_GLOBAL_ESSENTIALF ("Current Time: %f .\n", tstart);
         splitorder = (int)rand()%6;
         MPI_Bcast(&splitorder,1,MPI_INT,0,gdata->mpicomm);
-    for(int phase = 0;phase< totalphase;phase++){
-        solve_upwind(phase);
-        MPI_Barrier(gdata->mpicomm);
-        gdata->updateViewForOctant(phase);
-        MPI_Barrier(gdata->mpicomm); 
-    }
+        
+        for(int phase = 0;phase< totalphase;phase++){
+            solve_upwind(phase);
+            MPI_Barrier(gdata->mpicomm);
+            gdata->updateViewForOctant(phase);
+            MPI_Barrier(gdata->mpicomm); 
+        }
+    
+        solve_laxwendroff();
+    
     gdata->updateParticleStates();
    
     updateLocalSpacing();
@@ -770,7 +775,6 @@ void LPSolver::solve_3d(){
 
         gdata->switchFlagDelete();
     }
-
 
 
 }
@@ -824,7 +828,7 @@ void LPSolver::solve_laxwendroff(){
                continue;
            }
        }
-
+        
        bool redo = false;
        
        inpressure = &pad->pressure;
@@ -841,9 +845,9 @@ void LPSolver::solve_laxwendroff(){
           outvolume = &pad->volumeT1;
        }
        else if(gdata->dimension == 2){
-           outpressure = &pad->pressureT1;
-           outsoundspeed = &pad->soundspeedT1;
-           outvolume = &pad->volumeT1;
+           outpressure = &pad->pressureT2;
+           outsoundspeed = &pad->soundspeedT2;
+           outvolume = &pad->volumeT2;
        }
         
        outvelocityu = &pad->oldv[0];
@@ -869,7 +873,6 @@ void LPSolver::solve_laxwendroff(){
         
        computeSpatialDer(pad, inpressure, involume, invelocityu, invelocityv, invelocityw,
           Pd, Volumed, Ud, Vd, Wd);
-
        double gravity = 0;
        if(gdata->dimension == 3){   
             timeIntegration( gravity, *involume, *invelocityu, *invelocityv, *invelocityw, *inpressure, *insoundspeed,
