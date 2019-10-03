@@ -662,7 +662,7 @@ void LPSolver::solve_3d(){
     
     
     
-    gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
+   gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
     
     //gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
     gdata->presearch();
@@ -706,6 +706,9 @@ void LPSolver::solve_3d(){
         computeCFLCondition();
     
         tstart += cfldt;
+        P4EST_GLOBAL_ESSENTIALF ("Current Time: %f .\n", tstart);
+        splitorder = (int)rand()%6;
+        MPI_Bcast(&splitorder,1,MPI_INT,0,gdata->mpicomm);
     for(int phase = 0;phase< totalphase;phase++){
         solve_upwind(phase);
         MPI_Barrier(gdata->mpicomm);

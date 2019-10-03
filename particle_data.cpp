@@ -2712,7 +2712,7 @@ void Global_Data::searchUpwindNeighbourParticle2d(){
   }
 }
 */
-/*
+
 void Global_Data::searchUpwindNeighbourParticle(){
 
     p4est_topidx_t      tt;
@@ -3010,8 +3010,8 @@ void Global_Data::searchUpwindNeighbourParticle(){
         sc_array_destroy(dfl);
         sc_array_destroy(dbl);
 }
-*/
 
+/*
 void Global_Data::searchUpwindNeighbourParticle(){
 
     p4est_topidx_t      tt;
@@ -3089,6 +3089,7 @@ void Global_Data::searchUpwindNeighbourParticle(){
   
   }
 }
+*/
 
 void Global_Data::generateGhostParticle2d(){
 
