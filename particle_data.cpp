@@ -689,7 +689,7 @@ static void createParticlesInOctant(p8est_iter_volume_info_t * info, void *user_
     }
     //TO DO FILL WITH PARTICLE DATA 
     nump =(int)(l/ls);
-    
+    ls = (double)l/nump; //corrected locapspacing;
     for(i = 0;i<nump;i++){
         for(j=0;j<nump;j++){
             for(k=0;k<nump;k++){
@@ -3026,7 +3026,7 @@ void Global_Data::searchUpwindNeighbourParticle(){
   neighbour_info_t * nei_info, *nei_info2;
   double theta, phi, sigma;
   size_t numnei, neiid;
-  double anglemin = 0.96;
+  double anglemin = 1.3734;
   double anglemax = M_PI-anglemin;
   
   for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {

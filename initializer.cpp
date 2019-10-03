@@ -13,9 +13,9 @@ Initializer::Initializer(){
     minlevel = 0;
     elem_particles = 200;
 
-    initlocalspacing = 0.15;
+    initlocalspacing = 0.13;
     timesearchingradius = 4.;
-    initperturbation = 1;
+    initperturbation = 0.5;
     eoschoice = 1;
     pelletmaterial = 0;
     gamma = 1.4;
