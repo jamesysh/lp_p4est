@@ -662,7 +662,7 @@ void LPSolver::solve_3d(){
     
     
     
-   gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
+    gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
     
     //gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
     gdata->presearch();
@@ -698,8 +698,11 @@ void LPSolver::solve_3d(){
 
 
         
+
         gdata->searchNeighbourParticle();
+        
         gdata->searchUpwindNeighbourParticle(); 
+        
         gdata->generateGhostParticle();
 
     

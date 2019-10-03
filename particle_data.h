@@ -216,7 +216,7 @@ class Global_Data{
 
         double dt;
         double endt;
-        double domain_len = 16; 
+        double domain_len = 32; 
         double bb[6]; // bounding box of initial fluid particles  
 
         double lxyz[3],hxyz[3],dxyz[3]; //boundingbox of octant
