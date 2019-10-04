@@ -280,6 +280,7 @@ void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist
     neighbour_info_t *ninfo;
     while( true ){
         if(numrow > neighbourlist->elem_count){
+            
             *vel_d = 0;
             *vel_dd = 0;
             *p_d = 0;

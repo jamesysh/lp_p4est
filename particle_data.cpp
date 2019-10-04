@@ -36,7 +36,7 @@ Global_Data:: Global_Data(Initializer* init){
     gamma = 1.4;
     setEOS();    
     flagdelete = true;
-    iffreeboundary = true;
+    iffreeboundary = false;
 }
 
 
