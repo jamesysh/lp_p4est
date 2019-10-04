@@ -18,7 +18,7 @@ Global_Data:: Global_Data(Initializer* init){
     gpnum = 0;
     gplost = 0; 
     flagrefine = 1;
-    dimension = 3;
+    dimension = 2;
     initlevel = init->initlevel;
     timesearchingradius = init->timesearchingradius;
     maxlevel = init->maxlevel;
@@ -28,10 +28,10 @@ Global_Data:: Global_Data(Initializer* init){
     numrow1st2d = 3;
     initperturbation = init->initperturbation;
     elem_particles = init->elem_particles;
-    geometry = GeometryFactory::instance().createGeometry("cylinder"); 
+    geometry = GeometryFactory::instance().createGeometry("disk"); 
     geometry->getBoundingBox(bb[0],bb[1],bb[2],bb[3],bb[4],bb[5]);
     state = StateFactory::instance().createState("yee2dstate");
-    boundary = BoundaryFactory::instance().createBoundary("yee3dboundary");
+    boundary = BoundaryFactory::instance().createBoundary("yee2dboundary");
     eoschoice = init->eoschoice;
     gamma = 1.4;
     setEOS();    
