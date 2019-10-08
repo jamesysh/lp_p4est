@@ -1,6 +1,6 @@
 CC = mpic++ 
 DEBUG = -g
-LAPACK_DIR = /home/syuan/local/lapack
+LAPACK_DIR = /gpfs/home/shyyuan/local/lapack/
 P4EST_INC = /home/syuan/p4est/include
 P4EST_LIB = /home/syuan/p4est/lib
 MAIN_DIR:=${CURDIR}
@@ -9,7 +9,7 @@ STATE_DIR=$(MAIN_DIR)/state/
 GEOMETRY_DIR=$(MAIN_DIR)/geometry/
 
 INCS = -I $(P4EST_INC) -I $(BOUNDARY_DIR) -I $(STATE_DIR) -I $(GEOMETRY_DIR) -I $(MAIN_DIR)
-LIBS = -L $(P4EST_LIB)
+LIBS = -L $(P4EST_LIB) -L $(LAPACK_DIR)
 CFLAGS = -Wall -std=c++11 -c  $(DEBUG) $(INCS) $(LIBS) 
 LFLAGS = -Wall  $(DEBUG) $(INCS) $(LIBS)
 vpath %.h $(GEOMETRY_DIR) $(STATE_DIR) $(BOUNDARY_DIR)

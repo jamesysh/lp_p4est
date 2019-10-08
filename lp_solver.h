@@ -53,7 +53,7 @@ public:
     
     void computeLocalBoundaryAndFluidNum();
     void reorderNeighbourList();
-
+    void reorderNeighbourList2d();
     Octree_Manager *octree;
     Global_Data * gdata; 
     ParticleViewer *viewer;

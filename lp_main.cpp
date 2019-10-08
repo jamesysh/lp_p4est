@@ -59,8 +59,8 @@ int main(){
 
     octree->partition_octree(1);
     gdata->prerun(); 
-   gdata->initFluidParticles_distributed();
-//    gdata->initFluidParticles_hexagonal();
+//    gdata->initFluidParticles_distributed();
+    gdata->initFluidParticles_hexagonal();
     if(gdata->dimension == 3)
        gdata->resetOctantData(); 
     else if(gdata->dimension == 2)

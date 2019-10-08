@@ -2,6 +2,21 @@
 #include "lp_solver.h"
 
 using namespace std;
+
+static int compareneighbour_info(const void *p1,const void *p2)
+{
+    neighbour_info_t         *  i1 = (neighbour_info_t *)p1;
+
+    neighbour_info_t         *  i2 = (neighbour_info_t *)p2;
+    double d1 = i1->distance;
+    double d2 = i2->distance;
+    if(d1 >d2)
+        return 1;
+    else
+        return 0;
+}
+
+
 LPSolver::LPSolver(Global_Data *g, Octree_Manager *o, ParticleViewer *v){
     gdata = g;
     octree = o;
@@ -61,7 +76,7 @@ void LPSolver::updateLocalSpacing(){
 
     pdata_t *pad;
     size_t li, lpnum = gdata->particle_data->elem_count;
-     
+         
     for(li = 0; li<lpnum; li++){
        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
        if(pad->ifboundary)
@@ -155,11 +170,11 @@ if(p_d_0>0){
          {
              redo  = true;
          }
-        if(std::isnan(*outvolume) || std::isnan(*outvelocity) || std::isnan(*outpressure)) 
+        if(isnan(*outvolume) || isnan(*outvelocity) || isnan(*outpressure)) 
         {
                 redo = true;}
 
-        if(std::isinf(*outvolume) || std::isinf(*outvelocity) || std::isinf(*outpressure)) 
+        if(isinf(*outvolume) || isinf(*outvelocity) || isinf(*outpressure)) 
         {
                 redo = true;}
 
@@ -337,8 +352,8 @@ void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist
         
             *vel_dd = pad->schemeorder == 2? result[dir+offset]/distance/distance:0;
         
-			if(std::isnan(*p_d) || std::isnan(*p_dd) || std::isnan(*vel_d) || std::isnan(*vel_dd) ||
-			   std::isinf(*p_d) || std::isinf(*p_dd) || std::isinf(*vel_d) || std::isinf(*vel_dd)) {
+			if(isnan(*p_d) || isnan(*p_dd) || isnan(*vel_d) || isnan(*vel_dd) ||
+			   isinf(*p_d) || isinf(*p_dd) || isinf(*vel_d) || isinf(*vel_dd)) {
                 
                 numrow ++;
                 
@@ -543,9 +558,9 @@ void LPSolver::timeIntegration(
 	(*outPressure) = inPressure + realDt*Pt;
 	(*outVelocity) = inVelocity + realDt*(VELt+gravity);	
 
-	if(std::isnan(*outVolume) || std::isinf(*outVolume) || 
-	   std::isnan(*outPressure) || std::isinf(*outPressure) ||
-	   std::isnan(*outVelocity) || std::isinf(*outVelocity)) {
+	if(isnan(*outVolume) || isinf(*outVolume) || 
+	   isnan(*outPressure) || isinf(*outPressure) ||
+	   isnan(*outVelocity) || isinf(*outVelocity)) {
 	    printf("%.16g,%.16g,%.16g\n",*outVolume,*outPressure,*outVelocity);
         assert(false);   
 	}
@@ -636,6 +651,7 @@ void LPSolver:: solve_2d(){
 
         gdata->searchNeighbourParticle2d();
         gdata->searchUpwindNeighbourParticle2d(); 
+        reorderNeighbourList2d();
         if(gdata->iffreeboundary) 
             gdata->generateGhostParticle2d();
         
@@ -644,14 +660,14 @@ void LPSolver:: solve_2d(){
         P4EST_GLOBAL_ESSENTIALF ("Current Time: %f .\n", tstart);
         splitorder = (int)rand()%2;
         MPI_Bcast(&splitorder,1,MPI_INT,0,gdata->mpicomm);
-       
+      /* 
         for(int phase = 0;phase < totalphase;phase++){
         solve_upwind(phase);
         MPI_Barrier(gdata->mpicomm);
         gdata->updateViewForOctant2d(phase);
         MPI_Barrier(gdata->mpicomm); 
     }
-    
+    */
         solve_laxwendroff();
         gdata->updateParticleStates();
    
@@ -664,7 +680,7 @@ void LPSolver:: solve_2d(){
     {
 
         computeLocalBoundaryAndFluidNum();
-        nextwritetime += 0.01;    
+        nextwritetime += 0.04;    
         viewer->writeResult(tstart);
 //        viewer->writeGhost(tstart);
     }
@@ -735,6 +751,8 @@ void LPSolver::solve_3d(){
         gdata->searchNeighbourParticle();
         
         gdata->searchUpwindNeighbourParticle(); 
+        reorderNeighbourList();
+
         if(gdata->iffreeboundary){ 
             gdata->generateGhostParticle();
         }
@@ -752,8 +770,8 @@ void LPSolver::solve_3d(){
             gdata->updateViewForOctant(phase);
             MPI_Barrier(gdata->mpicomm); 
         }
-    
-        solve_laxwendroff();
+   
+    solve_laxwendroff();
     
     gdata->updateParticleStates();
    
@@ -765,7 +783,7 @@ void LPSolver::solve_3d(){
     {
 
         computeLocalBoundaryAndFluidNum();
-        nextwritetime += 0.01;    
+        nextwritetime += 0.2;    
         viewer->writeResult(tstart);
 //        viewer->writeGhost(tstart);
     }
@@ -798,9 +816,127 @@ void LPSolver:: computeLocalBoundaryAndFluidNum(){
     gdata->lboundarynum = boundarycount;
 }
 
+void LPSolver::reorderNeighbourList2d(){
+    
+    Global_Data *g = gdata;
+    sc_array_t *particle_data = g->particle_data;
+    sc_array_t *neilist;
+    size_t i, j, count = particle_data->elem_count;
+    size_t neisize;
+    pdata_t *pad;
+    pdata_copy_t *pad_copy;
+    neighbour_info_t *ninfo;
+    const double *xyz, *xyz0;
+    double x,y,x0,y0;
+    double *distance;
+    double penalty[4];
+    double penalty_weight = 10000;
+    int region;
+    for(i = 0;i<count;i++){
+        pad = (pdata_t *) sc_array_index(particle_data,i);
+        if(pad->ifboundary) 
+            continue;
+
+        xyz0 = pad->xyz;
+        x0 = xyz0[0];
+        y0 = xyz0[1];
+        neilist = pad->neighbourparticle;
+        
+        neisize = neilist->elem_count;
+       
+        for(int index=0;index<4;index++){
+            penalty[index] = 1;
+            }
+
+        for(j=0;j<neisize;j++){
+            ninfo = (neighbour_info_t *) sc_array_index(neilist,j);
+            g->fetchParticle2d(pad,&pad_copy,ninfo); 
+            xyz = pad_copy->xyz;
+            distance = &ninfo->distance;
+            x = xyz[0]; 
+            y = xyz[1]; 
+            if(x0>=x && y0>=y)
+                region = 0;
+            else if(x0<x && y0>=y)
+                region = 1;
+            else if(x0>=x && y0<y)
+                region = 2;
+            else if(x0<x && y0<y )
+                region = 3;
+            
+            *distance = *distance * penalty[region];
+            penalty[region] *= penalty_weight;
+            } 
+    
+        sc_array_sort(neilist,compareneighbour_info); 
+    }
+
+}
 void LPSolver::reorderNeighbourList(){
+    
+    Global_Data *g = gdata;
+    sc_array_t *particle_data = g->particle_data;
+    sc_array_t *neilist;
+    size_t i, j, count = particle_data->elem_count;
+    size_t neisize;
+    pdata_t *pad;
+    pdata_copy_t *pad_copy;
+    neighbour_info_t *ninfo;
+    const double *xyz, *xyz0;
+    double x,y,z,x0,y0,z0;
+    double *distance;
+    double penalty[8];
+    double penalty_weight = 10000;
+    int region;
+    for(i = 0;i<count;i++){
+        pad = (pdata_t *) sc_array_index(particle_data,i);
+        if(pad->ifboundary) 
+            continue;
 
+        xyz0 = pad->xyz;
+        x0 = xyz0[0];
+        y0 = xyz0[1];
+        z0 = xyz0[2];
+        neilist = pad->neighbourparticle;
+        
+        neisize = neilist->elem_count;
+       
+        for(int index=0;index<8;index++){
+            penalty[index] = 1;
+            }
 
+        for(j=0;j<neisize;j++){
+            ninfo = (neighbour_info_t *) sc_array_index(neilist,j);
+            g->fetchParticle(pad,&pad_copy,ninfo); 
+            xyz = pad_copy->xyz;
+            distance = &ninfo->distance;
+            x = xyz[0]; 
+            y = xyz[1]; 
+            z = xyz[2];
+            if(x0>=x && y0>=y && z0>=z)
+                region = 0;
+            else if(x0<x && y0>=y && z0>=z)
+                region = 1;
+            else if(x0>=x && y0<y && z0>=z)
+                region = 2;
+            else if(x0>=x && y0>=y && z0<z)
+                region = 3;
+            else if(x0<x && y0<y && z0>=z)
+                region = 4;
+            else if(x0<x && y0>=y && z0<z)
+                region = 5;
+            else if(x0>=x && y0<y && z0<z)
+                region = 6;
+            else if(x0<x && y0<y && z0<z)
+                region = 7;
+            
+            
+            *distance = *distance * penalty[region];
+            penalty[region] *= penalty_weight;
+            } 
+    
+        sc_array_sort(neilist,compareneighbour_info); 
+    }
 
 }
 
@@ -894,7 +1030,7 @@ void LPSolver::solve_laxwendroff(){
          {
              redo  = true;
          }
-        if(std::isnan(*outvolume) || std::isnan(*outvelocityu) || std::isnan(*outvelocityv) || std::isnan(*outpressure)) 
+        if(isnan(*outvolume) || isnan(*outvelocityu) || isnan(*outvelocityv) || isnan(*outpressure)) 
         
         {
             redo = true;
@@ -905,7 +1041,7 @@ void LPSolver::solve_laxwendroff(){
 
         }
 
-        if(std::isinf(*outvolume) || std::isinf(*outvelocityu) || std::isinf(*outvelocityv) || std::isinf(*outpressure)) 
+        if(isinf(*outvolume) || isinf(*outvelocityu) || isinf(*outvelocityv) || isinf(*outpressure)) 
         {
             redo = true;
             if(gdata->dimension == 3){
@@ -1078,8 +1214,8 @@ void LPSolver::computeSpatialDer(pdata_t *pad, const double* inPressure,  const 
 
         bool success = true;
         for(size_t i=0; i<numcol; i++){
-            if(std::isnan(Pd[i]) || std::isnan(Ud[i]) || std::isnan(Vd[i]) || std::isnan(Wd[i]) || std::isnan(Volumed[i]) ||
-               std::isinf(Pd[i]) || std::isinf(Ud[i]) || std::isinf(Vd[i]) || std::isinf(Wd[i])|| std::isnan(Volumed[i])) 
+            if(isnan(Pd[i]) || isnan(Ud[i]) || isnan(Vd[i]) || isnan(Wd[i]) || isnan(Volumed[i]) ||
+               isinf(Pd[i]) || isinf(Ud[i]) || isinf(Vd[i]) || isinf(Wd[i])|| isnan(Volumed[i])) 
             {
                 success = false;
             }
@@ -1125,9 +1261,9 @@ void LPSolver::timeIntegration( double gravity, double inVolume, double inVeloci
                 (*outVelocityV)=inVelocityV+Dt*VelocityVt+0.5*Dt*Dt*VelocityVtt+Dt*gravity;//TODO: MODIFIED GRAVITY DIRECTION
                 (*outVelocityW)=inVelocityW+Dt*VelocityWt+0.5*Dt*Dt*VelocityWtt;
                 (*outPressure)=inPressure+Dt*Pt+0.5*Dt*Dt*Ptt;
-                if(std::isnan(*outVolume) || std::isinf(*outVolume) ||
-                   std::isnan(*outPressure) || std::isinf(*outPressure) ||
-                 std::isnan(*outVelocityU) || std::isinf(*outVelocityU) ||std::isnan(*outVelocityV) || std::isinf(*outVelocityV) ||std::isnan(*outVelocityW) || std::isinf(*outVelocityW)) {
+                if(isnan(*outVolume) || isinf(*outVolume) ||
+                   isnan(*outPressure) || isinf(*outPressure) ||
+                 isnan(*outVelocityU) || isinf(*outVelocityU) ||isnan(*outVelocityV) || isinf(*outVelocityV) ||isnan(*outVelocityW) || isinf(*outVelocityW)) {
                         assert(false);
                 }
 
@@ -1150,9 +1286,9 @@ void LPSolver::timeIntegration( double gravity, double inVolume, double inVeloci
                 (*outVelocityV)=inVelocityV+Dt*VelocityVt+0.5*Dt*Dt*VelocityVtt+Dt*gravity;
 
                 (*outPressure)=inPressure+Dt*Pt+0.5*Dt*Dt*Ptt;
-                if(std::isnan(*outVolume) || std::isinf(*outVolume) ||
-                   std::isnan(*outPressure) || std::isinf(*outPressure) ||
-                 std::isnan(*outVelocityU) || std::isinf(*outVelocityU) ||std::isnan(*outVelocityV) || std::isinf(*outVelocityV)) {
+                if(isnan(*outVolume) || isinf(*outVolume) ||
+                   isnan(*outPressure) || isinf(*outPressure) ||
+                 isnan(*outVelocityU) || isinf(*outVelocityU) ||isnan(*outVelocityV) || isinf(*outVelocityV)) {
                         assert(false);
                 }
                 Pd[3]=gamma*(inPressure+Pinf)*(inVolume*(Pd[2]+Pd[3]));
