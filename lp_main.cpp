@@ -1,4 +1,7 @@
 #include<iostream>
+
+#include <sys/stat.h> // mkdir()
+#include <cstring> // strerror()
 #include "initializer.h"
 #include "mpi.h"
 #include "particle_data.h"
@@ -36,7 +39,70 @@ refine_init2d (p4est_t * p4est, p4est_topidx_t which_tree,
 
 
 
-int main(){
+int main(int argc, const char* argv[]){
+    
+	string inputfileName;
+	string datafileName; // restart datafile
+	string outputfileNameAll, outputfileNameFluid;		
+	string debugfileName;
+    bool ifDebug = false;
+    
+    
+	for(int i=1; i<argc; i++) { // argv[0] is name of the executable 
+		if(!strcmp(argv[i], "-i")) { // input; strcmp returns 0 if two c_str are the same
+			if(i+1 >= argc || argv[i+1][0]=='-') { // no inputfile name following -i option
+				cerr<<"ERROR: Needs to provide inputfile name!"<<endl;
+				exit(1);
+			}
+			inputfileName = argv[i+1];
+			cout<<"input file name: "<<inputfileName<<endl;
+			if(i+2 < argc && argv[i+2][0]!='-') { // there is second input file (restart data file)
+				datafileName = argv[i+2];
+				cout<<"resatrt data file name: "<<datafileName<<endl;
+			}
+		}
+		else if(!strcmp(argv[i], "-o")) { // output
+			if(i+1 >= argc || argv[i+1][0]=='-') { // no outputfile name following -o option
+				cerr<<"ERROR: Needs to provide outputfile name!"<<endl;
+				exit(1);
+			}
+			if(mkdir(argv[i+1], 0777) == -1) { //mkdir takes const char*
+				cerr<<"ERROR:"<<strerror(errno)<<endl;
+				exit(1);
+			}
+			outputfileNameAll = string(argv[i+1]) + "/out";
+			outputfileNameFluid = string(argv[i+1]) + "/out_fluid";
+			debugfileName = string(argv[i+1]);
+            cout<<"output file name: "<<outputfileNameAll<<endl;
+			cout<<"output file name: "<<outputfileNameFluid<<endl;
+		}
+		else if(!strcmp(argv[i], "-d")) { // debug
+			ifDebug = true;
+			if(i+1 >= argc || argv[i+1][0]=='-') // no debugfile name following -d option is fine, use default name
+			{
+                debugfileName = debugfileName + "/" + "debug";
+                
+                cout<<"debug file name: "<<debugfileName<<endl;
+
+                continue;
+            }
+			debugfileName = debugfileName + "/" + argv[i+1];
+			cout<<"debug file name: "<<debugfileName<<endl;
+		}	
+	}
+	if(inputfileName.empty()) {
+		cerr<<"ERROR: Needs to provide -i option!"<<endl;
+		exit(1);
+	}
+	if(outputfileNameAll.empty() || outputfileNameFluid.empty()) {
+		cerr<<"ERROR: Needs to provide -o option!"<<endl;
+		exit(1);
+	}
+    
+    
+    
+    
+    
     double t1 = MPI_Wtime();
     Initializer *init = new Initializer();
 
