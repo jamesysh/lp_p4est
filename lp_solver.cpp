@@ -660,14 +660,14 @@ void LPSolver:: solve_2d(){
         P4EST_GLOBAL_ESSENTIALF ("Current Time: %f .\n", tstart);
         splitorder = (int)rand()%2;
         MPI_Bcast(&splitorder,1,MPI_INT,0,gdata->mpicomm);
-      /* 
+       
         for(int phase = 0;phase < totalphase;phase++){
         solve_upwind(phase);
         MPI_Barrier(gdata->mpicomm);
         gdata->updateViewForOctant2d(phase);
         MPI_Barrier(gdata->mpicomm); 
     }
-    */
+    
         solve_laxwendroff();
         gdata->updateParticleStates();
    
