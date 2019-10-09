@@ -3,18 +3,6 @@
 
 using namespace std;
 
-static int compareneighbour_info(const void *p1,const void *p2)
-{
-    neighbour_info_t         *  i1 = (neighbour_info_t *)p1;
-
-    neighbour_info_t         *  i2 = (neighbour_info_t *)p2;
-    double d1 = i1->distance;
-    double d2 = i2->distance;
-    if(d1 >d2)
-        return 1;
-    else
-        return 0;
-}
 
 
 LPSolver::LPSolver(Global_Data *g, Octree_Manager *o, ParticleViewer *v){
