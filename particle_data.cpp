@@ -3854,4 +3854,124 @@ void Global_Data::switchFlagDelete(){
 
 }
 
+void Global_Data::reorderNeighbourList2d(){
+    
+    sc_array_t *neilist;
+    size_t i, j, count = particle_data->elem_count;
+    size_t neisize;
+    pdata_t *pad;
+    pdata_copy_t *pad_copy;
+    neighbour_info_t *ninfo;
+    const double *xyz, *xyz0;
+    double x,y,x0,y0;
+    float *distance;
+    float penalty[4];
+    float penalty_weight = 10000;
+    int region;
+    for(i = 0;i<count;i++){
+        pad = (pdata_t *) sc_array_index(particle_data,i);
+        if(pad->ifboundary) 
+            continue;
+
+        xyz0 = pad->xyz;
+        x0 = xyz0[0];
+        y0 = xyz0[1];
+        neilist = pad->neighbourparticle;
+        
+        neisize = neilist->elem_count;
+       
+        for(int index=0;index<4;index++){
+            penalty[index] = 1;
+            }
+
+        for(j=0;j<neisize;j++){
+            ninfo = (neighbour_info_t *) sc_array_index(neilist,j);
+            fetchParticle2d(pad,&pad_copy,ninfo); 
+            xyz = pad_copy->xyz;
+            distance = &ninfo->distance;
+            x = xyz[0]; 
+            y = xyz[1]; 
+            if(x0>=x && y0>=y)
+                region = 0;
+            else if(x0<x && y0>=y)
+                region = 1;
+            else if(x0>=x && y0<y)
+                region = 2;
+            else if(x0<x && y0<y )
+                region = 3;
+            
+            *distance = *distance * penalty[region];
+            penalty[region] *= penalty_weight;
+            } 
+    
+        sc_array_sort(neilist,compareneighbour_info); 
+    }
+
+}
+
+void Global_Data::reorderNeighbourList(){
+    
+    sc_array_t *neilist;
+    size_t i, j, count = particle_data->elem_count;
+    size_t neisize;
+    pdata_t *pad;
+    pdata_copy_t *pad_copy;
+    neighbour_info_t *ninfo;
+    const double *xyz, *xyz0;
+    double x,y,z,x0,y0,z0;
+    float *distance;
+    float penalty[8];
+    float penalty_weight = 10000;
+    int region;
+    for(i = 0;i<count;i++){
+        pad = (pdata_t *) sc_array_index(particle_data,i);
+        if(pad->ifboundary) 
+            continue;
+
+        xyz0 = pad->xyz;
+        x0 = xyz0[0];
+        y0 = xyz0[1];
+        z0 = xyz0[2];
+        neilist = pad->neighbourparticle;
+        
+        neisize = neilist->elem_count;
+       
+        for(int index=0;index<8;index++){
+            penalty[index] = 1;
+            }
+
+        for(j=0;j<neisize;j++){
+            ninfo = (neighbour_info_t *) sc_array_index(neilist,j);
+            fetchParticle(pad,&pad_copy,ninfo); 
+            xyz = pad_copy->xyz;
+            distance = &ninfo->distance;
+            x = xyz[0]; 
+            y = xyz[1]; 
+            z = xyz[2];
+            if(x0>=x && y0>=y && z0>=z)
+                region = 0;
+            else if(x0<x && y0>=y && z0>=z)
+                region = 1;
+            else if(x0>=x && y0<y && z0>=z)
+                region = 2;
+            else if(x0>=x && y0>=y && z0<z)
+                region = 3;
+            else if(x0<x && y0<y && z0>=z)
+                region = 4;
+            else if(x0<x && y0>=y && z0<z)
+                region = 5;
+            else if(x0>=x && y0<y && z0<z)
+                region = 6;
+            else if(x0<x && y0<y && z0<z)
+                region = 7;
+            
+            
+            *distance = (*distance) * penalty[region];
+            penalty[region] *= penalty_weight;
+            } 
+    
+        sc_array_sort(neilist,compareneighbour_info); 
+    }
+
+}
 

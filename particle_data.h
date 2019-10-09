@@ -162,6 +162,8 @@ class Global_Data{
         void searchNeighbourParticle2d();
         void searchUpwindNeighbourParticle();
         void searchUpwindNeighbourParticle2d();
+        void reorderNeighbourList();
+        void reorderNeighbourList2d();
         void initParticleNeighbour();
         void setUpwindNeighbourList2d(sc_array_t* nei0, sc_array_t *nei1, sc_array_t *neidest);
         void setUpwindNeighbourList(sc_array_t *list0, sc_array_t *list1, sc_array_t *list2, sc_array_t *list3, sc_array_t *neidest);
