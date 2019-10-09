@@ -828,9 +828,9 @@ void LPSolver::reorderNeighbourList2d(){
     neighbour_info_t *ninfo;
     const double *xyz, *xyz0;
     double x,y,x0,y0;
-    double *distance;
-    double penalty[4];
-    double penalty_weight = 10000;
+    float *distance;
+    float penalty[4];
+    float penalty_weight = 10000;
     int region;
     for(i = 0;i<count;i++){
         pad = (pdata_t *) sc_array_index(particle_data,i);
@@ -884,9 +884,9 @@ void LPSolver::reorderNeighbourList(){
     neighbour_info_t *ninfo;
     const double *xyz, *xyz0;
     double x,y,z,x0,y0,z0;
-    double *distance;
-    double penalty[8];
-    double penalty_weight = 10000;
+    float *distance;
+    float penalty[8];
+    float penalty_weight = 10000;
     int region;
     for(i = 0;i<count;i++){
         pad = (pdata_t *) sc_array_index(particle_data,i);
@@ -931,7 +931,7 @@ void LPSolver::reorderNeighbourList(){
                 region = 7;
             
             
-            *distance = *distance * penalty[region];
+            *distance = (*distance) * penalty[region];
             penalty[region] *= penalty_weight;
             } 
     

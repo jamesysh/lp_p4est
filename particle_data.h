@@ -95,14 +95,14 @@ typedef enum indata{
 indata_t;
 typedef struct neighbour_info{
     
+    float distance;
     size_t quadid;
     size_t parid;
     bool ifremote;        // if the particle is in remote processer
     bool ifghost;        // if the particle is a ghost particle       
-    double distance;
-    double phi;         //right and left
-    double theta;          //up and down
-    double sigma; //front and back
+    float phi;         //right and left
+    float theta;          //up and down
+    float sigma; //front and back
 } neighbour_info_t;       
 
 typedef struct comm_psend
