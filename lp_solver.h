@@ -53,7 +53,7 @@ public:
     
     void computeLocalBoundaryAndFluidNum();
     
-    
+    bool adjustDtByWriteTimeInterval();
     private:
    
     Octree_Manager *octree;
@@ -61,14 +61,16 @@ public:
     ParticleViewer *viewer;
     double tstart;
     double tend;
-
+    double currenttime;
     double cfldt;
     double cflcoefficient;
 	std::vector<std::vector<int> > m_vDirSplitTable; 
     int splitorder;
     int totalphase;
-
-
+    int writestep;
+    double writetimeinterval;
+    double nextwritetime;
+    
 };
 
 

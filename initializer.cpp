@@ -96,7 +96,7 @@ void Initializer::readInputfile(const string& inputfileName) {
 			iss.str(lines[i++]);
 			iss>>tmpS;
 			m_vBoundaryObjNames.push_back(tmpS);
-			save<<"m_vBoundaryObjectNames"<<j<<" "<<m_vBoundaryObjNames[j]<<endl;
+			save<<"m_vBoundaryObjectNames"<<" "<<m_vBoundaryObjNames[j]<<endl;
 		}
 
 	iss.str(lines[i++]);
@@ -224,7 +224,7 @@ void Initializer::setParams() {
             m_fTimeSearchRadius = 4;//4
 
 	if(m_iDimension==3) {
-		m_iNumRow2ndOrder = 54; 
+		m_iNumRow2ndOrder = 53; 
 		m_iNumRow1stOrder = 8; 
 		m_iNumCol2ndOrder = 9; 
 		m_iNumCol1stOrder = 3;

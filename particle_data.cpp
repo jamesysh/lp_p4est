@@ -3935,10 +3935,10 @@ void Global_Data::reorderNeighbourList(){
     pdata_copy_t *pad_copy;
     neighbour_info_t *ninfo;
     const double *xyz, *xyz0;
-    double x,y,z,x0,y0,z0;
+    double x,y,z,x0,y0,z0, dx, dy, dz;
     float *distance;
-    float penalty[8];
-    float penalty_weight = 10000;
+    float penalty[6];
+    float penalty_weight = 100;
     int region;
     for(i = 0;i<count;i++){
         pad = (pdata_t *) sc_array_index(particle_data,i);
@@ -3965,7 +3965,33 @@ void Global_Data::reorderNeighbourList(){
             x = xyz[0]; 
             y = xyz[1]; 
             z = xyz[2];
-            if(x0>=x && y0>=y && z0>=z)
+            dx = x-x0;
+            dy = y-y0;
+            dz = z-z0;
+
+			if ((fabs(dx)>=fabs(dy))&&(fabs(dx)>=fabs(dz)))
+			{
+				if(dx>0)
+					region=0;
+				else
+					region=1;
+			}
+            else if ((fabs(dy)>=fabs(dx))&&(fabs(dy)>=fabs(dz)))
+            {
+                    if(dy>0)
+                            region=2;
+                    else
+                            region=3;
+            }
+            else
+            {
+                    if(dz>0)
+                            region=4;
+                    else
+                            region=5;
+            }
+           
+           /* if(x0>=x && y0>=y && z0>=z)
                 region = 0;
             else if(x0<x && y0>=y && z0>=z)
                 region = 1;
@@ -3981,7 +4007,7 @@ void Global_Data::reorderNeighbourList(){
                 region = 6;
             else if(x0<x && y0<y && z0<z)
                 region = 7;
-            
+            */
             
             *distance = (*distance) * penalty[region];
             penalty[region] *= penalty_weight;

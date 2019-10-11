@@ -29,8 +29,9 @@ string ParticleViewer::rightFlush(size_t numDigits) {
 }
 
 
-void ParticleViewer:: writeGhost(double t){
+void ParticleViewer:: writeGhost(int step){
     
+   writestep = step; 
    static bool FIRST = true;
    size_t lpnum = gdata->particle_data->elem_count;
    size_t ghostn = gdata->lghostnum;
@@ -132,11 +133,10 @@ void ParticleViewer:: writeGhost(double t){
     
     fclose(visitfile);
     }   
-    writestep ++;
 
 }
-void ParticleViewer:: writeResult(double t){
-    
+void ParticleViewer:: writeResult(int step){
+   writestep = step; 
    static bool FIRST = true;
    size_t lpnum = gdata->particle_data->elem_count;
    size_t li;
@@ -252,6 +252,5 @@ void ParticleViewer:: writeResult(double t){
     
     fclose(visitfile);
     }   
-    writestep ++;
 
 }

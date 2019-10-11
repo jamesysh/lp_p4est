@@ -13,6 +13,11 @@ LPSolver::LPSolver(Initializer *init, Global_Data *g, Octree_Manager *o, Particl
     cflcoefficient = init->getCFLCoeff();
     tstart = init->getStartTime();
     tend = init->getEndTime();
+
+    writestep = init->getWriteStep();
+    writetimeinterval = init->getWriteTimeInterval();
+    currenttime = tstart;
+    nextwritetime = writetimeinterval;
     if(gdata->dimension == 3){
         m_vDirSplitTable = vector<vector<int> >
         ({{0,1,2},
@@ -573,7 +578,6 @@ void LPSolver:: computeCFLCondition(){
 
     cfldt = gmindt * cflcoefficient;
 
-    P4EST_GLOBAL_ESSENTIALF ("MINCFL timestep is %f. \n", cfldt);
 
 }
 
@@ -582,10 +586,7 @@ void LPSolver:: solve_2d(){
 
     computeLocalBoundaryAndFluidNum();
     viewer->writeResult(0);
-    double tstart = 0;
-    double tend = 1;
-    double nextwritetime = 0;
-    while(tstart<tend)
+    while(currenttime < tend)
     {
     
     
@@ -640,8 +641,11 @@ void LPSolver:: solve_2d(){
         
     //gdata->testquad2d();
         computeCFLCondition();
-        tstart += cfldt;
-        P4EST_GLOBAL_ESSENTIALF ("Current Time: %f .\n", tstart);
+        bool iswritestep = adjustDtByWriteTimeInterval(); 
+        
+        currenttime += cfldt;
+        
+        P4EST_GLOBAL_ESSENTIALF ("Current Time: %f .\n", currenttime);
         splitorder = (int)rand()%2;
         MPI_Bcast(&splitorder,1,MPI_INT,0,gdata->mpicomm);
        
@@ -659,14 +663,11 @@ void LPSolver:: solve_2d(){
         updateLocalSpacing();
    
      moveParticle();
-    if(tstart  >= nextwritetime)
+    if(iswritestep)
     
     {
-
         computeLocalBoundaryAndFluidNum();
-        nextwritetime += 0.04;    
-        viewer->writeResult(tstart);
-//        viewer->writeGhost(tstart);
+        viewer->writeResult(writestep);
     }
    
     
@@ -682,14 +683,11 @@ void LPSolver:: solve_2d(){
 void LPSolver::solve_3d(){
 
 
-    double tstart = 0;
-    double tend = 5;
-    double nextwritetime = 0;
     
     computeLocalBoundaryAndFluidNum();
     
     viewer->writeResult(0);
-    while(tstart<tend)
+    while(currenttime < tend)
     {
     
     
@@ -749,8 +747,9 @@ void LPSolver::solve_3d(){
     
         computeCFLCondition();
     
-        tstart += cfldt;
-        P4EST_GLOBAL_ESSENTIALF ("Current Time: %f .\n", tstart);
+        bool iswritestep = adjustDtByWriteTimeInterval(); 
+        currenttime += cfldt;
+        P4EST_GLOBAL_ESSENTIALF ("Current Time: %f .\n", currenttime);
         splitorder = (int)rand()%6;
         MPI_Bcast(&splitorder,1,MPI_INT,0,gdata->mpicomm);
        /* 
@@ -768,14 +767,12 @@ void LPSolver::solve_3d(){
     updateLocalSpacing();
      
     moveParticle();
-    if(tstart  >= nextwritetime)
+    if(iswritestep)
     
     {
 
         computeLocalBoundaryAndFluidNum();
-        nextwritetime += 0.2;    
-        viewer->writeResult(tstart);
-//        viewer->writeGhost(tstart);
+        viewer->writeResult(writestep);
     }
    
     MPI_Barrier(gdata->mpicomm); 
@@ -1167,6 +1164,24 @@ void LPSolver::timeIntegration( double gravity, double inVolume, double inVeloci
 
 
 
+bool LPSolver::adjustDtByWriteTimeInterval() {
+	if(currenttime+cfldt >= nextwritetime) {
+		cfldt = nextwritetime - currenttime;
+		
+        P4EST_GLOBAL_ESSENTIALF ("MINCFL timestep is %f. \n", cfldt);
+        nextwritetime += writetimeinterval;
+		writestep ++;
+        if(nextwritetime > tend) nextwritetime = tend;
+		assert(cfldt >= 0);
+		//cout<<"-------TimeController::adjustDtByWriteTimeInterval()-------"<<endl;
+		//cout<<"m_fDt="<<m_fDt<<endl;
+		//cout<<"-----------------------------------------------------------"<<endl;
+		return true; // m_fDt adjusted
+	}
+	
+    P4EST_GLOBAL_ESSENTIALF ("MINCFL timestep is %f. \n", cfldt);
+    return false; // m_fDt did not get adjusted
+}
 
 
 

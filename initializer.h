@@ -57,7 +57,7 @@ class Initializer {
 	double getWriteTimeInterval() const {return m_fWriteTimeInterval;}
    
    
-	double getWriteStep() const {return m_iWriteStep;}
+	int getWriteStep() const {return m_iWriteStep;}
    
 	double getCFLCoeff() const {return m_fCFLCoeff;}
    
@@ -161,7 +161,7 @@ class Initializer {
 	double m_fStartTime;///< simulation start time
 	double m_fEndTime; ///< simulation end time	
 	double m_fWriteTimeInterval;///< write time interval
-	std::size_t m_iWriteStep; ///< write step
+	int m_iWriteStep; ///< write step
 	double m_fCFLCoeff;///< CFL coeff
 	int m_iDimension;///< dimension
 	string m_sFilenameSaveInit;
