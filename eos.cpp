@@ -53,14 +53,8 @@ double PolytropicGasEOS::getElectricConductivity(double pressure, double density
 double PolytropicGasEOS::getTemperature(double pressure, double density) {
   double R,mu;
   
-  if(m_iPelletMaterial == 0 ){
     mu = 20.18;
     R = 83.14;
-  }
-  else if(m_iPelletMaterial == 1){
-       R = 83.14;
-       mu = 2.014;
-      }
   return mu*pressure/(R*density)/11604.525;
 }
 

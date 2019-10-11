@@ -124,7 +124,7 @@ int Octree_Manager:: adapt_coarsen2d (p4est_t * p4est, p4est_topidx_t which_tree
         remain += oud->premain;
         receive += oud->preceive;
   }
-  if ((double) (remain + receive) < .5 * g->elem_particles) {
+  if ((double) (remain + receive) < .5 * g->elem_particle) {
     /* we will coarsen and adjust ireindex, irvindex in adapt_replace */
     g->qremain = remain;
     g->qreceive = receive;
@@ -166,7 +166,7 @@ int Octree_Manager:: adapt_coarsen (p8est_t * p8est, p4est_topidx_t which_tree,
         remain += oud->premain;
         receive += oud->preceive;
   }
-  if ((double) (remain + receive) < .5 * g->elem_particles) {
+  if ((double) (remain + receive) < .5 * g->elem_particle) {
     /* we will coarsen and adjust ireindex, irvindex in adapt_replace */
     g->qremain = remain;
     g->qreceive = receive;
@@ -583,7 +583,7 @@ int Octree_Manager:: adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,
   }  
   if(quad == quadrant)
   { 
-      if(maxp <= g->elem_particles && maxp>-1)
+      if(maxp <= g->elem_particle && maxp>-1)
       { g->flagrefine = 0;
       }
       else
@@ -607,7 +607,7 @@ int Octree_Manager:: adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,
   
   /* we have set this to -1 in adapt_coarsen */
 
-  if ((double) (oud->premain + oud->preceive) > g->elem_particles) {
+  if ((double) (oud->premain + oud->preceive) > g->elem_particle) {
     /* we are trying to refine, we will possibly go into the replace function */
     g->ire2 = g->ireindex;
     g->ireindex += oud->premain;
@@ -661,7 +661,7 @@ int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,
   
   if(quad == quadrant)
   { 
-      if(maxp <= g->elem_particles && maxp>-1)
+      if(maxp <= g->elem_particle && maxp>-1)
       { g->flagrefine = 0;
       }
       else
@@ -684,7 +684,7 @@ int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,
   
   /* we have set this to -1 in adapt_coarsen */
 
-  if ((double) (oud->premain + oud->preceive) > g->elem_particles) {
+  if ((double) (oud->premain + oud->preceive) > g->elem_particle) {
     /* we are trying to refine, we will possibly go into the replace function */
     g->ire2 = g->ireindex;
     g->ireindex += oud->premain;

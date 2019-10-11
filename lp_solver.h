@@ -10,7 +10,7 @@ class LPSolver {
 
 public:
 	
-    LPSolver(Global_Data *g, Octree_Manager *octree, ParticleViewer *viewer);
+    LPSolver(Initializer* init, Global_Data *g, Octree_Manager *octree, ParticleViewer *viewer);
     
     void solve_2d(); 
     void solve_3d();
@@ -52,22 +52,21 @@ public:
     void computeCFLCondition();
     
     void computeLocalBoundaryAndFluidNum();
+    
+    
+    private:
+   
     Octree_Manager *octree;
     Global_Data * gdata; 
     ParticleViewer *viewer;
-    
-    
-    double cfldt = 0;
+    double tstart;
+    double tend;
+
+    double cfldt;
     double cflcoefficient;
 	std::vector<std::vector<int> > m_vDirSplitTable; 
     int splitorder;
-    double invalidpressure;
     int totalphase;
-    size_t numrow2nd;
-    size_t numrow2nd2d;
-
-
-    double pinf;
 
 
 };

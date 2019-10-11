@@ -47,7 +47,12 @@ int main(int argc, const char* argv[]){
 	string debugfileName;
     bool ifDebug = false;
     
-    
+    int mpiret;
+    mpiret = sc_MPI_Init (NULL, NULL);
+
+    SC_CHECK_MPI (mpiret);
+    int mpirank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
 	for(int i=1; i<argc; i++) { // argv[0] is name of the executable 
 		if(!strcmp(argv[i], "-i")) { // input; strcmp returns 0 if two c_str are the same
 			if(i+1 >= argc || argv[i+1][0]=='-') { // no inputfile name following -i option
@@ -66,10 +71,12 @@ int main(int argc, const char* argv[]){
 				cerr<<"ERROR: Needs to provide outputfile name!"<<endl;
 				exit(1);
 			}
+            if(mpirank == 0){
 			if(mkdir(argv[i+1], 0777) == -1) { //mkdir takes const char*
 				cerr<<"ERROR:"<<strerror(errno)<<endl;
 				exit(1);
 			}
+            }
 			outputfileNameAll = string(argv[i+1]) + "/out";
 			outputfileNameFluid = string(argv[i+1]) + "/out_fluid";
 			debugfileName = string(argv[i+1]);
@@ -104,15 +111,16 @@ int main(int argc, const char* argv[]){
     
     
     double t1 = MPI_Wtime();
-    Initializer *init = new Initializer();
+    Initializer *init;
 
+	if(datafileName.empty())
+		init = new Initializer(inputfileName, ifDebug, debugfileName);
+	else // restart to do
+		init = new Initializer(inputfileName, datafileName, ifDebug, debugfileName);
+    
     Global_Data *gdata = new Global_Data(init);
 
     ParticleViewer * viewer = new ParticleViewer(gdata,"output_",4);
-    int mpiret;
-    mpiret = sc_MPI_Init (NULL, NULL);
-
-    SC_CHECK_MPI (mpiret);
 
     Octree_Manager *octree = new Octree_Manager(gdata);
 
@@ -131,7 +139,7 @@ int main(int argc, const char* argv[]){
        gdata->resetOctantData(); 
     else if(gdata->dimension == 2)
         gdata->resetOctantData2d();
-    LPSolver * lpsolver = new LPSolver(gdata,octree,viewer);
+    LPSolver * lpsolver = new LPSolver(init, gdata,octree,viewer);
     if(gdata->dimension == 3 )
         lpsolver->solve_3d();
     else if(gdata->dimension == 2)

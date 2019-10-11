@@ -18,25 +18,42 @@ Global_Data:: Global_Data(Initializer* init){
     gpnum = 0;
     gplost = 0; 
     flagrefine = 1;
-    dimension = 3;
-    initlevel = init->initlevel;
-    timesearchingradius = init->timesearchingradius;
-    maxlevel = init->maxlevel;
-    minlevel = init->minlevel; 
-    initlocalspacing = init->initlocalspacing;
-    numrow1st = 8;
-    numrow1st2d = 3;
-    initperturbation = init->initperturbation;
-    elem_particles = init->elem_particles;
-    geometry = GeometryFactory::instance().createGeometry("cylinder"); 
+    domain_len = init->getDomainlength();
+    dimension = init->getDimension();
+    initlevel = init->getInitLevel();
+    timesearchingradius = init->getTimeSearchRadius();
+    maxlevel = init->getMaxLevel();
+    minlevel = init->getMinLevel(); 
+    initlocalspacing = init->getInitParticleSpacing();
+    numrow1st = init->getNumRow1stOrder();
+    numrow2nd = init->getNumRow2ndOrder();
+    numcol1st = init->getNumCol1stOrder();
+    numcol2nd = init->getNumCol2ndOrder(); 
+    initperturbation = init->getInitialPerturbation();
+    elem_particle = init->getElemParticle();
+    string temp;
+    temp = init->getGeometryName();
+    geometry = GeometryFactory::instance().createGeometry(temp); 
     geometry->getBoundingBox(bb[0],bb[1],bb[2],bb[3],bb[4],bb[5]);
-    state = StateFactory::instance().createState("yee2dstate");
-    boundary = BoundaryFactory::instance().createBoundary("yee3dboundary");
-    eoschoice = init->eoschoice;
-    gamma = 1.4;
+    temp = init->getStateName();
+    state = StateFactory::instance().createState(temp);
+    boundarynumber = init->getBoundaryNumber();
+    vector<string> boundarynames = init->getBoundaryNames();
+    for(size_t i=0;i<boundarynumber;i++){
+
+    	m_vBoundary.push_back(BoundaryFactory::instance().createBoundary(boundarynames[i]));
+
+    }
+    eoschoice = init->getEOSChoice();
+    gamma = init->getGamma();
+    pinf = init->getPinf();
+    einf = init->getEinf();
     setEOS();    
+
+    invalidpressure = init->getInvalidPressure();
+    invaliddensity = init->getInvalidDensity();
+    iffreeboundary = init->getIfFreeBoundary();
     flagdelete = true;
-    iffreeboundary = false;
 }
 
 
@@ -1088,7 +1105,7 @@ void Global_Data::setEOS(){
 
 	if(eoschoice == 1) // Polytropic gas EOS
     {   
-         eos = new PolytropicGasEOS(gamma,pelletmaterial);
+         eos = new PolytropicGasEOS(gamma);
 	     std::vector<double> eos_parameters;
 	     eos->getParameters(eos_parameters);
     }
@@ -1187,7 +1204,7 @@ void Global_Data::prerun(){
     if(dimension == 3) 
         klh[i] = sc_array_new (sizeof (p4est_locidx_t));
     else 
-        assert(klh[i] == NULL);
+        (klh[i] == NULL);
    }
 }
 
@@ -3123,20 +3140,20 @@ void Global_Data::generateGhostParticle2d(){
 
 
         count = pad->neighbourrightparticle->elem_count;
-        if(count<numrow1st2d)
-            fillArrayWithGhostParticle2d(pad->neighbourrightparticle,pad,numrow1st2d-count,3);
+        if(count<numrow1st)
+            fillArrayWithGhostParticle2d(pad->neighbourrightparticle,pad,numrow1st-count,3);
 
         count = pad->neighbourleftparticle->elem_count;
-        if(count<numrow1st2d)
-            fillArrayWithGhostParticle2d(pad->neighbourleftparticle,pad,numrow1st2d-count,4);
+        if(count<numrow1st)
+            fillArrayWithGhostParticle2d(pad->neighbourleftparticle,pad,numrow1st-count,4);
 
         count = pad->neighbourfrontparticle->elem_count;
-        if(count<numrow1st2d)
-            fillArrayWithGhostParticle2d(pad->neighbourfrontparticle,pad,numrow1st2d-count,5);
+        if(count<numrow1st)
+            fillArrayWithGhostParticle2d(pad->neighbourfrontparticle,pad,numrow1st-count,5);
 
         count = pad->neighbourbackparticle->elem_count;
-        if(count<numrow1st2d)
-            fillArrayWithGhostParticle2d(pad->neighbourbackparticle,pad,numrow1st2d-count,6);
+        if(count<numrow1st)
+            fillArrayWithGhostParticle2d(pad->neighbourbackparticle,pad,numrow1st-count,6);
 
         }
   

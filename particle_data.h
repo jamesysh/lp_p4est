@@ -206,20 +206,26 @@ class Global_Data{
         double timesearchingradius;
         int maxlevel;
         int minlevel; 
-        int elem_particles; //max number of particles per octant
+        int elem_particle; //max number of particles per octant
         int eoschoice;
         bool iffreeboundary;
-        int pelletmaterial;
         
         double gamma;
-        
+        double pinf;
+        double einf;
+        double invalidpressure;
+        double invaliddensity;
+
+        int LPFOrder;
         double initlocalspacing;
         double initperturbation;
+        double gravity;
+        bool ifuselimiter;
         size_t numrow1st;
-        size_t numrow1st2d;
-
-        double dt;
-        double endt;
+        size_t numrow2nd;
+        size_t numcol1st;
+        size_t numcol2nd;
+        
         double domain_len = 32; 
         double bb[6]; // bounding box of initial fluid particles  
 
@@ -227,7 +233,9 @@ class Global_Data{
         Geometry* geometry;
         State* state;        
         EOS* eos;        
-        Boundary *boundary;
+	    
+        std::vector<Boundary*> m_vBoundary;///< Vector of boundary objects
+        size_t boundarynumber;
         bool flagdelete; 
         p4est_locidx_t lpnum; //number of particles on local processor
         p4est_gloidx_t gpnum, gplost; //number of particles on all processor, number of particles on all processers which left domain

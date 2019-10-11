@@ -5,13 +5,14 @@ using namespace std;
 
 
 
-LPSolver::LPSolver(Global_Data *g, Octree_Manager *o, ParticleViewer *v){
+LPSolver::LPSolver(Initializer *init, Global_Data *g, Octree_Manager *o, ParticleViewer *v){
     gdata = g;
     octree = o;
     viewer = v;
     splitorder = 0;
-    cflcoefficient = 0.3;
-    invalidpressure = 0;
+    cflcoefficient = init->getCFLCoeff();
+    tstart = init->getStartTime();
+    tend = init->getEndTime();
     if(gdata->dimension == 3){
         m_vDirSplitTable = vector<vector<int> >
         ({{0,1,2},
@@ -29,17 +30,7 @@ LPSolver::LPSolver(Global_Data *g, Octree_Manager *o, ParticleViewer *v){
         totalphase = 2;
     }
     
-    numrow2nd = 54;
-    numrow2nd2d = 36;
 
-
-
-
-
-
-
-
-    pinf = 0;
 
 }
 
@@ -154,7 +145,7 @@ if(p_d_0>0){
     vel_d_1, vel_dd_1, p_d_1, p_dd_1,
     outvolume, outvelocity, outpressure);
         
-         if(*outpressure < invalidpressure || 1./(*outvolume)<0)
+         if(*outpressure < gdata->invalidpressure || 1./(*outvolume)< gdata->invaliddensity)
          {
              redo  = true;
          }
@@ -275,8 +266,8 @@ void LPSolver::setNeighbourListPointer(pdata_t *pad, sc_array_t** neilist0, sc_a
 
 void LPSolver::computeSpatialDer(int dir,pdata_t *pad, sc_array_t *neighbourlist, const double* inpressure, const double *invelocity,
         double *vel_d, double *vel_dd, double *p_d, double *p_dd) {
-    size_t numrow = pad->redocount + gdata->dimension == 3? gdata->numrow1st:gdata->numrow1st2d;
-    size_t numcol = gdata->dimension == 3? 3:2;
+    size_t numrow = pad->redocount + gdata->numrow1st;
+    size_t numcol = gdata->numcol1st;
     double distance;
     int info;
     int offset = gdata->dimension == 3? 3:2; // 2 for 2 dimension
@@ -597,12 +588,10 @@ void LPSolver:: solve_2d(){
     while(tstart<tend)
     {
     
-        tstart += cfldt;
     
-    
-    
-        gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
-    
+        for(size_t id=0; id<gdata->boundarynumber; id++){ 
+           gdata->m_vBoundary[id]->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
+        }
         
     //gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
         
@@ -632,19 +621,26 @@ void LPSolver:: solve_2d(){
     
         gdata->partitionParticles2d();
     
+        MPI_Barrier(gdata->mpicomm);
         gdata->createViewForOctant2d();
     
+        MPI_Barrier(gdata->mpicomm);
     
         gdata->searchNeighbourOctant2d();
 
         gdata->searchNeighbourParticle2d();
+        
         gdata->searchUpwindNeighbourParticle2d(); 
+        
         gdata->reorderNeighbourList2d();
+        
+        MPI_Barrier(gdata->mpicomm);
         if(gdata->iffreeboundary) 
             gdata->generateGhostParticle2d();
         
     //gdata->testquad2d();
         computeCFLCondition();
+        tstart += cfldt;
         P4EST_GLOBAL_ESSENTIALF ("Current Time: %f .\n", tstart);
         splitorder = (int)rand()%2;
         MPI_Bcast(&splitorder,1,MPI_INT,0,gdata->mpicomm);
@@ -699,7 +695,9 @@ void LPSolver::solve_3d(){
     
     
     
-    gdata->boundary->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
+        for(size_t id=0; id<gdata->boundarynumber; id++){ 
+           gdata->m_vBoundary[id]->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
+         }
     
     //gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
     gdata->presearch();
@@ -729,8 +727,11 @@ void LPSolver::solve_3d(){
     
         gdata->partitionParticles();
     
+        MPI_Barrier(gdata->mpicomm); 
+        
         gdata->createViewForOctant();
     
+        MPI_Barrier(gdata->mpicomm); 
         gdata->searchNeighbourOctant();
 
 
@@ -741,6 +742,7 @@ void LPSolver::solve_3d(){
         gdata->searchUpwindNeighbourParticle(); 
         gdata->reorderNeighbourList();
 
+        MPI_Barrier(gdata->mpicomm); 
         if(gdata->iffreeboundary){ 
             gdata->generateGhostParticle();
         }
@@ -751,14 +753,14 @@ void LPSolver::solve_3d(){
         P4EST_GLOBAL_ESSENTIALF ("Current Time: %f .\n", tstart);
         splitorder = (int)rand()%6;
         MPI_Bcast(&splitorder,1,MPI_INT,0,gdata->mpicomm);
-        
+       /* 
         for(int phase = 0;phase< totalphase;phase++){
             solve_upwind(phase);
             MPI_Barrier(gdata->mpicomm);
             gdata->updateViewForOctant(phase);
             MPI_Barrier(gdata->mpicomm); 
         }
-   
+   */
     solve_laxwendroff();
     
     gdata->updateParticleStates();
@@ -891,7 +893,7 @@ void LPSolver::solve_laxwendroff(){
        }
    
     
-         if(*outpressure < invalidpressure || 1./(*outvolume)<0)
+         if(*outpressure < gdata->invalidpressure || 1./(*outvolume) < gdata->invaliddensity)
          {
              redo  = true;
          }
@@ -962,8 +964,8 @@ void LPSolver::computeSpatialDer(pdata_t *pad, const double* inPressure,  const 
 
     
     size_t offset = gdata->dimension == 3? 3:2;
-    size_t numrow = pad->redocount + gdata->dimension == 3? numrow2nd:numrow2nd2d;
-    size_t numcol = gdata->dimension == 3? 9:5;
+    size_t numrow = pad->redocount + gdata->numrow2nd;
+    size_t numcol = gdata->numcol2nd;
     double distance;
     int info;
     neighbour_info_t *ninfo;
@@ -1104,7 +1106,7 @@ void LPSolver::timeIntegration( double gravity, double inVolume, double inVeloci
                                                         double* outVolume, double* outVelocityU, double* outVelocityV, double* outVelocityW, double* outPressure){
 
       double gamma=inSoundSpeed*inSoundSpeed/inVolume/inPressure;
-      double Pinf = pinf;
+      double Pinf = gdata->pinf;
       double Dt = cfldt;
       if(gdata->dimension==3)
         {
