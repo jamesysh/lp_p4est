@@ -7,7 +7,7 @@ using namespace std;
 ParticleViewer::ParticleViewer(Global_Data *g, const std::string &filename,int numd ){
     gdata = g;
     outputfilename = filename;
-    numdigit = 4;
+    numdigit = numd;
     writestep = 0;
 }
 
@@ -38,7 +38,7 @@ void ParticleViewer:: writeGhost(int step){
    size_t ghostnum;
    size_t li;
    int mpirank = gdata->mpirank;
-   string filename_t = outputfilename + rightFlush(numdigit)+"_";
+   string filename_t = outputfilename +"/out" + rightFlush(numdigit)+"_";
    string filename = filename_t + to_string(mpirank) + ".vtk";
     pdata_t *pad;
     pdata_copy_t * padd;
@@ -113,7 +113,7 @@ void ParticleViewer:: writeGhost(int step){
     fclose(outfile);
     if(mpirank == 0){
     FILE *visitfile;
-    string fname = "output_data.visit";
+    string fname = outputfilename+ "output_alldata.visit";
     visitfile = fopen(fname.c_str(),"a");
    
 	if(visitfile==nullptr) {
@@ -142,7 +142,7 @@ void ParticleViewer:: writeResult(int step){
    size_t li;
    size_t lfluidnum = gdata->lfluidnum;
    int mpirank = gdata->mpirank;
-   string filename_t = outputfilename + rightFlush(numdigit)+"_";
+   string filename_t = outputfilename +"/out_fluid" + rightFlush(numdigit)+"_";
    string filename = filename_t + to_string(mpirank) + ".vtk";
     pdata_t *pad;
     
@@ -232,7 +232,7 @@ void ParticleViewer:: writeResult(int step){
     fclose(outfile);
     if(mpirank == 0){
     FILE *visitfile;
-    string fname = "output_data.visit";
+    string fname = outputfilename +"/output_fluiddata.visit";
     visitfile = fopen(fname.c_str(),"a");
    
 	if(visitfile==nullptr) {

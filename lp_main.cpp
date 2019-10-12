@@ -43,7 +43,7 @@ int main(int argc, const char* argv[]){
     
 	string inputfileName;
 	string datafileName; // restart datafile
-	string outputfileNameAll, outputfileNameFluid;		
+	string outputfileNameFluid;		
 	string debugfileName;
     bool ifDebug = false;
     
@@ -77,10 +77,8 @@ int main(int argc, const char* argv[]){
 				exit(1);
 			}
             }
-			outputfileNameAll = string(argv[i+1]) + "/out";
-			outputfileNameFluid = string(argv[i+1]) + "/out_fluid";
+			outputfileNameFluid = string(argv[i+1]);
 			debugfileName = string(argv[i+1]);
-            cout<<"output file name: "<<outputfileNameAll<<endl;
 			cout<<"output file name: "<<outputfileNameFluid<<endl;
 		}
 		else if(!strcmp(argv[i], "-d")) { // debug
@@ -101,7 +99,7 @@ int main(int argc, const char* argv[]){
 		cerr<<"ERROR: Needs to provide -i option!"<<endl;
 		exit(1);
 	}
-	if(outputfileNameAll.empty() || outputfileNameFluid.empty()) {
+	if( outputfileNameFluid.empty()) {
 		cerr<<"ERROR: Needs to provide -o option!"<<endl;
 		exit(1);
 	}
@@ -120,7 +118,7 @@ int main(int argc, const char* argv[]){
     
     Global_Data *gdata = new Global_Data(init);
 
-    ParticleViewer * viewer = new ParticleViewer(gdata,"output_",4);
+    ParticleViewer * viewer = new ParticleViewer(gdata,outputfileNameFluid,4);
 
     Octree_Manager *octree = new Octree_Manager(gdata);
 
