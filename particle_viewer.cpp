@@ -39,6 +39,7 @@ void ParticleViewer:: writeGhost(int step){
    size_t li;
    int mpirank = gdata->mpirank;
    string filename_t = outputfilename +"/out" + rightFlush(numdigit)+"_";
+   string filenameinvisitfile = "out"+rightFlush(numdigit) + "_";
    string filename = filename_t + to_string(mpirank) + ".vtk";
     pdata_t *pad;
     pdata_copy_t * padd;
@@ -126,7 +127,7 @@ void ParticleViewer:: writeGhost(int step){
     
         }
         for(int i=0;i<gdata->mpisize;i++){
-            string name  = filename_t +to_string(i) + ".vtk\n";
+            string name  = filenameinvisitfile + to_string(i) + ".vtk\n";
             fprintf(visitfile,name.c_str());
             
             }
@@ -143,6 +144,7 @@ void ParticleViewer:: writeResult(int step){
    size_t lfluidnum = gdata->lfluidnum;
    int mpirank = gdata->mpirank;
    string filename_t = outputfilename +"/out_fluid" + rightFlush(numdigit)+"_";
+   string filenameinvisitfile = "out_fluid"+rightFlush(numdigit) + "_";
    string filename = filename_t + to_string(mpirank) + ".vtk";
     pdata_t *pad;
     
@@ -245,7 +247,7 @@ void ParticleViewer:: writeResult(int step){
     
         }
         for(int i=0;i<gdata->mpisize;i++){
-            string name  = filename_t +to_string(i) + ".vtk\n";
+            string name  = filenameinvisitfile + to_string(i) + ".vtk\n";
             fprintf(visitfile,name.c_str());
             
             }

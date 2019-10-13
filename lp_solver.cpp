@@ -633,7 +633,7 @@ void LPSolver:: solve_2d(){
         
         gdata->searchUpwindNeighbourParticle2d(); 
         
-        gdata->reorderNeighbourList2d();
+  //      gdata->reorderNeighbourList2d();
         
         MPI_Barrier(gdata->mpicomm);
         if(gdata->iffreeboundary) 
@@ -662,10 +662,10 @@ void LPSolver:: solve_2d(){
    
         updateLocalSpacing();
    
-     moveParticle();
-    if(iswritestep)
-    
-    {
+        moveParticle();
+        if(iswritestep)
+        
+         {
         computeLocalBoundaryAndFluidNum();
         viewer->writeResult(writestep);
     }
@@ -738,7 +738,7 @@ void LPSolver::solve_3d(){
         gdata->searchNeighbourParticle();
         
         gdata->searchUpwindNeighbourParticle(); 
-      //  gdata->reorderNeighbourList();
+     //   gdata->reorderNeighbourList();
 
         MPI_Barrier(gdata->mpicomm); 
         if(gdata->iffreeboundary){ 
@@ -752,14 +752,14 @@ void LPSolver::solve_3d(){
         P4EST_GLOBAL_ESSENTIALF ("Current Time: %f .\n", currenttime);
         splitorder = (int)rand()%6;
         MPI_Bcast(&splitorder,1,MPI_INT,0,gdata->mpicomm);
-       /* 
+        
         for(int phase = 0;phase< totalphase;phase++){
             solve_upwind(phase);
             MPI_Barrier(gdata->mpicomm);
             gdata->updateViewForOctant(phase);
             MPI_Barrier(gdata->mpicomm); 
         }
-   */
+   
     solve_laxwendroff();
     
     gdata->updateParticleStates();
