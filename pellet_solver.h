@@ -12,14 +12,16 @@ class PelletSolver{
         void build_quadtree();
         void prerun();
         void resetOctantData2d();
-    private:
-        Global_Data *gdata;
-        
-        
-        
-        
+        void presearch2d(); 
         p4est_t *p4est_heating;
         p4est_connectivity_t *conn;
+    
+        Global_Data *gdata;
+    private:
+        
+        
+        
+        
         sc_array_t *ilh[2],*jlh[2],*klh[2];
     };
 

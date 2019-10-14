@@ -67,7 +67,7 @@ typedef struct octant_data
    // sc_array_t* particle_data_view;
     pdata_copy_t localparticle[200];
     int octantid;
-    int mpirank;
+   // int mpirank;
     
     p4est_locidx_t    fluidnum; //number of fluid particle
     p4est_locidx_t    poctant;
@@ -129,10 +129,12 @@ typedef enum comm_tag
 }
 comm_tag_t;
 
+class PelletSolver;
+
 class Global_Data{
 
     public:
-    
+        friend PelletSolver; 
         Global_Data(Initializer* init);
         ~Global_Data(); 
 
