@@ -1204,7 +1204,7 @@ void Global_Data::prerun(){
     if(dimension == 3) 
         klh[i] = sc_array_new (sizeof (p4est_locidx_t));
     else 
-        (klh[i] == NULL);
+        (klh[i] = NULL);
    }
 }
 
