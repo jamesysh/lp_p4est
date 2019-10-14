@@ -14,7 +14,6 @@ class PelletSolver{
         void resetOctantData2d();
     private:
         Global_Data *gdata;
-        sc_array_t *particle_data_copy;
         
         
         

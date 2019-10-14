@@ -3,7 +3,7 @@
 
 PelletSolver::PelletSolver(Global_Data*g){
     gdata = g;
-    sc_array_copy(particle_data_copy, gdata->particle_data);
+    sc_array_copy(gdata->particle_data_copy, gdata->particle_data);
 
     }
 
@@ -45,3 +45,5 @@ void PelletSolver::resetOctantData2d(){
   }
 
 }
+
+
