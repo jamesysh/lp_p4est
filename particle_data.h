@@ -253,7 +253,6 @@ class Global_Data{
         p4est_ghost_t *ghost2d;
         sc_array_t *particle_data; //local particle data on process
         
-        sc_array_t *particle_data_copy; //used for pellet problem;
         sc_array_t *pfound; //target process of particle
         
         sc_array_t *iremain; /**< locidx_t Index into padata of stay-local particles */

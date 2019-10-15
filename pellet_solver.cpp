@@ -3,7 +3,7 @@
 
 PelletSolver::PelletSolver(Global_Data*g){
     gdata = g;
-    sc_array_copy(gdata->particle_data_copy, gdata->particle_data);
+    sc_array_copy(particle_data_copy, gdata->particle_data);
 
     }
 
@@ -81,7 +81,7 @@ psearch_point2d (p4est_t * p4est, p4est_topidx_t which_tree,
   /* find process/quadrant for this particle */
   if (local_num >= 0) {
     /* quadrant is a local leaf */
-    zp = sc_array_position (g->particle_data_copy, point);
+    zp = sc_array_position (p->particle_data_copy, point);
     pfn = (int *) sc_array_index (g->pfound, zp);
     /* first local match counts (due to roundoff there may be multiple) */
     if (*pfn != g->mpirank) {
@@ -103,7 +103,7 @@ psearch_point2d (p4est_t * p4est, p4est_topidx_t which_tree,
     }
     
     /* found particle on a remote process */
-    zp = sc_array_position (g->particle_data, point);
+    zp = sc_array_position (p->particle_data_copy, point);
     pfn = (int *) sc_array_index (g->pfound, zp);
     /* only count match if it has not been found locally or on lower rank */
     if (*pfn < 0 || (*pfn != g->mpirank && pfirst < *pfn)) {
@@ -157,12 +157,12 @@ void PelletSolver::resetOctantData2d(){
 
 void PelletSolver::presearch2d(){
         
-  gdata->pfound = sc_array_new_count (sizeof (int), gdata->particle_data_copy->elem_count);
+  gdata->pfound = sc_array_new_count (sizeof (int), particle_data_copy->elem_count);
   
   gdata->iremain = sc_array_new (sizeof (p4est_locidx_t));
   sc_array_memset (gdata->pfound, -1);
 
-  p4est_search_all (p4est_heating, 0, psearch_quad2d, psearch_point2d, gdata->particle_data_copy);
+  p4est_search_all (p4est_heating, 0, psearch_quad2d, psearch_point2d, particle_data_copy);
 
 
 
