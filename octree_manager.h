@@ -41,9 +41,9 @@ class Octree_Manager{
 
         
         void balance_octree2d(p4est_init_t init_fn, p4est_replace_t replace_fn);
-        void adapt_octree();
+        void adapt_octree( p8est_t* p8est);
  
-        void adapt_octree2d();
+        void adapt_octree2d( p4est_t* p4est);
  
         static int adapt_coarsen2d (p4est_t * p8est, p4est_topidx_t which_tree,
                p4est_quadrant_t * quadrants[]);

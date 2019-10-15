@@ -583,9 +583,11 @@ void LPSolver:: computeCFLCondition(){
 
 void LPSolver:: solve_2d(){
 
-
     computeLocalBoundaryAndFluidNum();
     viewer->writeResult(0);
+    
+    PelletSolver *pellet_solver = new PelletSolver(gdata);
+    pellet_solver->prerun();
     while(currenttime < tend)
     {
     
@@ -614,7 +616,7 @@ void LPSolver:: solve_2d(){
         gdata->communicateParticles();
         gdata->postsearch2d();
 
-        octree->adapt_octree2d();
+        octree->adapt_octree2d(gdata->p4est);
     
         octree->balance_octree2d(NULL,octree->balance_replace2d);
     
@@ -638,7 +640,10 @@ void LPSolver:: solve_2d(){
         MPI_Barrier(gdata->mpicomm);
         if(gdata->iffreeboundary) 
             gdata->generateGhostParticle2d();
-        
+   
+        pellet_solver->build_quadtree();
+              
+
     //gdata->testquad2d();
         computeCFLCondition();
         bool iswritestep = adjustDtByWriteTimeInterval(); 
@@ -717,7 +722,7 @@ void LPSolver::solve_3d(){
     gdata->communicateParticles();
         gdata->postsearch();
 
-        octree->adapt_octree(); 
+        octree->adapt_octree(gdata->p8est); 
     
         octree->balance_octree(NULL,octree->balance_replace);
     

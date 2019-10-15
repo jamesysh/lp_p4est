@@ -2,6 +2,17 @@
 #define __PELLET_SOLVER_H__
 #include "particle_data.h"
 
+
+typedef struct quadrant_data
+{   
+    
+    p4est_locidx_t      lpend;
+//    p4est_locidx_t ghostneighbourid[300];
+  /** counts of local particles remaining on this quadrant and recieved ones */
+  p4est_locidx_t      premain, preceive;
+}
+quadrant_data_t;
+
 class PelletSolver{
     
     public:
@@ -11,8 +22,11 @@ class PelletSolver{
         
         void build_quadtree();
         void prerun();
-        void resetOctantData2d();
+        void resetQuadrantData();
         void presearch2d(); 
+        void packParticles();
+        
+        size_t elem_particle_box = 1000;
         p4est_t *p4est_heating;
         p4est_connectivity_t *conn;
         sc_array_t *particle_data_copy; //used for pellet problem;

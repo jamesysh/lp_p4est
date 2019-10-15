@@ -6,6 +6,7 @@
 #include "ls_solver.h"
 #include "octree_manager.h"
 #include "particle_viewer.h"
+#include "pellet_solver.h"
 class LPSolver {
 
 public:

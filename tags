@@ -64,11 +64,12 @@ INCS	boundary/makefile	/^INCS   = -I $(BOUNDARY_DIR) -I $(STATE_DIR) -I $(GEOMET
 INCS	geometry/makefile	/^INCS   = -I $(BOUNDARY_DIR) -I $(STATE_DIR) -I $(GEOMETRY_DIR) -I $(MAIN_DIR)$/;"	m
 INCS	makefile	/^INCS = -I $(P4EST_INC) -I $(BOUNDARY_DIR) -I $(STATE_DIR) -I $(GEOMETRY_DIR) -I $(MAIN_DIR)$/;"	m
 INCS	state/makefile	/^INCS   = -I $(BOUNDARY_DIR) -I $(STATE_DIR) -I $(GEOMETRY_DIR) -I $(MAIN_DIR)$/;"	m
-Initializer	initializer.cpp	/^Initializer::Initializer(){$/;"	f	class:Initializer
+Initializer	initializer.cpp	/^Initializer::Initializer(const string& inputfileName, bool ifDebug, const string& debugfileName)$/;"	f	class:Initializer
+Initializer	initializer.h	/^	Initializer(const std::string& param_filename, const std::string& data_filename, $/;"	f	class:Initializer
 Initializer	initializer.h	/^class Initializer {$/;"	c
 LAPACK_DIR	boundary/makefile	/^LAPACK_DIR=\/gpfs\/home\/shyyuan\/local\/lapack-3.8.0$/;"	m
 LAPACK_DIR	geometry/makefile	/^LAPACK_DIR=\/gpfs\/home\/shyyuan\/local\/lapack-3.8.0$/;"	m
-LAPACK_DIR	makefile	/^LAPACK_DIR = \/home\/syuan\/local\/lapack$/;"	m
+LAPACK_DIR	makefile	/^LAPACK_DIR = \/gpfs\/home\/shyyuan\/local\/lapack\/$/;"	m
 LAPACK_DIR	state/makefile	/^LAPACK_DIR=\/gpfs\/home\/shyyuan\/local\/lapack-3.8.0$/;"	m
 LFLAGS	boundary/makefile	/^LFLAGS = -Wall  $(DEBUG) $(INCS) $(LIBS) $(OMP)$/;"	m
 LFLAGS	geometry/makefile	/^LFLAGS = -Wall  $(DEBUG) $(INCS) $(LIBS) $(OMP)$/;"	m
@@ -76,16 +77,17 @@ LFLAGS	makefile	/^LFLAGS = -Wall  $(DEBUG) $(INCS) $(LIBS)$/;"	m
 LFLAGS	state/makefile	/^LFLAGS = -Wall  $(DEBUG) $(INCS) $(LIBS) $(OMP)$/;"	m
 LIBS	boundary/makefile	/^LIBS   = -L $(LAPACK_DIR) $/;"	m
 LIBS	geometry/makefile	/^LIBS   = -L $(LAPACK_DIR) $/;"	m
-LIBS	makefile	/^LIBS = -L $(P4EST_LIB)$/;"	m
+LIBS	makefile	/^LIBS = -L $(P4EST_LIB) -L $(LAPACK_DIR)$/;"	m
 LIBS	state/makefile	/^LIBS   = -L $(LAPACK_DIR) $/;"	m
-LPSolver	lp_solver.cpp	/^LPSolver::LPSolver(Global_Data *g, Octree_Manager *o, ParticleViewer *v){$/;"	f	class:LPSolver
+LPFOrder	particle_data.h	/^        int LPFOrder;$/;"	m	class:Global_Data
+LPSolver	lp_solver.cpp	/^LPSolver::LPSolver(Initializer *init, Global_Data *g, Octree_Manager *o, ParticleViewer *v){$/;"	f	class:LPSolver
 LPSolver	lp_solver.h	/^class LPSolver {$/;"	c
 LSSolver	ls_solver.h	/^class LSSolver {$/;"	c
 MAIN_DIR	boundary/makefile	/^MAIN_DIR:=${CURDIR}\/..\/$/;"	m
 MAIN_DIR	geometry/makefile	/^MAIN_DIR:=${CURDIR}\/..\/$/;"	m
 MAIN_DIR	makefile	/^MAIN_DIR:=${CURDIR}$/;"	m
 MAIN_DIR	state/makefile	/^MAIN_DIR:=${CURDIR}\/..\/$/;"	m
-MAIN_OBJS	makefile	/^MAIN_OBJS = lp_main.o particle_data.o initializer.o octree_manager.o registrar.o lp_solver.o eos.o particle_viewer.o ls_solver.o hexagonal_packing.o$/;"	m
+MAIN_OBJS	makefile	/^MAIN_OBJS = lp_main.o particle_data.o initializer.o octree_manager.o registrar.o lp_solver.o eos.o particle_viewer.o ls_solver.o hexagonal_packing.o pellet_solver.o$/;"	m
 OBJS	boundary/makefile	/^OBJS = $(SRC_FILES:.cpp=.o)$/;"	m
 OBJS	geometry/makefile	/^OBJS := $(SRC_FILES:.cpp=.o)$/;"	m
 OBJS	state/makefile	/^OBJS := $(SRC_FILES:.cpp=.o)$/;"	m
@@ -104,10 +106,12 @@ PelletInflowBoundary	boundary/boundary_pellet.cpp	/^PelletInflowBoundary::Pellet
 PelletInflowBoundary	boundary/boundary_pellet.h	/^class PelletInflowBoundary: public Boundary {$/;"	c
 PelletLayer	geometry/geometry_pellet.cpp	/^PelletLayer::PelletLayer(){$/;"	f	class:PelletLayer
 PelletLayer	geometry/geometry_pellet.h	/^class PelletLayer: public Geometry {$/;"	c
+PelletSolver	pellet_solver.cpp	/^PelletSolver::PelletSolver(Global_Data*g){$/;"	f	class:PelletSolver
+PelletSolver	pellet_solver.h	/^class PelletSolver{$/;"	c
 PelletState	state/state_pellet.cpp	/^PelletState::PelletState():$/;"	f	class:PelletState
 PelletState	state/state_pellet.h	/^class PelletState: public State{$/;"	c
 Pinflow	boundary/boundary_pellet.h	/^    double Pinflow;\/\/inflow pressure, constant$/;"	m	class:PelletInflowBoundary
-PolytropicGasEOS	eos.h	/^	PolytropicGasEOS(double gamma,int pelletmaterial) :m_iPelletMaterial(pelletmaterial) {m_iEOSChoice=1; m_fGamma = gamma;}$/;"	f	class:PolytropicGasEOS
+PolytropicGasEOS	eos.h	/^	PolytropicGasEOS(double gamma) {m_iEOSChoice=1; m_fGamma = gamma;}$/;"	f	class:PolytropicGasEOS
 PolytropicGasEOS	eos.h	/^class PolytropicGasEOS : public EOS {$/;"	c
 QRSolver	ls_solver.h	/^	QRSolver(std::size_t numRow, std::size_t numCol, double *A, double limitR=1e-3) {$/;"	f	class:QRSolver
 QRSolver	ls_solver.h	/^class QRSolver : public LSSolver {$/;"	c
@@ -153,20 +157,25 @@ __LS_SOLVER_H__	ls_solver.h	21;"	d
 __OCTREE_MANAGER__	octree_manager.h	2;"	d
 __PARTICLE_DATA_H__	particle_data.h	2;"	d
 __PARTICLE_VIEWER_H__	particle_viewer.h	2;"	d
+__PELLET_SOLVER_H__	pellet_solver.h	2;"	d
 __REGISTRAR_H__	registrar.h	2;"	d
 __STATE_GRESHO_H__	state/state_gresho.h	2;"	d
 __STATE_H__	state/state.h	3;"	d
 __STATE_PELLET_H__	state/state_pellet.h	2;"	d
 adapt_coarsen	octree_manager.cpp	/^int Octree_Manager:: adapt_coarsen (p8est_t * p8est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
 adapt_coarsen2d	octree_manager.cpp	/^int Octree_Manager:: adapt_coarsen2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
-adapt_octree	octree_manager.cpp	/^void Octree_Manager:: adapt_octree(){$/;"	f	class:Octree_Manager
-adapt_octree2d	octree_manager.cpp	/^void Octree_Manager:: adapt_octree2d(){$/;"	f	class:Octree_Manager
+adapt_octree	octree_manager.cpp	/^void Octree_Manager:: adapt_octree( p8est_t *p8est){$/;"	f	class:Octree_Manager
+adapt_octree2d	octree_manager.cpp	/^void Octree_Manager:: adapt_octree2d( p4est_t *p4est){$/;"	f	class:Octree_Manager
 adapt_refine	octree_manager.cpp	/^int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
 adapt_refine2d	octree_manager.cpp	/^int Octree_Manager:: adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
+adapt_refine2d	pellet_solver.cpp	/^static int adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 adapt_replace	octree_manager.cpp	/^void Octree_Manager:: adapt_replace (p8est_t * p8est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
 adapt_replace2d	octree_manager.cpp	/^void Octree_Manager:: adapt_replace2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
+adapt_replace2d	pellet_solver.cpp	/^static void adapt_replace2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 addGhostParticle	particle_data.cpp	/^void Global_Data::addGhostParticle(pdata_copy_t * ghostnei, pdata_t *pad, double dx, double dy, double dz){$/;"	f	class:Global_Data
 adjustCoordByDomain	particle_data.cpp	/^void Global_Data:: adjustCoordByDomain( double xyz[3]){$/;"	f	class:Global_Data
+adjustCoordByDomain	pellet_solver.cpp	/^static void adjustCoordByDomain( double xyz[3], double dl){$/;"	f	file:
+adjustDtByWriteTimeInterval	lp_solver.cpp	/^bool LPSolver::adjustDtByWriteTimeInterval() {$/;"	f	class:LPSolver
 bTable	boundary/boundary.h	/^	std::unordered_map<std::string,GeoCreateFunc> bTable; \/\/\/< hash table for the (name,creatFunction) pair$/;"	m	class:BoundaryFactory
 balance_octree	octree_manager.cpp	/^void Octree_Manager::balance_octree(p8est_init_t init_fn, p8est_replace_t replace_fn){$/;"	f	class:Octree_Manager
 balance_octree2d	octree_manager.cpp	/^void Octree_Manager::balance_octree2d(p4est_init_t init_fn, p4est_replace_t replace_fn){$/;"	f	class:Octree_Manager
@@ -176,11 +185,11 @@ bb	particle_data.h	/^        double bb[6]; \/\/ bounding box of initial fluid pa
 bo	boundary/boundary_gresho.h	/^	double bo; $/;"	m	class:Gresho2DSolidBoundary
 bo	boundary/boundary_gresho.h	/^        double bo;$/;"	m	class:Yee2DSolidBoundary
 bo	boundary/boundary_gresho.h	/^        double bo;$/;"	m	class:Yee3DSolidBoundary
-boundary	particle_data.h	/^        Boundary *boundary;$/;"	m	class:Global_Data
+boundarynumber	particle_data.h	/^        size_t boundarynumber;$/;"	m	class:Global_Data
 build_octree	octree_manager.cpp	/^void Octree_Manager:: build_octree(){$/;"	f	class:Octree_Manager
-cfl_coefficient	initializer.h	/^        double cfl_coefficient;$/;"	m	class:Initializer
+build_quadtree	pellet_solver.cpp	/^void PelletSolver::build_quadtree(){$/;"	f	class:PelletSolver
 cflcoefficient	lp_solver.h	/^    double cflcoefficient;$/;"	m	class:LPSolver
-cfldt	lp_solver.h	/^    double cfldt = 0;$/;"	m	class:LPSolver
+cfldt	lp_solver.h	/^    double cfldt;$/;"	m	class:LPSolver
 cfound	particle_data.h	/^        sc_array_t *cfound;   \/**< char Flag for received particles *\/$/;"	m	class:Global_Data
 cleanForTimeStep	particle_data.cpp	/^void Global_Data::cleanForTimeStep(){$/;"	f	class:Global_Data
 cleanForTimeStep2d	particle_data.cpp	/^void Global_Data::cleanForTimeStep2d(){$/;"	f	class:Global_Data
@@ -209,6 +218,7 @@ computeY	hexagonal_packing.h	/^	double computeY(int tag, size_t j) {$/;"	f	class
 computeY	hexagonal_packing.h	/^	double computeY(size_t j) {$/;"	f	class:HexagonalPacking2D
 computeZ	hexagonal_packing.h	/^	double computeZ(size_t i) {$/;"	f	class:HexagonalPacking3D
 conn	particle_data.h	/^        p8est_connectivity_t *conn;$/;"	m	class:Global_Data
+conn	pellet_solver.h	/^        p4est_connectivity_t *conn;$/;"	m	class:PelletSolver
 conn2d	particle_data.h	/^        p4est_connectivity_t *conn2d;$/;"	m	class:Global_Data
 copyNeighbourInfo	particle_data.cpp	/^static void copyNeighbourInfo(neighbour_info_t * d, neighbour_info_t *s){$/;"	f	file:
 copyParticle	particle_data.cpp	/^void Global_Data::copyParticle(pdata_copy_t *d, pdata_t *s){$/;"	f	class:Global_Data
@@ -222,6 +232,7 @@ createParticlesInOctant2d	particle_data.cpp	/^static void createParticlesInOctan
 createState	state/state.cpp	/^State* StateFactory::createState(std::string name) {$/;"	f	class:StateFactory
 createViewForOctant	particle_data.cpp	/^void Global_Data::createViewForOctant(){$/;"	f	class:Global_Data
 createViewForOctant2d	particle_data.cpp	/^void Global_Data::createViewForOctant2d(){$/;"	f	class:Global_Data
+currenttime	lp_solver.h	/^    double currenttime;$/;"	m	class:LPSolver
 density	state/state_gresho.cpp	/^double Gresho2DState::density(double x, double y, double z) {$/;"	f	class:Gresho2DState
 density	state/state_gresho.cpp	/^double Yee2DState::density(double x, double y, double z) {$/;"	f	class:Yee2DState
 density	state/state_pellet.cpp	/^double PelletState::density(double x, double y, double z){$/;"	f	class:PelletState
@@ -229,16 +240,15 @@ dest_fixed	particle_data.h	/^      sc_array_t         *dest_fixed;       \/**< i
 destroy_octree	octree_manager.cpp	/^void Octree_Manager:: destroy_octree(){$/;"	f	class:Octree_Manager
 diagnosis	eos.h	/^    virtual void diagnosis(double rho0, double rho1, double t0, double t1){};$/;"	f	class:PolytropicGasEOS
 dimension	particle_data.h	/^        int dimension;$/;"	m	class:Global_Data
-distance	particle_data.h	/^    double distance;$/;"	m	struct:neighbour_info
+distance	particle_data.h	/^    float distance;$/;"	m	struct:neighbour_info
+domain_len	initializer.h	/^    double domain_len; $/;"	m	class:Initializer
 domain_len	particle_data.h	/^        double domain_len = 32; $/;"	m	class:Global_Data
-dt	particle_data.h	/^        double dt;$/;"	m	class:Global_Data
 dxyz	particle_data.h	/^        double lxyz[3],hxyz[3],dxyz[3]; \/\/boundingbox of octant$/;"	m	class:Global_Data
-elem_particles	initializer.h	/^        int elem_particles; \/\/max number of particles per octant$/;"	m	class:Initializer
-elem_particles	particle_data.h	/^        int elem_particles; \/\/max number of particles per octant$/;"	m	class:Global_Data
-endt	initializer.h	/^        double endt;$/;"	m	class:Initializer
-endt	particle_data.h	/^        double endt;$/;"	m	class:Global_Data
+einf	particle_data.h	/^        double einf;$/;"	m	class:Global_Data
+elem_particle	initializer.h	/^    int elem_particle; \/\/max number of particles per octant$/;"	m	class:Initializer
+elem_particle	particle_data.h	/^        int elem_particle; \/\/max number of particles per octant$/;"	m	class:Global_Data
+elem_particle_box	pellet_solver.h	/^        size_t elem_particle_box = 1000;$/;"	m	class:PelletSolver
 eos	particle_data.h	/^        EOS* eos;        $/;"	m	class:Global_Data
-eoschoice	initializer.h	/^        int eoschoice;$/;"	m	class:Initializer
 eoschoice	particle_data.h	/^        int eoschoice;$/;"	m	class:Global_Data
 fetchNeighbourParticle	particle_data.cpp	/^void Global_Data::fetchNeighbourParticle(pdata_t* pad, pdata_copy_t **padnei ,sc_array_t *neighbourlist, size_t index){$/;"	f	class:Global_Data
 fetchNeighbourParticle2d	particle_data.cpp	/^void Global_Data::fetchNeighbourParticle2d(pdata_t* pad, pdata_copy_t **padnei ,sc_array_t *neighbourlist, size_t index){$/;"	f	class:Global_Data
@@ -254,11 +264,11 @@ flagdelete	particle_data.h	/^    bool flagdelete;   \/\/ delete boundary particl
 flagrefine	particle_data.h	/^        int flagrefine, gflagrefine, flagstartrefine;$/;"	m	class:Global_Data
 flagstartrefine	particle_data.h	/^        int flagrefine, gflagrefine, flagstartrefine;$/;"	m	class:Global_Data
 fluidnum	particle_data.h	/^    p4est_locidx_t    fluidnum; \/\/number of fluid particle$/;"	m	struct:octant_data
-gamma	initializer.h	/^        int gamma;$/;"	m	class:Initializer
 gamma	particle_data.h	/^        double gamma;$/;"	m	class:Global_Data
 gdata	lp_solver.h	/^    Global_Data * gdata; $/;"	m	class:LPSolver
 gdata	octree_manager.h	/^        Global_Data *gdata;$/;"	m	class:Octree_Manager
 gdata	particle_viewer.h	/^     Global_Data *gdata;$/;"	m	class:ParticleViewer
+gdata	pellet_solver.h	/^        Global_Data *gdata;$/;"	m	class:PelletSolver
 generateBoundaryParticle	boundary/boundary.h	/^    virtual void generateBoundaryParticle(Global_Data *gdata, EOS* m_pEOS, double m_fInitParticleSpacing)  {return ;}  $/;"	f	class:Boundary
 generateBoundaryParticle	boundary/boundary_gresho.cpp	/^void Gresho2DSolidBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx){$/;"	f	class:Gresho2DSolidBoundary
 generateBoundaryParticle	boundary/boundary_gresho.cpp	/^void Yee2DSolidBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx){$/;"	f	class:Yee2DSolidBoundary
@@ -268,20 +278,67 @@ generateGhostParticle	particle_data.cpp	/^void Global_Data::generateGhostParticl
 generateGhostParticle2d	particle_data.cpp	/^void Global_Data::generateGhostParticle2d(){$/;"	f	class:Global_Data
 geoTable	geometry/geometry.h	/^	std::unordered_map<std::string,GeoCreateFunc> geoTable; \/\/\/< hash table for the (name,creatFunction) pair$/;"	m	class:GeometryFactory
 geometry	particle_data.h	/^        Geometry* geometry;$/;"	m	class:Global_Data
+getBoundaryNames	initializer.h	/^    vector<string>& getBoundaryNames() {return m_vBoundaryObjNames;}$/;"	f	class:Initializer
+getBoundaryNumber	initializer.h	/^    size_t getBoundaryNumber() const{return m_iBoundaryObjNum;}$/;"	f	class:Initializer
 getBoundingBox	geometry/geometry_cylinder.cpp	/^void Cylinder::getBoundingBox(double& xmin, double& xmax, double& ymin, double& ymax, double& zmin, double& zmax) {$/;"	f	class:Cylinder
 getBoundingBox	geometry/geometry_disk.cpp	/^void Disk::getBoundingBox(double& xmin, double& xmax, double& ymin, double& ymax, double& zmin, double& zmax){$/;"	f	class:Disk
 getBoundingBox	geometry/geometry_pellet.cpp	/^void PelletLayer::getBoundingBox(double& xmin, double& xmax, double& ymin, double& ymax, double& zmin, double& zmax){$/;"	f	class:PelletLayer
+getCFLCoeff	initializer.h	/^	double getCFLCoeff() const {return m_fCFLCoeff;}$/;"	f	class:Initializer
+getDebugfileName	initializer.h	/^    string getDebugfileName() const {return m_sDebugfileName;}$/;"	f	class:Initializer
+getDimension	initializer.h	/^	int getDimension() const {return m_iDimension;}	$/;"	f	class:Initializer
+getDomainlength	initializer.h	/^    double getDomainlength() const{return domain_len;}$/;"	f	class:Initializer
 getEOSChoice	eos.h	/^	int getEOSChoice() {return m_iEOSChoice;}$/;"	f	class:EOS
+getEOSChoice	initializer.h	/^	int getEOSChoice() const {return m_iEOSChoice;} \/\/TODO$/;"	f	class:Initializer
+getEinf	initializer.h	/^    double getEinf() const{return m_fEinf;}$/;"	f	class:Initializer
 getElectricConductivity	eos.cpp	/^double PolytropicGasEOS::getElectricConductivity(double pressure, double density) {$/;"	f	class:PolytropicGasEOS
+getElemParticle	initializer.h	/^    int getElemParticle() const{return elem_particle;} $/;"	f	class:Initializer
+getEndTime	initializer.h	/^	double getEndTime() const {return m_fEndTime;}$/;"	f	class:Initializer
 getEnergy	eos.cpp	/^double PolytropicGasEOS::getEnergy(double pressure, double density) {$/;"	f	class:PolytropicGasEOS
 getGamma	eos.h	/^    double getGamma() {return m_fGamma;}	$/;"	f	class:EOS
+getGamma	initializer.h	/^    double getGamma() const{return m_fGamma;}$/;"	f	class:Initializer
+getGeometryName	initializer.h	/^    string getGeometryName(){return m_sGeometry;}$/;"	f	class:Initializer
+getGravity	initializer.h	/^	double getGravity() const {return m_fGravity;}$/;"	f	class:Initializer
+getIfDebug	initializer.h	/^	bool getIfDebug() const {return m_bIfDebug;}$/;"	f	class:Initializer
+getIfFreeBoundary	initializer.h	/^    bool getIfFreeBoundary() const{return m_bIfFreeBoundary;}$/;"	f	class:Initializer
+getIfRestart	initializer.h	/^	bool getIfRestart() const {return m_bIfRestart;}$/;"	f	class:Initializer
+getInitLevel	initializer.h	/^    int getInitLevel() const{return initlevel;}$/;"	f	class:Initializer
+getInitParticleSpacing	initializer.h	/^	double getInitParticleSpacing() const {return m_fInitParticleSpacing;}$/;"	f	class:Initializer
 getInitialPerturbation	hexagonal_packing.h	/^	void getInitialPerturbation(double ip){m_fInitialPerturbation=ip;}$/;"	f	class:HexagonalPacking2D
 getInitialPerturbation	hexagonal_packing.h	/^	void getInitialPerturbation(double ip){m_fInitialPerturbation=ip;}$/;"	f	class:HexagonalPacking3D
+getInitialPerturbation	initializer.h	/^    int getInitialPerturbation() const {return m_fInitialPerturbation;}$/;"	f	class:Initializer
+getInvalidDensity	initializer.h	/^	double getInvalidDensity() const {return m_fInvalidDensity;}$/;"	f	class:Initializer
+getInvalidPressure	initializer.h	/^	double getInvalidPressure() const {return m_fInvalidPressure;}$/;"	f	class:Initializer
+getLPFOrder	initializer.h	/^	int getLPFOrder() const {return m_iLPFOrder;}	$/;"	f	class:Initializer
+getMaxLevel	initializer.h	/^    int getMaxLevel() const{return maxlevel;}$/;"	f	class:Initializer
+getMinLevel	initializer.h	/^    int getMinLevel() const{return minlevel;}$/;"	f	class:Initializer
+getNumCol1stOrder	initializer.h	/^	size_t getNumCol1stOrder() const {return m_iNumCol1stOrder;}$/;"	f	class:Initializer
+getNumCol2ndOrder	initializer.h	/^	size_t getNumCol2ndOrder() const {return m_iNumCol2ndOrder;}$/;"	f	class:Initializer
+getNumRow1stOrder	initializer.h	/^	size_t getNumRow1stOrder() const {return m_iNumRow1stOrder;}$/;"	f	class:Initializer
+getNumRow2ndOrder	initializer.h	/^	size_t getNumRow2ndOrder() const {return m_iNumRow2ndOrder;}$/;"	f	class:Initializer
 getParameters	eos.h	/^	virtual void getParameters(std::vector<double>& params){params.push_back(m_fGamma);};$/;"	f	class:PolytropicGasEOS
 getParameters	hexagonal_packing.h	/^	void getParameters(size_t& l0_, size_t& l1_, $/;"	f	class:HexagonalPacking3D
 getParameters	hexagonal_packing.h	/^	void getParameters(size_t& m0_, size_t& m1_, $/;"	f	class:HexagonalPacking2D
+getPinf	initializer.h	/^    double getPinf() const{return m_fPinf;}$/;"	f	class:Initializer
+getPrintAllParticle	initializer.h	/^   int getPrintAllParticle(){return m_iPrintAllParticle;}$/;"	f	class:Initializer
+getPrintDensity	initializer.h	/^   int getPrintDensity(){return m_iPrintDensity;}$/;"	f	class:Initializer
+getPrintLocalSpacing	initializer.h	/^   int getPrintLocalSpacing(){return m_iPrintLocalSpacing;}$/;"	f	class:Initializer
+getPrintMass	initializer.h	/^   int getPrintMass(){return m_iPrintMass;}$/;"	f	class:Initializer
+getPrintPressure	initializer.h	/^   int getPrintPressure(){return m_iPrintPressure;}$/;"	f	class:Initializer
+getPrintSoundSpeed	initializer.h	/^   int getPrintSoundSpeed(){return m_iPrintSoundSpeed;}$/;"	f	class:Initializer
+getPrintTemperature	initializer.h	/^   int getPrintTemperature(){return m_iPrintTemperature;}$/;"	f	class:Initializer
+getPrintVelocity	initializer.h	/^   int getPrintVelocity(){return m_iPrintVelocity;} $/;"	f	class:Initializer
+getPrintVelocityU	initializer.h	/^   int getPrintVelocityU(){return m_iPrintVelocityU;}$/;"	f	class:Initializer
+getPrintVelocityV	initializer.h	/^   int getPrintVelocityV(){return m_iPrintVelocityV;}$/;"	f	class:Initializer
+getPrintVelocityW	initializer.h	/^   int getPrintVelocityW(){return m_iPrintVelocityW;}$/;"	f	class:Initializer
+getRandomDirSplitOrder	initializer.h	/^	bool getRandomDirSplitOrder() const {return m_bRandomDirSplitOrder;}$/;"	f	class:Initializer
 getSoundSpeed	eos.cpp	/^double PolytropicGasEOS::getSoundSpeed(double pressure, double density) {$/;"	f	class:PolytropicGasEOS
+getStartTime	initializer.h	/^	double getStartTime() const {return m_fStartTime;}$/;"	f	class:Initializer
+getStateName	initializer.h	/^    string getStateName(){return m_sState;}$/;"	f	class:Initializer
 getTemperature	eos.cpp	/^double PolytropicGasEOS::getTemperature(double pressure, double density) {$/;"	f	class:PolytropicGasEOS
+getTimeSearchRadius	initializer.h	/^	double getTimeSearchRadius() const {return m_fTimeSearchRadius;}$/;"	f	class:Initializer
+getUseLimiter	initializer.h	/^	bool getUseLimiter() const {return m_iUseLimiter;}$/;"	f	class:Initializer
+getWriteStep	initializer.h	/^	int getWriteStep() const {return m_iWriteStep;}$/;"	f	class:Initializer
+getWriteTimeInterval	initializer.h	/^	double getWriteTimeInterval() const {return m_fWriteTimeInterval;}$/;"	f	class:Initializer
 gflagrefine	particle_data.h	/^        int flagrefine, gflagrefine, flagstartrefine;$/;"	m	class:Global_Data
 gfluidnum	particle_data.h	/^        p4est_gloidx_t gfluidnum;$/;"	m	class:Global_Data
 gghostnum	particle_data.h	/^        p4est_gloidx_t gghostnum;$/;"	m	class:Global_Data
@@ -292,6 +349,7 @@ ghostneighbour	particle_data.h	/^    sc_array_t * ghostneighbour;   \/\/pdata_co
 ghostneighbourid	particle_data.h	/^    sc_array_t *ghostneighbourid;$/;"	m	struct:octant_data
 gplost	particle_data.h	/^        p4est_gloidx_t gpnum, gplost; \/\/number of particles on all processor, number of particles on all processers which left domain$/;"	m	class:Global_Data
 gpnum	particle_data.h	/^        p4est_gloidx_t gpnum, gplost; \/\/number of particles on all processor, number of particles on all processers which left domain$/;"	m	class:Global_Data
+gravity	particle_data.h	/^        double gravity;$/;"	m	class:Global_Data
 h_r	hexagonal_packing.h	/^	double xmin, xmax, ymin, ymax, h_r;$/;"	m	class:HexagonalPacking2D
 h_r	hexagonal_packing.h	/^	double xmin, xmax, ymin, ymax, zmin, zmax, h_r;$/;"	m	class:HexagonalPacking3D
 hxyz	particle_data.h	/^        double lxyz[3],hxyz[3],dxyz[3]; \/\/boundingbox of octant$/;"	m	class:Global_Data
@@ -306,24 +364,25 @@ iffreeboundary	particle_data.h	/^        bool iffreeboundary;$/;"	m	class:Global
 ifghost	particle_data.h	/^    bool ifghost;        \/\/ if the particle is a ghost particle       $/;"	m	struct:neighbour_info
 ifhasghostneighbour	particle_data.h	/^    bool ifhasghostneighbour;$/;"	m	struct:pdata
 ifremote	particle_data.h	/^    bool ifremote;        \/\/ if the particle is in remote processer$/;"	m	struct:neighbour_info
+ifuselimiter	particle_data.h	/^        bool ifuselimiter;$/;"	m	class:Global_Data
 ilh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
+ilh	pellet_solver.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:PelletSolver
 indata	particle_data.h	/^typedef enum indata{$/;"	g
 indata_t	particle_data.h	/^indata_t;$/;"	t	typeref:enum:indata
 initFluidParticles_distributed	particle_data.cpp	/^void Global_Data::initFluidParticles_distributed(){$/;"	f	class:Global_Data
 initFluidParticles_hexagonal	particle_data.cpp	/^void Global_Data::initFluidParticles_hexagonal(){$/;"	f	class:Global_Data
 initNeighbourArray	particle_data.cpp	/^static void initNeighbourArray(p8est_iter_volume_info_t *info, void*user_data){$/;"	f	file:
 initNeighbourArray2d	particle_data.cpp	/^static void initNeighbourArray2d(p4est_iter_volume_info_t *info, void*user_data){$/;"	f	file:
-initlevel	initializer.h	/^        int initlevel ; \/\/init level of octree$/;"	m	class:Initializer
+initlevel	initializer.h	/^    int initlevel ; \/\/init level of octree$/;"	m	class:Initializer
 initlevel	particle_data.h	/^        int initlevel;$/;"	m	class:Global_Data
-initlocalspacing	initializer.h	/^        double initlocalspacing;$/;"	m	class:Initializer
 initlocalspacing	particle_data.h	/^        double initlocalspacing;$/;"	m	class:Global_Data
-initperturbation	initializer.h	/^        double initperturbation;$/;"	m	class:Initializer
 initperturbation	particle_data.h	/^        double initperturbation;$/;"	m	class:Global_Data
 innerradius	geometry/geometry_pellet.h	/^	double innerradius;$/;"	m	class:PelletLayer
 instance	boundary/boundary.cpp	/^BoundaryFactory& BoundaryFactory::instance() { $/;"	f	class:BoundaryFactory
 instance	geometry/geometry.cpp	/^GeometryFactory& GeometryFactory::instance() { $/;"	f	class:GeometryFactory
 instance	state/state.cpp	/^StateFactory& StateFactory::instance() { \/\/ singleton$/;"	f	class:StateFactory
-invalidpressure	lp_solver.h	/^    double invalidpressure;$/;"	m	class:LPSolver
+invaliddensity	particle_data.h	/^        double invaliddensity;$/;"	m	class:Global_Data
+invalidpressure	particle_data.h	/^        double invalidpressure;$/;"	m	class:Global_Data
 ip2d	boundary/boundary_gresho.h	/^        double ip2d(double x1, double y1, double x2, double y2) {return x1*x2+y1*y2;}\/\/\/< inner product 2d$/;"	f	class:Yee3DSolidBoundary
 ire2	particle_data.h	/^        p4est_locidx_t      ireindex, ire2, ireindex2;   \/**< Running index into iremain *\/$/;"	m	class:Global_Data
 ireceive	particle_data.h	/^        sc_array_t *ireceive;\/**< Index into particle receive buffer *\/$/;"	m	class:Global_Data
@@ -337,7 +396,9 @@ irvindex	particle_data.h	/^        p4est_locidx_t      irvindex, irv2, irvindex2
 irvindex2	particle_data.h	/^        p4est_locidx_t      irvindex, irv2, irvindex2;   \/**< Running index into ireceive *\/$/;"	m	class:Global_Data
 isDecomposed	ls_solver.h	/^	bool isDecomposed;\/\/\/< if true then the matrix A is decomposed into QR already; if false otherwise$/;"	m	class:QRSolver
 jlh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
+jlh	pellet_solver.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:PelletSolver
 klh	particle_data.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:Global_Data
+klh	pellet_solver.h	/^        sc_array_t *ilh[2],*jlh[2],*klh[2];$/;"	m	class:PelletSolver
 l0	hexagonal_packing.h	/^	size_t l0,l1;$/;"	m	class:HexagonalPacking3D
 l1	hexagonal_packing.h	/^	size_t l0,l1;$/;"	m	class:HexagonalPacking3D
 lboundarynum	particle_data.h	/^        p4est_gloidx_t lboundarynum;$/;"	m	class:Global_Data
@@ -350,7 +411,9 @@ localspacing	particle_data.h	/^    double localspacing;$/;"	m	struct:pdata
 localspacing	particle_data.h	/^    double localspacing;$/;"	m	struct:pdata_copy
 loopquad	particle_data.cpp	/^void Global_Data::loopquad (p4est_topidx_t tt, p8est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]){$/;"	f	class:Global_Data
 loopquad2d	particle_data.cpp	/^void Global_Data::loopquad2d (p4est_topidx_t tt, p4est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]){$/;"	f	class:Global_Data
+loopquad2d	pellet_solver.cpp	/^static void loopquad2d (PelletSolver* p, p4est_topidx_t tt, p4est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]){$/;"	f	file:
 lpend	particle_data.h	/^    p4est_locidx_t      lpend;$/;"	m	struct:octant_data
+lpend	pellet_solver.h	/^    p4est_locidx_t      lpend;$/;"	m	struct:quadrant_data
 lpnum	particle_data.h	/^        p4est_locidx_t lpnum; \/\/number of particles on local processor$/;"	m	class:Global_Data
 lxyz	particle_data.h	/^        double lxyz[3],hxyz[3],dxyz[3]; \/\/boundingbox of octant$/;"	m	class:Global_Data
 m0	hexagonal_packing.h	/^	size_t m0, m1, n0_odd, n1_odd, n0_even, n1_even;	$/;"	m	class:HexagonalPacking2D
@@ -359,35 +422,77 @@ m0_odd	hexagonal_packing.h	/^	size_t m0_odd, m1_odd, m0_even, m1_even, n0_odd, n
 m1	hexagonal_packing.h	/^	size_t m0, m1, n0_odd, n1_odd, n0_even, n1_even;	$/;"	m	class:HexagonalPacking2D
 m1_even	hexagonal_packing.h	/^	size_t m0_odd, m1_odd, m0_even, m1_even, n0_odd, n1_odd, n0_even, n1_even;$/;"	m	class:HexagonalPacking3D
 m1_odd	hexagonal_packing.h	/^	size_t m0_odd, m1_odd, m0_even, m1_even, n0_odd, n1_odd, n0_even, n1_even;$/;"	m	class:HexagonalPacking3D
+m_bIfDebug	initializer.h	/^    bool m_bIfDebug;$/;"	m	class:Initializer
+m_bIfFreeBoundary	initializer.h	/^    bool m_bIfFreeBoundary;$/;"	m	class:Initializer
+m_bIfRestart	initializer.h	/^    bool m_bIfRestart;$/;"	m	class:Initializer
+m_bRandomDirSplitOrder	initializer.h	/^    bool m_bRandomDirSplitOrder;\/\/\/< if true then the order of directional splitting is randomly set 1:yes 0:no	$/;"	m	class:Initializer
+m_fCFLCoeff	initializer.h	/^	double m_fCFLCoeff;\/\/\/< CFL coeff$/;"	m	class:Initializer
 m_fDen	state/state_pellet.h	/^	double m_fDen;$/;"	m	class:PelletState
 m_fDensity	state/state_gresho.h	/^	double m_fDensity;	$/;"	m	class:Gresho2DState
+m_fEinf	initializer.h	/^	double m_fEinf;\/\/\/<eos parameter einf (stiffened poly gas) 	$/;"	m	class:Initializer
+m_fEndTime	initializer.h	/^	double m_fEndTime; \/\/\/< simulation end time	$/;"	m	class:Initializer
 m_fGamma	eos.h	/^    double m_fGamma;	$/;"	m	class:EOS
+m_fGamma	initializer.h	/^	double m_fGamma;\/\/\/< eos parameter gamma$/;"	m	class:Initializer
+m_fGravity	initializer.h	/^	double m_fGravity;\/\/\/< gravity$/;"	m	class:Initializer
+m_fInitParticleSpacing	initializer.h	/^	double m_fInitParticleSpacing;\/\/\/< the initial particle spacing	$/;"	m	class:Initializer
 m_fInitialPerturbation	hexagonal_packing.h	/^	double m_fInitialPerturbation;	$/;"	m	class:HexagonalPacking2D
 m_fInitialPerturbation	hexagonal_packing.h	/^	double m_fInitialPerturbation;	$/;"	m	class:HexagonalPacking3D
+m_fInitialPerturbation	initializer.h	/^	double m_fInitialPerturbation;\/\/<amount of maximal initial perturbation in dx$/;"	m	class:Initializer
+m_fInvalidDensity	initializer.h	/^	double m_fInvalidDensity;\/\/\/< volume cannot be negative: if volume < invalid volume => invalid state	$/;"	m	class:Initializer
+m_fInvalidPressure	initializer.h	/^	double m_fInvalidPressure;\/\/\/< if p < invalid pressure => invalid state$/;"	m	class:Initializer
 m_fLimitR	ls_solver.h	/^	double m_fLimitR;\/\/\/< A specified scalar multiplier (<1) for trimming diagonal entry of R in the QR decomposition$/;"	m	class:QRSolver
+m_fPinf	initializer.h	/^	double m_fPinf;\/\/\/< eos parameter pinf (stiffened poly gas) $/;"	m	class:Initializer
 m_fPressure	state/state_pellet.h	/^	double m_fPressure;$/;"	m	class:PelletState
+m_fStartTime	initializer.h	/^	double m_fStartTime;\/\/\/< simulation start time$/;"	m	class:Initializer
+m_fTimeSearchRadius	initializer.h	/^    double m_fTimeSearchRadius;\/\/\/< the radius for neighbour search$/;"	m	class:Initializer
 m_fVel	state/state_pellet.h	/^	double m_fVel;$/;"	m	class:PelletState
+m_fWriteTimeInterval	initializer.h	/^	double m_fWriteTimeInterval;\/\/\/< write time interval$/;"	m	class:Initializer
+m_iBoundaryObjNum	initializer.h	/^    size_t m_iBoundaryObjNum;\/\/\/< number of boundary objects$/;"	m	class:Initializer
+m_iDimension	initializer.h	/^	int m_iDimension;\/\/\/< dimension$/;"	m	class:Initializer
 m_iEOSChoice	eos.h	/^    int m_iEOSChoice; \/\/\/< The eos choice: 1=Polytropic gas; 2=Stiffened Polytropic gas; 3=Saha Eos$/;"	m	class:EOS
+m_iEOSChoice	initializer.h	/^	int m_iEOSChoice;\/\/\/< choice of eos$/;"	m	class:Initializer
+m_iLPFOrder	initializer.h	/^    int m_iLPFOrder;\/\/\/< the order of Local Polynomial Fitting (LPF)  	$/;"	m	class:Initializer
 m_iNumCol	ls_solver.h	/^	std::size_t m_iNumCol;\/\/\/< The number of columns in matrix A	$/;"	m	class:LSSolver
+m_iNumCol1stOrder	initializer.h	/^	std::size_t  m_iNumCol1stOrder;\/\/TODO\/\/\/< the number of columns of A when solving 1st order LPF$/;"	m	class:Initializer
+m_iNumCol2ndOrder	initializer.h	/^	std::size_t m_iNumCol2ndOrder;\/\/TODO\/\/\/< the number of columns of A when solving 2nd order LPF	$/;"	m	class:Initializer
 m_iNumRow	ls_solver.h	/^	std::size_t m_iNumRow;\/\/\/< The number of rows in matrix A	$/;"	m	class:LSSolver
-m_iPelletMaterial	eos.h	/^    int m_iPelletMaterial;$/;"	m	class:PolytropicGasEOS
+m_iNumRow1stOrder	initializer.h	/^	std::size_t m_iNumRow1stOrder;\/\/\/< the smallest number of rows of A to solve 1st order LPF$/;"	m	class:Initializer
+m_iNumRow2ndOrder	initializer.h	/^	std::size_t m_iNumRow2ndOrder;\/\/\/< the smallest number of rows of A to solve 2nd order LPF$/;"	m	class:Initializer
+m_iPrintAllParticle	initializer.h	/^    int m_iPrintAllParticle = 0;$/;"	m	class:Initializer
+m_iPrintDensity	initializer.h	/^    int m_iPrintDensity = 0;$/;"	m	class:Initializer
+m_iPrintLocalSpacing	initializer.h	/^    int m_iPrintLocalSpacing = 0;$/;"	m	class:Initializer
+m_iPrintMass	initializer.h	/^    int m_iPrintMass = 0;$/;"	m	class:Initializer
+m_iPrintPressure	initializer.h	/^    int m_iPrintPressure = 0;$/;"	m	class:Initializer
+m_iPrintSoundSpeed	initializer.h	/^    int m_iPrintSoundSpeed = 0;$/;"	m	class:Initializer
+m_iPrintTemperature	initializer.h	/^    int m_iPrintTemperature = 0;$/;"	m	class:Initializer
+m_iPrintVelocity	initializer.h	/^    int m_iPrintVelocity = 0;$/;"	m	class:Initializer
+m_iPrintVelocityU	initializer.h	/^    int m_iPrintVelocityU = 0;$/;"	m	class:Initializer
+m_iPrintVelocityV	initializer.h	/^    int m_iPrintVelocityV = 0;$/;"	m	class:Initializer
+m_iPrintVelocityW	initializer.h	/^    int m_iPrintVelocityW = 0;$/;"	m	class:Initializer
+m_iUseLimiter	initializer.h	/^	bool m_iUseLimiter;\/\/\/< if use limiter or not 1:yes 0:no$/;"	m	class:Initializer
+m_iWriteStep	initializer.h	/^	int m_iWriteStep; \/\/\/< write step$/;"	m	class:Initializer
+m_sDebugfileName	initializer.h	/^    string m_sDebugfileName;$/;"	m	class:Initializer
+m_sFilenameSaveInit	initializer.h	/^	string m_sFilenameSaveInit;$/;"	m	class:Initializer
+m_sGeometry	initializer.h	/^    string m_sGeometry;$/;"	m	class:Initializer
+m_sState	initializer.h	/^	string m_sState;$/;"	m	class:Initializer
 m_vA	ls_solver.h	/^	double *m_vA;\/\/\/< The matrix A$/;"	m	class:LSSolver
+m_vBoundary	particle_data.h	/^        std::vector<Boundary*> m_vBoundary;\/\/\/< Vector of boundary objects$/;"	m	class:Global_Data
+m_vBoundaryObjNames	initializer.h	/^    vector<std::string> m_vBoundaryObjNames; \/\/\/< Vector of boundary object names$/;"	m	class:Initializer
 m_vDirSplitTable	lp_solver.h	/^	std::vector<std::vector<int> > m_vDirSplitTable; $/;"	m	class:LPSolver
 m_vJPVT	ls_solver.h	/^	std::vector<int> m_vJPVT;\/\/\/< The pivoting matrix 	$/;"	m	class:QRSolver
 m_vTAU	ls_solver.h	/^	std::vector<double> m_vTAU;\/\/\/< The scalar factors of elementary reflectors$/;"	m	class:QRSolver
 m_vb	ls_solver.h	/^	double *m_vb;\/\/\/< The vector b (the right-hand-side)		$/;"	m	class:LSSolver
-main	lp_main.cpp	/^int main(){$/;"	f
+main	lp_main.cpp	/^int main(int argc, const char* argv[]){$/;"	f
 mass	particle_data.h	/^    double mass;$/;"	m	struct:pdata
 mass	particle_data.h	/^    double mass;$/;"	m	struct:pdata_copy
-maxlevel	initializer.h	/^        int maxlevel ;$/;"	m	class:Initializer
+maxlevel	initializer.h	/^    int maxlevel ;$/;"	m	class:Initializer
 maxlevel	particle_data.h	/^        int maxlevel;$/;"	m	class:Global_Data
 message	particle_data.h	/^  sc_array_t          message;     \/** Message data to send *\/$/;"	m	struct:comm_psend
-minlevel	initializer.h	/^        int minlevel;$/;"	m	class:Initializer
+minlevel	initializer.h	/^    int minlevel;$/;"	m	class:Initializer
 minlevel	particle_data.h	/^        int minlevel; $/;"	m	class:Global_Data
 moveParticle	lp_solver.cpp	/^void LPSolver::moveParticle(){$/;"	f	class:LPSolver
 mpicomm	particle_data.h	/^        sc_MPI_Comm mpicomm;$/;"	m	class:Global_Data
 mpirank	particle_data.h	/^        int mpisize,mpirank;$/;"	m	class:Global_Data
-mpirank	particle_data.h	/^    int mpirank;$/;"	m	struct:octant_data
 mpisize	particle_data.h	/^        int mpisize,mpirank;$/;"	m	class:Global_Data
 n0_even	hexagonal_packing.h	/^	size_t m0, m1, n0_odd, n1_odd, n0_even, n1_even;	$/;"	m	class:HexagonalPacking2D
 n0_even	hexagonal_packing.h	/^	size_t m0_odd, m1_odd, m0_even, m1_even, n0_odd, n1_odd, n0_even, n1_even;$/;"	m	class:HexagonalPacking3D
@@ -406,15 +511,16 @@ neighbourleftparticle	particle_data.h	/^    sc_array_t * neighbourleftparticle;$
 neighbourparticle	particle_data.h	/^    sc_array_t * neighbourparticle;$/;"	m	struct:pdata
 neighbourrightparticle	particle_data.h	/^    sc_array_t * neighbourrightparticle;$/;"	m	struct:pdata
 neighbourupparticle	particle_data.h	/^    sc_array_t * neighbourupparticle;$/;"	m	struct:pdata
+nextwritetime	lp_solver.h	/^    double nextwritetime;$/;"	m	class:LPSolver
 nn0_even	hexagonal_packing.h	/^	size_t nn0_odd, nn1_odd, nn0_even, nn1_even;		$/;"	m	class:HexagonalPacking3D
 nn0_odd	hexagonal_packing.h	/^	size_t nn0_odd, nn1_odd, nn0_even, nn1_even;		$/;"	m	class:HexagonalPacking3D
 nn1_even	hexagonal_packing.h	/^	size_t nn0_odd, nn1_odd, nn0_even, nn1_even;		$/;"	m	class:HexagonalPacking3D
 nn1_odd	hexagonal_packing.h	/^	size_t nn0_odd, nn1_odd, nn0_even, nn1_even;		$/;"	m	class:HexagonalPacking3D
+numcol1st	particle_data.h	/^        size_t numcol1st;$/;"	m	class:Global_Data
+numcol2nd	particle_data.h	/^        size_t numcol2nd;$/;"	m	class:Global_Data
 numdigit	particle_viewer.h	/^	int numdigit;\/\/\/< The number of digits for the indexing of output file name $/;"	m	class:ParticleViewer
 numrow1st	particle_data.h	/^        size_t numrow1st;$/;"	m	class:Global_Data
-numrow1st2d	particle_data.h	/^        size_t numrow1st2d;$/;"	m	class:Global_Data
-numrow2nd	lp_solver.h	/^    size_t numrow2nd;$/;"	m	class:LPSolver
-numrow2nd2d	lp_solver.h	/^    size_t numrow2nd2d;$/;"	m	class:LPSolver
+numrow2nd	particle_data.h	/^        size_t numrow2nd;$/;"	m	class:Global_Data
 octant_data	particle_data.h	/^typedef struct octant_data$/;"	s
 octant_data_t	particle_data.h	/^octant_data_t;$/;"	t	typeref:struct:octant_data
 octantid	particle_data.h	/^        int octantid;  $/;"	m	class:Global_Data
@@ -430,6 +536,7 @@ operator ()	geometry/geometry_pellet.cpp	/^bool PelletLayer::operator()(double x
 outerradius	geometry/geometry_pellet.h	/^	double outerradius;$/;"	m	class:PelletLayer
 outputfilename	particle_viewer.h	/^	std::string  outputfilename;\/\/\/< The name of the output file $/;"	m	class:ParticleViewer
 p4est	particle_data.h	/^        p4est_t            *p4est;$/;"	m	class:Global_Data
+p4est_heating	pellet_solver.h	/^        p4est_t *p4est_heating;$/;"	m	class:PelletSolver
 p8est	particle_data.h	/^        p8est_t            *p8est;$/;"	m	class:Global_Data
 pa_mode	particle_data.h	/^typedef enum pa_mode$/;"	g
 pa_mode_t	particle_data.h	/^pa_mode_t;$/;"	t	typeref:enum:pa_mode
@@ -438,6 +545,7 @@ parid	particle_data.h	/^    size_t parid;$/;"	m	struct:neighbour_info
 part_weight	particle_data.cpp	/^part_weight (p8est_t * p4est,$/;"	f	file:
 part_weight2d	particle_data.cpp	/^part_weight2d (p4est_t * p4est,$/;"	f	file:
 particle_data	particle_data.h	/^        sc_array_t *particle_data; \/\/local particle data on process$/;"	m	class:Global_Data
+particle_data_copy	pellet_solver.h	/^        sc_array_t *particle_data_copy; \/\/used for pellet problem;$/;"	m	class:PelletSolver
 partitionParticles	particle_data.cpp	/^void Global_Data:: partitionParticles(){$/;"	f	class:Global_Data
 partitionParticles2d	particle_data.cpp	/^void Global_Data:: partitionParticles2d(){$/;"	f	class:Global_Data
 partition_octree	octree_manager.cpp	/^void Octree_Manager:: partition_octree(int allow_for_coarsening){$/;"	f	class:Octree_Manager
@@ -445,20 +553,22 @@ pdata	particle_data.h	/^typedef struct pdata{$/;"	s
 pdata_copy	particle_data.h	/^typedef struct pdata_copy{$/;"	s
 pdata_copy_t	particle_data.h	/^} pdata_copy_t;$/;"	t	typeref:struct:pdata_copy
 pdata_t	particle_data.h	/^} pdata_t;$/;"	t	typeref:struct:pdata
-pelletmaterial	initializer.h	/^        int pelletmaterial;$/;"	m	class:Initializer
-pelletmaterial	particle_data.h	/^        int pelletmaterial;$/;"	m	class:Global_Data
 pfound	particle_data.h	/^        sc_array_t *pfound; \/\/target process of particle$/;"	m	class:Global_Data
-phi	particle_data.h	/^    double phi;         \/\/right and left$/;"	m	struct:neighbour_info
-pinf	lp_solver.h	/^    double pinf;$/;"	m	class:LPSolver
+phi	particle_data.h	/^    float phi;         \/\/right and left$/;"	m	struct:neighbour_info
+pinf	particle_data.h	/^        double pinf;$/;"	m	class:Global_Data
 poctant	particle_data.h	/^    p4est_locidx_t    poctant;$/;"	m	struct:octant_data
 postsearch	particle_data.cpp	/^void Global_Data::postsearch(){$/;"	f	class:Global_Data
 postsearch2d	particle_data.cpp	/^void Global_Data::postsearch2d(){$/;"	f	class:Global_Data
 prebuf	particle_data.h	/^        sc_array_t *prebuf;  \/**< pdata_t All received particles *\/$/;"	m	class:Global_Data
 preceive	particle_data.h	/^  p4est_locidx_t      premain, preceive;$/;"	m	struct:octant_data
+preceive	pellet_solver.h	/^  p4est_locidx_t      premain, preceive;$/;"	m	struct:quadrant_data
 premain	particle_data.h	/^  p4est_locidx_t      premain, preceive;$/;"	m	struct:octant_data
+premain	pellet_solver.h	/^  p4est_locidx_t      premain, preceive;$/;"	m	struct:quadrant_data
 prerun	particle_data.cpp	/^void Global_Data::prerun(){$/;"	f	class:Global_Data
+prerun	pellet_solver.cpp	/^void PelletSolver::prerun(){$/;"	f	class:PelletSolver
 presearch	particle_data.cpp	/^void Global_Data::presearch(){$/;"	f	class:Global_Data
 presearch2d	particle_data.cpp	/^void Global_Data::presearch2d(){$/;"	f	class:Global_Data
+presearch2d	pellet_solver.cpp	/^void PelletSolver::presearch2d(){$/;"	f	class:PelletSolver
 pressure	particle_data.h	/^    double pressure;$/;"	m	struct:pdata
 pressure	particle_data.h	/^    double pressure;$/;"	m	struct:pdata_copy
 pressure	state/state_gresho.cpp	/^double Gresho2DState::pressure(double x, double y, double z) {$/;"	f	class:Gresho2DState
@@ -469,17 +579,23 @@ pressureT2	particle_data.h	/^    double pressureT2;$/;"	m	struct:pdata
 prevlp	particle_data.h	/^      p4est_locidx_t      prevlp;   \/**< Count local particles in partition callback *\/$/;"	m	class:Global_Data
 psearch_point	particle_data.cpp	/^psearch_point (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 psearch_point2d	particle_data.cpp	/^psearch_point2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
+psearch_point2d	pellet_solver.cpp	/^psearch_point2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 psearch_quad	particle_data.cpp	/^psearch_quad (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 psearch_quad2d	particle_data.cpp	/^psearch_quad2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
+psearch_quad2d	pellet_solver.cpp	/^psearch_quad2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 psend	particle_data.h	/^        sc_hash_t  *psend;    \/**< comm_psend_t with one entry per receiver *\/$/;"	m	class:Global_Data
 psend	particle_data.h	/^  comm_psend_t       *psend;        \/**< Points to hash table entry *\/$/;"	m	struct:comm_prank
 psend_equal	particle_data.cpp	/^psend_equal (const void *v1, const void *v2, const void *u)$/;"	f	file:
+psend_equal	pellet_solver.cpp	/^psend_equal (const void *v1, const void *v2, const void *u)$/;"	f	file:
 psend_hash	particle_data.cpp	/^psend_hash (const void *v, const void *u)$/;"	f	file:
+psend_hash	pellet_solver.cpp	/^psend_hash (const void *v, const void *u)$/;"	f	file:
 psmem	particle_data.h	/^        sc_mempool_t *psmem;    \/**< comm_psend_t to use as hash table entries *\/$/;"	m	class:Global_Data
 qcount	particle_data.h	/^      p4est_locidx_t      qcount;   \/**< Count local quadrants in partition callback *\/$/;"	m	class:Global_Data
 qreceive	particle_data.h	/^        p4est_locidx_t qremain, qreceive;$/;"	m	class:Global_Data
 qremain	particle_data.h	/^        p4est_locidx_t qremain, qreceive;$/;"	m	class:Global_Data
 quadid	particle_data.h	/^    size_t quadid;$/;"	m	struct:neighbour_info
+quadrant_data	pellet_solver.h	/^typedef struct quadrant_data$/;"	s
+quadrant_data_t	pellet_solver.h	/^quadrant_data_t;$/;"	t	typeref:struct:quadrant_data
 radius	boundary/boundary_gresho.h	/^	double radius;	$/;"	m	class:Gresho2DSolidBoundary
 radius	boundary/boundary_gresho.h	/^        double radius;$/;"	m	class:Yee2DSolidBoundary
 radius	boundary/boundary_gresho.h	/^        double radius;$/;"	m	class:Yee3DSolidBoundary
@@ -487,6 +603,7 @@ radius	geometry/geometry_cylinder.h	/^	double radius;$/;"	m	class:Cylinder
 radius	geometry/geometry_disk.h	/^        double radius;$/;"	m	class:Disk
 rank	particle_data.h	/^  int                 rank;$/;"	m	struct:comm_prank
 rank	particle_data.h	/^  int                 rank;$/;"	m	struct:comm_psend
+readInputfile	initializer.cpp	/^void Initializer::readInputfile(const string& inputfileName) {$/;"	f	class:Initializer
 recevs	particle_data.h	/^        sc_array_t *recevs;   \/**< comm_prank_t with one entry per receiver, sorted *\/$/;"	m	class:Global_Data
 recv_req	particle_data.h	/^        sc_array_t  *recv_req; \/**< sc_MPI_Request for receiving *\/$/;"	m	class:Global_Data
 redocount	particle_data.h	/^    int32_t redocount;$/;"	m	struct:pdata
@@ -499,9 +616,11 @@ registerGeometry	geometry/geometry.cpp	/^void GeometryFactory::registerGeometry(
 registerState	state/state.cpp	/^void StateFactory::registerState(std::string name, StateCreateFunc func) {$/;"	f	class:StateFactory
 regroupParticles	particle_data.cpp	/^void Global_Data::regroupParticles(){$/;"	f	class:Global_Data
 regroupParticles2d	particle_data.cpp	/^void Global_Data::regroupParticles2d(){$/;"	f	class:Global_Data
-reorderNeighbourList	lp_solver.cpp	/^void LPSolver::reorderNeighbourList(){$/;"	f	class:LPSolver
+reorderNeighbourList	particle_data.cpp	/^void Global_Data::reorderNeighbourList(){$/;"	f	class:Global_Data
+reorderNeighbourList2d	particle_data.cpp	/^void Global_Data::reorderNeighbourList2d(){$/;"	f	class:Global_Data
 resetOctantData	particle_data.cpp	/^void Global_Data::resetOctantData(){$/;"	f	class:Global_Data
 resetOctantData2d	particle_data.cpp	/^void Global_Data::resetOctantData2d(){$/;"	f	class:Global_Data
+resetQuadrantData	pellet_solver.cpp	/^void PelletSolver::resetQuadrantData(){$/;"	f	class:PelletSolver
 rightFlush	particle_viewer.cpp	/^string ParticleViewer::rightFlush(size_t numDigits) {$/;"	f	class:ParticleViewer
 sc_array_index_begin	particle_data.cpp	/^void * Global_Data::sc_array_index_begin (sc_array_t * arr)$/;"	f	class:Global_Data
 sc_array_paste	particle_data.cpp	/^void Global_Data::sc_array_paste (sc_array_t * dest, sc_array_t * src)$/;"	f	class:Global_Data
@@ -516,9 +635,10 @@ send_req	particle_data.h	/^        sc_array_t *send_req; \/**< sc_MPI_Request fo
 setEOS	particle_data.cpp	/^void Global_Data::setEOS(){$/;"	f	class:Global_Data
 setInAndOutPointer	lp_solver.cpp	/^void LPSolver::setInAndOutPointer(pdata_t *pad, double **inpressure, double **outpressure, double **involume, double **outvolume,$/;"	f	class:LPSolver
 setNeighbourListPointer	lp_solver.cpp	/^void LPSolver::setNeighbourListPointer(pdata_t *pad, sc_array_t** neilist0, sc_array_t **neilist1,int dir){$/;"	f	class:LPSolver
+setParams	initializer.cpp	/^void Initializer::setParams() {$/;"	f	class:Initializer
 setUpwindNeighbourList	particle_data.cpp	/^void Global_Data::setUpwindNeighbourList(sc_array_t *list0, sc_array_t *list1, sc_array_t *list2, sc_array_t *list3, sc_array_t *neidest){$/;"	f	class:Global_Data
 setUpwindNeighbourList2d	particle_data.cpp	/^void Global_Data::setUpwindNeighbourList2d(sc_array_t* nei0, sc_array_t *nei1, sc_array_t *neidest){$/;"	f	class:Global_Data
-sigma	particle_data.h	/^    double sigma; \/\/front and back$/;"	m	struct:neighbour_info
+sigma	particle_data.h	/^    float sigma; \/\/front and back$/;"	m	struct:neighbour_info
 slocal_point	particle_data.cpp	/^slocal_point (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 slocal_point2d	particle_data.cpp	/^slocal_point2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 slocal_quad	particle_data.cpp	/^slocal_quad (p8est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
@@ -540,21 +660,22 @@ stateTable	state/state.h	/^	std::unordered_map<std::string, StateCreateFunc> sta
 switchFlagDelete	particle_data.cpp	/^void Global_Data::switchFlagDelete(){$/;"	f	class:Global_Data
 temperature	particle_data.h	/^    double temperature;$/;"	m	struct:pdata
 temperature	particle_data.h	/^    double temperature;$/;"	m	struct:pdata_copy
+tend	lp_solver.h	/^    double tend;$/;"	m	class:LPSolver
 testcornerside	particle_data.cpp	/^static void testcornerside( p8est_iter_corner_info_t * info, void *user_data){$/;"	f	file:
 testcornerside2d	particle_data.cpp	/^static void testcornerside2d( p4est_iter_corner_info_t * info, void *user_data){$/;"	f	file:
 testedgeside	octree_manager.cpp	/^static void testedgeside( p8est_iter_edge_info_t * info, void *user_data){$/;"	f	file:
 testfaceside	octree_manager.cpp	/^static void testfaceside( p8est_iter_face_info_t * info, void *user_data){$/;"	f	file:
 testquad	particle_data.cpp	/^void Global_Data::testquad(){$/;"	f	class:Global_Data
 testquad2d	particle_data.cpp	/^void Global_Data::testquad2d(){$/;"	f	class:Global_Data
-theta	particle_data.h	/^    double theta;          \/\/up and down$/;"	m	struct:neighbour_info
+theta	particle_data.h	/^    float theta;          \/\/up and down$/;"	m	struct:neighbour_info
 thickness	boundary/boundary_gresho.h	/^	double thickness;$/;"	m	class:Gresho2DSolidBoundary
 thickness	boundary/boundary_gresho.h	/^        double thickness;$/;"	m	class:Yee2DSolidBoundary
 thickness	boundary/boundary_gresho.h	/^        double thickness;$/;"	m	class:Yee3DSolidBoundary
 timeIntegration	lp_solver.cpp	/^void LPSolver::timeIntegration( double gravity, double inVolume, double inVelocityU, double inVelocityV, double inVelocityW, double inPressure, double inSoundSpeed,$/;"	f	class:LPSolver
 timeIntegration	lp_solver.cpp	/^void LPSolver::timeIntegration($/;"	f	class:LPSolver
-timesearchingradius	initializer.h	/^        double timesearchingradius;$/;"	m	class:Initializer
 timesearchingradius	particle_data.h	/^        double timesearchingradius;$/;"	m	class:Global_Data
 totalphase	lp_solver.h	/^    int totalphase;$/;"	m	class:LPSolver
+tstart	lp_solver.h	/^    double tstart;$/;"	m	class:LPSolver
 updateLocalSpacing	lp_solver.cpp	/^void LPSolver::updateLocalSpacing(){$/;"	f	class:LPSolver
 updateParticleStates	particle_data.cpp	/^void Global_Data::updateParticleStates(){$/;"	f	class:Global_Data
 updateViewForOctant	particle_data.cpp	/^void Global_Data::updateViewForOctant(int phase){$/;"	f	class:Global_Data
@@ -569,10 +690,12 @@ volume	particle_data.h	/^    double volume;$/;"	m	struct:pdata
 volume	particle_data.h	/^    double volume;$/;"	m	struct:pdata_copy
 volumeT1	particle_data.h	/^    double volumeT1;$/;"	m	struct:pdata
 volumeT2	particle_data.h	/^    double volumeT2;$/;"	m	struct:pdata
-writeGhost	particle_viewer.cpp	/^void ParticleViewer:: writeGhost(double t){$/;"	f	class:ParticleViewer
-writeResult	particle_viewer.cpp	/^void ParticleViewer:: writeResult(double t){$/;"	f	class:ParticleViewer
+writeGhost	particle_viewer.cpp	/^void ParticleViewer:: writeGhost(int step){$/;"	f	class:ParticleViewer
+writeResult	particle_viewer.cpp	/^void ParticleViewer:: writeResult(int step){$/;"	f	class:ParticleViewer
 writeVTKFiles	particle_data.cpp	/^void Global_Data:: writeVTKFiles(){$/;"	f	class:Global_Data
+writestep	lp_solver.h	/^    int writestep;$/;"	m	class:LPSolver
 writestep	particle_viewer.h	/^    int writestep;$/;"	m	class:ParticleViewer
+writetimeinterval	lp_solver.h	/^    double writetimeinterval;$/;"	m	class:LPSolver
 xCen	geometry/geometry_cylinder.h	/^	double xCen;$/;"	m	class:Cylinder
 xcen	geometry/geometry_disk.h	/^        double xcen;$/;"	m	class:Disk
 xcen	geometry/geometry_pellet.h	/^	double xcen;$/;"	m	class:PelletLayer

@@ -709,11 +709,10 @@ int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,
 
 }
 
-void Octree_Manager:: adapt_octree2d(){
+void Octree_Manager:: adapt_octree2d( p4est_t *p4est){
 
   
 
-    p4est_t *p4est = gdata->p4est;
 
     for(int i=0;i<3;i++){
         gdata->ireindex2 = gdata->irvindex2 = 0;
@@ -746,11 +745,10 @@ void Octree_Manager:: adapt_octree2d(){
    
 }
 
-void Octree_Manager:: adapt_octree(){
+void Octree_Manager:: adapt_octree( p8est_t *p8est){
 
   
 
-    p8est_t *p8est = gdata->p8est;
     for(int i=0;i<3;i++){
         gdata->ireindex2 = gdata->irvindex2 = 0;
         p8est_coarsen_ext (p8est, 0, 1, adapt_coarsen, NULL, adapt_replace);
