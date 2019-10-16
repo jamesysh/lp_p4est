@@ -26,7 +26,7 @@ class PelletSolver{
         void presearch2d(); 
         void packParticles();
         
-        size_t elem_particle_box = 1000;
+        size_t elem_particle_box;
         p4est_t *p4est_heating;
         p4est_connectivity_t *conn;
         sc_array_t *particle_data_copy; //used for pellet problem;

@@ -3,8 +3,7 @@
 using namespace std;
 PelletSolver::PelletSolver(Global_Data*g){
     gdata = g;
-    particle_data_copy = sc_array_new(sizeof(pdata_t));
-    sc_array_copy(particle_data_copy, gdata->particle_data);
+    elem_particle_box = 1000;
     }
 
 
@@ -148,15 +147,12 @@ static int adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,
   quadrant_data_t          *oud = (quadrant_data_t *) quadrant->p.user_data;
   
   
-  
-        
-
 
   
   
   /* we have set this to -1 in adapt_coarsen */
 
-  if ((double) (oud->premain + oud->preceive) > p->elem_particle_box) {
+  if ((double) (oud->premain ) > p->elem_particle_box) {
     /* we are trying to refine, we will possibly go into the replace function */
     g->ire2 = g->ireindex;
     g->ireindex += oud->premain;
@@ -240,19 +236,72 @@ static void adapt_replace2d (p4est_t * p4est, p4est_topidx_t which_tree,
 }
 
 void PelletSolver::build_quadtree(){
+
+    size_t gpnum = (size_t) gdata->gpnum;
+    particle_data_copy = sc_array_new(sizeof(pdata_t));
+    if(gdata->mpirank == gdata->mpisize-1){
+        sc_array_resize(particle_data_copy,gpnum);
+    }
+    int offset[gdata->mpisize];
+
+    if(gdata->mpirank != gdata->mpisize-1){
+        int n = (int)gdata->particle_data->elem_count;
+        MPI_Send(&n,1,MPI_INT,gdata->mpisize-1,888,gdata->mpicomm);
+        
+        }
+
+    if(gdata->mpirank == gdata->mpisize-1){
+            
+            offset[gdata->mpisize-1] = gdata->particle_data->elem_count; 
+            for(int i=0;i<gdata->mpisize-1;i++){
+                
+                MPI_Recv(&offset[i],1,MPI_INT,i,888,gdata->mpicomm,MPI_STATUS_IGNORE);
+                
+                }
+        
+        }
+
+    
+    if(gdata->mpirank != gdata->mpisize-1){
+        int msglen = (int)(gdata->particle_data->elem_count*sizeof(pdata_t));
+        MPI_Send(gdata->particle_data->array,msglen,MPI_BYTE,gdata->mpisize-1,999,gdata->mpicomm);
+        
+        }
+    
+    int count = 0; 
+
+    if(gdata->mpirank == gdata->mpisize-1){
+            
+            for(int i=0;i<gdata->mpisize-1;i++){
+                int msglen = (int)(offset[i]*sizeof(pdata_t));
+                MPI_Recv(sc_array_index_int(particle_data_copy,count),msglen,MPI_BYTE,i,999,gdata->mpicomm,MPI_STATUS_IGNORE);
+                count += offset[i]; 
+                }
+            sc_array_copy_into(particle_data_copy,(size_t)(count),gdata->particle_data);
+        }
+    
+
     p4est_locidx_t *id;
     conn = p4est_connectivity_new_unitsquare();
     p4est_heating = p4est_new_ext(gdata->mpicomm, conn,0,0,1,sizeof(quadrant_data_t), NULL, this);  
     
     resetQuadrantData();
-    gdata->ireindex = gdata->ire2 = 0;
-    gdata->irvindex = gdata->irv2 = 0;
     gdata->iremain = sc_array_new_count(sizeof(p4est_locidx_t),particle_data_copy->elem_count);
     for(size_t i=0; i<particle_data_copy->elem_count; i++){
         id = (p4est_locidx_t*)sc_array_index(gdata->iremain,i);
         *id = (p4est_locidx_t )i;
         } 
-    p4est_refine_ext (p4est_heating, 0, 50 , adapt_refine2d, NULL, adapt_replace2d);
+    int oldnumquad = p4est_heating->global_num_quadrants;
+    while(true){ 
+    
+        gdata->ireindex = gdata->ire2 = 0;
+        gdata->irvindex = gdata->irv2 = 0;
+        p4est_refine_ext (p4est_heating, 0, 50 , adapt_refine2d, NULL, adapt_replace2d);
+        if(p4est_heating->global_num_quadrants == oldnumquad)
+            break; 
+        else
+            oldnumquad = p4est_heating->global_num_quadrants;
+    }
     sc_array_destroy(gdata->iremain);
     
     }
