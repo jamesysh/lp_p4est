@@ -25,18 +25,26 @@ class PelletSolver{
         void resetQuadrantData();
         void presearch2d(); 
         void packParticles();
+        void postsearch2d();
+        void regroupParticles2d();
         
+        void communicateParticles();
+  
+        void adaptQuadtree();
+        void destoryQuadtree();
+  
         size_t elem_particle_box;
+        sc_array_t *prebuf;
         p4est_t *p4est_heating;
         p4est_connectivity_t *conn;
         sc_array_t *particle_data_copy; //used for pellet problem;
         Global_Data *gdata;
-    private:
-        
-        
-        
-        
+    
         sc_array_t *ilh[2],*jlh[2],*klh[2];
+        
+        
+        
+        
     };
 
 

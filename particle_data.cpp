@@ -1252,6 +1252,7 @@ void Global_Data::packParticles(){
 
   psend = sc_hash_new (psend_hash, psend_equal, NULL, NULL);
   recevs = sc_array_new (sizeof (comm_prank_t));
+
   lremain = lsend = llost = 0;
   cps = (comm_psend_t *) sc_mempool_alloc (psmem);
   cps->rank = -1;
@@ -3250,13 +3251,9 @@ void Global_Data::generateGhostParticle(){
 //dir: 1 up 2 down 3 right 4 left 5 front 6 back
 
 void Global_Data::fillArrayWithGhostParticle2d(sc_array_t * neighbourlist, pdata_t * pad, int count, int dir){
-      double anglemin = 0.14;
-      double anglemax = 3.;
       double radius = (timesearchingradius-1) * pad->localspacing;
       double r;
-      double angle;
       double dx, dy;
-      double r2;
       pdata_copy_t * ghostnei;
       neighbour_info_t *ghostnei_info;
       size_t ghostid;
@@ -3266,11 +3263,9 @@ void Global_Data::fillArrayWithGhostParticle2d(sc_array_t * neighbourlist, pdata
       for(int i = 0;i<count;i++){
         r = rand()/(double)RAND_MAX * radius/4 + pad->localspacing;
         if( dir == 3 || dir == 5){
-            angle = anglemax + rand()/(double)RAND_MAX *(M_PI-anglemax);
 
             if(dir == 3){
                 dy = -r;
-                r2 = r*r - dy*dy;
                 dx = rand()/(double)RAND_MAX *(2*(rand()%2)-1)* r/4;
                 ghostnei_info = (neighbour_info_t *)sc_array_push(neighbourlist);
                 ghostid = pad->ghostneighbour->elem_count;
@@ -3283,7 +3278,6 @@ void Global_Data::fillArrayWithGhostParticle2d(sc_array_t * neighbourlist, pdata
             }
             if(dir == 5){
                 dx = -r;
-                r2 = r*r - dx*dx;
                 dy = rand()/(double)RAND_MAX *(2*(rand()%2)-1)* r/4;
                 ghostnei_info = (neighbour_info_t *)sc_array_push(neighbourlist);
                 ghostid = pad->ghostneighbour->elem_count;
@@ -3299,11 +3293,9 @@ void Global_Data::fillArrayWithGhostParticle2d(sc_array_t * neighbourlist, pdata
         } 
 
         if( dir == 4 || dir == 6){
-            angle =  rand()/(double)RAND_MAX *anglemin;
 
             if(dir == 4){
                 dy = r;
-                r2 = r*r - dy*dy;
                 dx = rand()/(double)RAND_MAX *(2*(rand()%2)-1)* r/4;
                 ghostnei_info = (neighbour_info_t *)sc_array_push(neighbourlist);
                 ghostid = pad->ghostneighbour->elem_count;
@@ -3316,7 +3308,6 @@ void Global_Data::fillArrayWithGhostParticle2d(sc_array_t * neighbourlist, pdata
             }
             if(dir == 6){
                 dx = r;
-                r2 = r*r - dx*dx;
                 
                 dy = rand()/(double)RAND_MAX *(2*(rand()%2)-1)* r/4;
                 

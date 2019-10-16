@@ -642,7 +642,13 @@ void LPSolver:: solve_2d(){
             gdata->generateGhostParticle2d();
    
         pellet_solver->build_quadtree();
-              
+        pellet_solver->presearch2d();
+        pellet_solver->packParticles();
+        pellet_solver->communicateParticles();
+        
+        pellet_solver->postsearch2d();
+        pellet_solver->adaptQuadtree();
+        pellet_solver->regroupParticles2d();
 
     //gdata->testquad2d();
         computeCFLCondition();
@@ -679,8 +685,9 @@ void LPSolver:: solve_2d(){
         gdata->cleanForTimeStep2d();
     
         gdata->switchFlagDelete();
+        break;
     }
-
+        pellet_solver->destoryQuadtree();
 
 }
 
