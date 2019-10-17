@@ -587,10 +587,8 @@ void LPSolver:: solve_2d(){
     viewer->writeResult(0);
     
     PelletSolver *pellet_solver = new PelletSolver(gdata);
-    pellet_solver->prerun();
-    while(currenttime < tend)
+    while(currenttime<tend)
     {
-    
     
         for(size_t id=0; id<gdata->boundarynumber; id++){ 
            gdata->m_vBoundary[id]->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
@@ -641,6 +639,7 @@ void LPSolver:: solve_2d(){
         if(gdata->iffreeboundary) 
             gdata->generateGhostParticle2d();
    
+        pellet_solver->prerun();
         pellet_solver->build_quadtree();
       
         pellet_solver->presearch2d();
@@ -693,8 +692,9 @@ void LPSolver:: solve_2d(){
         gdata->cleanForTimeStep2d();
     
         gdata->switchFlagDelete();
-    }
+        
         pellet_solver->destoryQuadtree();
+    }
 
 }
 
