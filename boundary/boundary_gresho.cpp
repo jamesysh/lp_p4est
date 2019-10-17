@@ -265,6 +265,7 @@ void Yee3DSolidBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, d
                 padb->pressure = pressureb[j];
                 padb->ifboundary = true;
                 padb->flagdelete = !g->flagdelete;
+                padb->mass = dx*dx*dx/100/sqrt(2);
                 count ++;        
                 xb.clear();
                 yb.clear();

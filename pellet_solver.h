@@ -34,10 +34,18 @@ class PelletSolver{
         void adaptQuadtree();
         void destoryQuadtree();
   
+        void swapXAndZCoordinate();
+        void computeDensityIntegral();
         void split_by_coord ( sc_array_t * in,
                 sc_array_t * out[2], pa_mode_t mode, int component,
                 const double lxyz[3], const double dxyz[3]);
-        size_t elem_particle_box;
+        
+        int countNumberinRange(sc_array_t *view, int n, double x, double y); 
+        
+        
+        
+        int elem_particle_box;
+        int elem_particle_cell;
         sc_array_t *prebuf;
         p4est_t *p4est_heating;
         p4est_connectivity_t *conn;

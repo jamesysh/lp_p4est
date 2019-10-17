@@ -586,7 +586,6 @@ void LPSolver:: solve_2d(){
     computeLocalBoundaryAndFluidNum();
     viewer->writeResult(0);
     
-    PelletSolver *pellet_solver = new PelletSolver(gdata);
     while(currenttime<tend)
     {
     
@@ -639,23 +638,6 @@ void LPSolver:: solve_2d(){
         if(gdata->iffreeboundary) 
             gdata->generateGhostParticle2d();
    
-        pellet_solver->prerun();
-        pellet_solver->build_quadtree();
-      
-        pellet_solver->presearch2d();
-        
-        pellet_solver->packParticles();
-        
-        pellet_solver->communicateParticles();
-        
-        pellet_solver->postsearch2d();
-     
-        pellet_solver->adaptQuadtree();
-
-     
-        pellet_solver->regroupParticles2d();
-
-        pellet_solver->partitionParticles2d();
     //gdata->testquad2d();
         computeCFLCondition();
     
@@ -693,7 +675,6 @@ void LPSolver:: solve_2d(){
     
         gdata->switchFlagDelete();
         
-        pellet_solver->destoryQuadtree();
     }
 
 }
@@ -706,6 +687,8 @@ void LPSolver::solve_3d(){
     computeLocalBoundaryAndFluidNum();
     
     viewer->writeResult(0);
+    
+    PelletSolver *pellet_solver = new PelletSolver(gdata);
     while(currenttime < tend)
     {
     
@@ -764,6 +747,27 @@ void LPSolver::solve_3d(){
             gdata->generateGhostParticle();
         }
     
+        pellet_solver->prerun();
+        pellet_solver->build_quadtree();
+      
+        pellet_solver->presearch2d();
+        
+        pellet_solver->packParticles();
+        
+        pellet_solver->communicateParticles();
+        
+        pellet_solver->postsearch2d();
+     
+        pellet_solver->adaptQuadtree();
+
+     
+        pellet_solver->regroupParticles2d();
+
+        pellet_solver->partitionParticles2d();
+        
+        MPI_Barrier(gdata->mpicomm);
+
+        pellet_solver->computeDensityIntegral();
         computeCFLCondition();
     
         bool iswritestep = adjustDtByWriteTimeInterval(); 
@@ -794,11 +798,12 @@ void LPSolver::solve_3d(){
         viewer->writeResult(writestep);
     }
    
-    MPI_Barrier(gdata->mpicomm); 
     
         gdata->cleanForTimeStep();
 
         gdata->switchFlagDelete();
+    
+        pellet_solver->destoryQuadtree();
     }
 
 

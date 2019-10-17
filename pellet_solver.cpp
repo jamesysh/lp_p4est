@@ -1,10 +1,12 @@
 #include "pellet_solver.h"
+#include <algorithm>
 #include "sc_notify.h"
 #include <iostream>
 using namespace std;
 PelletSolver::PelletSolver(Global_Data*g){
     gdata = g;
-    elem_particle_box = 300;
+    elem_particle_box = 5000;
+    elem_particle_cell = 500;
     }
 
 
@@ -354,7 +356,7 @@ void PelletSolver::build_quadtree(){
 
     particle_data_copy = sc_array_new(sizeof(pdata_t));
     sc_array_copy(particle_data_copy,gdata->particle_data);
-
+    swapXAndZCoordinate();
     conn = p4est_connectivity_new_unitsquare();
     p4est_heating = p4est_new_ext(gdata->mpicomm, conn,1,0,1,sizeof(quadrant_data_t), NULL, this);  
     resetQuadrantData();
@@ -871,3 +873,233 @@ void PelletSolver::destoryQuadtree(){
         }
     
     }
+
+
+static int
+compareXCoordinate (const void *p1, const void *p2)
+{
+  int t = 0;
+  pdata_t                * i1 = (pdata_t *) p1;
+  pdata_t                * i2 = (pdata_t *) p2;
+  
+  if((i1->xyz[2] - i2->xyz[2])>0)
+      t = 1;
+  return t;
+}
+void PelletSolver::computeDensityIntegral(){
+
+    p4est_topidx_t      tt;
+    p4est_locidx_t      lq, lpend, offset = 0;
+    p4est_tree_t       *tree;
+    p4est_quadrant_t   *quad;
+    quadrant_data_t          *qud;
+    pdata_t          *pad;
+    double dy, dz;
+    double lxyz[3],hxyz[3],dxyz[3];
+    double x_min, x_max;
+    int i_node, i_nodeend, np_node, node_id;
+    double x_lower, x_upper, x_center;
+    int division;
+    sc_array_t view;  
+  
+    vector<int> cell_ID;
+    vector<double> x_left;
+    vector<double> x_right;
+    vector<double> x_dividing;
+    for (tt = p4est_heating->first_local_tree; tt <= p4est_heating->last_local_tree; ++tt) {
+        tree = p4est_tree_array_index (p4est_heating->trees, tt);
+        for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+            quad = p4est_quadrant_array_index (&tree->quadrants, lq);
+            qud = (quadrant_data_t *) quad->p.user_data;
+            lpend = qud->lpend;
+            //binary tree construction;            
+            if(lpend == offset)
+                continue;
+            sc_array_init_view(&view,particle_data_copy,offset,lpend-offset);
+            sc_array_sort(&view,compareXCoordinate); 
+            loopquad2d(this,tt,quad,lxyz,hxyz,dxyz);
+            dz = dxyz[0];
+            dy = dxyz[1];
+            pad = (pdata_t*) sc_array_index_int(&view,0);
+            x_min = pad->xyz[2];
+            pad = (pdata_t*) sc_array_index_int(&view,lpend-offset-1);
+            x_max = pad->xyz[2];
+            
+            cell_ID.push_back(0);
+
+            x_left.push_back(x_min);
+            x_right.push_back(x_max);
+
+            i_node = 0;
+            i_nodeend = 1;
+            np_node = lpend - offset;
+            while(i_node < i_nodeend){
+                node_id = cell_ID[i_node];
+                x_lower = x_left[node_id];
+                x_upper = x_right[node_id];
+                np_node = countNumberinRange(&view,lpend-offset,x_lower,x_upper);
+                if(np_node <= elem_particle_cell){ 
+                    i_node ++;}
+                else{
+                    x_center = (x_lower+x_upper)/2;
+                    cell_ID.push_back(i_nodeend);
+                    cell_ID.push_back(i_nodeend+1);
+                    x_left.push_back(x_lower);
+                    x_left.push_back(x_center);
+                    x_right.push_back(x_center);
+                    x_right.push_back(x_upper);
+                    x_dividing.push_back(x_center);
+                    i_node++;
+                    i_nodeend += 2;
+                    
+                    }
+                
+                
+                
+                }
+            
+            x_dividing.push_back(x_max);
+            sort(x_dividing.begin(),x_dividing.end());
+            division = x_dividing.size();
+            vector<double> left_sum(division,0);
+            vector<double> right_sum(division,0);
+            vector<double> local_sum(division,0) ;
+            
+            for(int id_particle=0,id_cell=0;id_particle<lpend-offset;)
+                {   
+                    pad = (pdata_t *) sc_array_index_int(&view,id_particle);
+                    if(pad->xyz[2] <= x_dividing[id_cell]){
+                            
+                        local_sum[id_cell] += pad->mass;
+                    
+                        ++id_particle;
+                        
+                    }
+                    else
+                    
+                        {    
+                             ++id_cell;
+                          }            
+                }
+               
+             for(int k = 0; k<division; k++){
+                for(int p = 0; p<k+1; p++){
+                    left_sum[k] += local_sum[p];
+                    
+                    }
+                    left_sum[k] -= local_sum[k]/2;
+                    left_sum[k] = left_sum[k]/dy/dz; 
+              
+                for(int p = k; p<division; p++){
+                    right_sum[k] += local_sum[p];
+                    }
+                    right_sum[k] -= local_sum[k]/2;
+                    right_sum[k] = right_sum[k]/dy/dz; 
+                
+                }
+                
+                
+            for(int id_particle = 0, id_cell = 0;id_particle<lpend - offset; ){
+                
+                  pad = (pdata_t *) sc_array_index_int(&view,id_particle);
+                  if(pad->xyz[2] <= x_dividing[id_cell])   
+                        {
+                         pad->leftintegral = left_sum[id_cell];
+                         pad->rightintegral = right_sum[id_cell];
+                         id_particle++;
+                         }
+                   else
+                         {  
+                         id_cell++;
+                        }
+            }
+                
+            cell_ID.clear();
+            x_left.clear();
+            x_right.clear();
+            x_dividing.clear();
+            offset = lpend;
+                
+             }   
+        
+        
+        }
+    
+    
+    
+    }
+
+void PelletSolver::swapXAndZCoordinate(){
+    pdata_t *pad;    
+    size_t li, lpnum = particle_data_copy->elem_count;
+    
+    for(li=0; li<lpnum; li++){
+        pad = (pdata_t *) sc_array_index(particle_data_copy,li);
+        swap(pad->xyz[0],pad->xyz[2]);
+        }
+    
+    } 
+
+
+
+int PelletSolver::countNumberinRange(sc_array_t *view, int n, double x, double y) 
+    {   
+        pdata_t* pad;
+        int l = 0, h = n - 1; 
+        while (l <= h) { 
+            int mid = (l + h) / 2;
+            pad = (pdata_t* )sc_array_index_int(view,mid);
+            if (pad->xyz[2] >= x) 
+                h = mid - 1; 
+            else
+               l = mid + 1; 
+                       } 
+        int lower = l;
+       l = 0; 
+       h = n-1;
+         while (l <= h)
+         { 
+            int mid = (l + h) / 2;
+            pad = (pdata_t* )sc_array_index_int(view,mid);
+            if (pad->xyz[2] <= y) 
+                l = mid + 1; 
+            else  
+                h = mid - 1;       
+                }
+        int upper = h;
+        return upper-lower+1;
+    } 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

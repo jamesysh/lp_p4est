@@ -30,6 +30,8 @@ typedef struct pdata{
     bool flagdelete;   // delete boundary particle at current timestep: delete if its not the same as flag in gdata
     double schemeorder;
     int32_t redocount;
+    double leftintegral;
+    double rightintegral;
     sc_array_t * ghostneighbour;   //pdata_copy_t
     sc_array_t * neighbourparticle;
       
