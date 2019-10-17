@@ -4,7 +4,7 @@
 using namespace std;
 PelletSolver::PelletSolver(Global_Data*g){
     gdata = g;
-    elem_particle_box = 150;
+    elem_particle_box = 300;
     }
 
 
@@ -173,16 +173,48 @@ static int adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,
     /* maintain cumulative particle count for next quadrant */
     g->ireindex += oud->premain;
     g->irvindex += oud->preceive;
-    p4est_locidx_t *irecumu = (p4est_locidx_t *)sc_array_push(g->irecumu);
-    *irecumu = g->ireindex;
-    p4est_locidx_t *irvcumu = (p4est_locidx_t *)sc_array_push(g->irvcumu);
-    *irvcumu = g->irvindex;
     
     return 0;
   }
 
 }
 
+void PelletSolver::split_by_coord ( sc_array_t * in,
+                sc_array_t * out[2], pa_mode_t mode, int component,
+                const double lxyz[3], const double dxyz[3])
+{
+  p4est_locidx_t      ppos;
+  const double       *x;
+  size_t              zz, znum;
+  pdata_t          *pad;
+
+  sc_array_truncate (out[0]);
+  sc_array_truncate (out[1]);
+
+  znum = in->elem_count;
+  for (zz = 0; zz < znum; ++zz) {
+    ppos = *(p4est_locidx_t *) sc_array_index (in, zz);
+    if (mode == PA_MODE_REMAIN) {
+      pad = (pdata_t *) sc_array_index (particle_data_copy, ppos);
+      x = pad->xyz;
+    }
+    else if (mode == PA_MODE_RECEIVE) {
+      pad = (pdata_t *) sc_array_index (prebuf, ppos);
+      x = pad->xyz;
+    }
+    else {
+      P4EST_ASSERT (mode == PA_MODE_LOCATE);
+      pad = (pdata_t *) sc_array_index (particle_data_copy, ppos);
+      x = pad->xyz;
+    }
+    if (x[component] <= lxyz[component] + .5 * dxyz[component]) {
+      *(p4est_locidx_t *) sc_array_push (out[0]) = ppos;
+    }
+    else {
+      *(p4est_locidx_t *) sc_array_push (out[1]) = ppos;
+    }
+  }
+}
 static void  adapt_replace2d (p4est_t * p4est, p4est_topidx_t which_tree,
                int num_outgoing, p4est_quadrant_t * outgoing[],
                int num_incoming, p4est_quadrant_t * incoming[]){
@@ -217,10 +249,10 @@ static void  adapt_replace2d (p4est_t * p4est, p4est_topidx_t which_tree,
     p->klh[0] = &iview;
     wz = 0;
 
-    g->split_by_coord ( p->klh[wz], p->jlh, PA_MODE_REMAIN, 1, lxyz, dxyz);
+    p->split_by_coord ( p->klh[wz], p->jlh, PA_MODE_REMAIN, 1, lxyz, dxyz);
     
     for (wy = 0; wy < 2; ++wy) {
-      g->split_by_coord (p->jlh[wy], p->ilh, PA_MODE_REMAIN, 0, lxyz, dxyz);
+      p->split_by_coord (p->jlh[wy], p->ilh, PA_MODE_REMAIN, 0, lxyz, dxyz);
       for (wx = 0; wx < 2; ++wx) {
         // we have a set of particles for child 4 * wz + 2 * wy + wx 
         arr = p->ilh[wx];
@@ -240,9 +272,9 @@ static void  adapt_replace2d (p4est_t * p4est, p4est_topidx_t which_tree,
     // sort received particles into the children 
     pchild = incoming;
     wz = 0;
-    g->split_by_coord ( p->klh[wz], p->jlh, PA_MODE_RECEIVE, 1, lxyz, dxyz);
+    p->split_by_coord ( p->klh[wz], p->jlh, PA_MODE_RECEIVE, 1, lxyz, dxyz);
     for (wy = 0; wy < 2; ++wy) {
-      g->split_by_coord ( p->jlh[wy], p->ilh, PA_MODE_RECEIVE, 0, lxyz, dxyz);
+      p->split_by_coord ( p->jlh[wy], p->ilh, PA_MODE_RECEIVE, 0, lxyz, dxyz);
       for (wx = 0; wx < 2; ++wx) {
         // we have a set of particles for child 4 * wz + 2 * wy + wx 
         arr = p->ilh[wx];
@@ -408,7 +440,6 @@ void PelletSolver::packParticles(){
     
     }
     if (*pfn == gdata->mpirank) {
-
       ++lremain;
       continue;
     }
@@ -462,7 +493,6 @@ void PelletSolver::communicateParticles(){
   comm_prank_t       *trank;
    
   num_receivers = gdata->recevs->elem_count;
-
  
   
   notif = sc_array_new_count (sizeof (int), num_receivers);
@@ -509,7 +539,7 @@ void PelletSolver::communicateParticles(){
     msglen = count * (int) sizeof(pdata_t);
     mpiret = sc_MPI_Irecv
       (sc_array_index (prebuf, cucount), msglen, sc_MPI_BYTE,
-       *(int *) sc_array_index_int (notif, i), COMM_TAG_PART, gdata->mpicomm,
+       *(int *) sc_array_index_int (notif, i), 999, gdata->mpicomm,
        (sc_MPI_Request *) sc_array_index_int (gdata->recv_req, i));
     SC_CHECK_MPI (mpiret);
     cucount += count;
@@ -527,7 +557,7 @@ void PelletSolver::communicateParticles(){
       arr = &cps->message;
       msglen = (int) (arr->elem_count * arr->elem_size);
       mpiret = sc_MPI_Isend
-        (arr->array, msglen, sc_MPI_BYTE, cps->rank, COMM_TAG_PART,
+        (arr->array, msglen, sc_MPI_BYTE, cps->rank, 999,
          gdata->mpicomm, (sc_MPI_Request *) sc_array_index_int (gdata->send_req, i));
       SC_CHECK_MPI (mpiret);
     }
@@ -602,7 +632,7 @@ slocal_point2d (p4est_t * p4est, p4est_topidx_t which_tree,
   if (local_num >= 0) {
     /* quadrant is a local leaf */
     /* first local match counts (due to roundoff there may be multiple) */
-    zp = sc_array_position (g->prebuf, point);
+    zp = sc_array_position (p->prebuf, point);
     cf = (char *) sc_array_index (g->cfound, zp);
     if (!*cf) {
       /* make sure this particle is not found twice */
@@ -625,7 +655,7 @@ slocal_point2d (p4est_t * p4est, p4est_topidx_t which_tree,
 void PelletSolver::postsearch2d(){
   gdata->ireceive = sc_array_new (sizeof (p4est_locidx_t));
   gdata->cfound = sc_array_new_count (sizeof (char), prebuf->elem_count);
-
+    
   sc_array_memset (gdata->cfound, 0);
 
   p4est_search_local (p4est_heating, 0, slocal_quad2d, slocal_point2d, prebuf);
@@ -713,6 +743,118 @@ void PelletSolver::adaptQuadtree(){
     
     }
 
+static int
+part_weight2d (p4est_t * p4est,
+             p4est_topidx_t which_tree, p4est_quadrant_t * quadrant)
+{
+  p4est_locidx_t      ilem_particles;
+  PelletSolver      *p = (PelletSolver *) p4est->user_pointer;
+  Global_Data      *g = p->gdata;
+  quadrant_data_t          *qud = (quadrant_data_t *) quadrant->p.user_data;
+
+
+  ilem_particles = qud->lpend - g->prevlp;
+
+  g->prevlp = qud->lpend;
+  *(int *) sc_array_index (g->src_fixed, g->qcount++) =
+    (int) (ilem_particles * sizeof (pdata_t));
+  return 1+ ilem_particles;
+}
+void PelletSolver:: partitionParticles2d(){
+
+
+  sc_array_t         *dest_data;
+  p4est_topidx_t      tt;
+  p4est_locidx_t      ldatasize, lcount;
+  p4est_locidx_t      dest_quads, src_quads;
+  p4est_locidx_t      dest_parts;
+  p4est_locidx_t      lquad, lq;
+  p4est_locidx_t      lpnum;
+  p4est_gloidx_t      gshipped;
+  p4est_gloidx_t     *src_gfq;
+  p4est_tree_t       *tree;
+  p4est_quadrant_t   *quad;
+  quadrant_data_t          *qud;
+   
+  if(gdata->mpisize == 1)
+  
+      return;
+
+  src_gfq = P4EST_ALLOC (p4est_gloidx_t, gdata->mpisize + 1);
+
+  memcpy (src_gfq, p4est_heating->global_first_quadrant,
+          (gdata->mpisize + 1) * sizeof (p4est_gloidx_t));
+
+
+  src_quads = p4est_heating->local_num_quadrants;
+
+  assert(src_quads == src_gfq[gdata->mpirank+1]-src_gfq[gdata->mpirank]);
+
+  gdata->src_fixed = sc_array_new_count (sizeof (int), src_quads);
+
+  gdata->qcount = 0;
+  gdata->prevlp = 0;
+
+  gshipped = p4est_partition_ext (p4est_heating, 1, part_weight2d);
+  dest_quads = p4est_heating->local_num_quadrants;
+
+  if (gshipped == 0) {
+    sc_array_destroy_null (&gdata->src_fixed);
+    P4EST_FREE (src_gfq);
+    return;
+  }
+
+  gdata->dest_fixed = sc_array_new_count (sizeof (int), dest_quads);
+
+  p4est_transfer_fixed (p4est_heating->global_first_quadrant, src_gfq,
+                        gdata->mpicomm, COMM_TAG_FIXED,
+                        (int *) gdata->dest_fixed->array,
+                        (const int *) gdata->src_fixed->array, sizeof (int));
+
+  ldatasize = (p4est_locidx_t) sizeof (pdata_t);
+
+  dest_parts = 0;
+
+  for (lq = 0; lq < dest_quads; ++lq) {
+    dest_parts += *(int *) sc_array_index (gdata->dest_fixed, lq);
+  }
+  assert(dest_parts % ldatasize == 0); 
+  dest_parts /= ldatasize;
+  dest_data = sc_array_new_count (sizeof (pdata_t), dest_parts);
+  p4est_transfer_custom (p4est_heating->global_first_quadrant, src_gfq,
+                         gdata->mpicomm, COMM_TAG_CUSTOM,
+                         (pdata_t *) dest_data->array,
+                         (const int *) gdata->dest_fixed->array,
+                         (const pdata_t *) particle_data_copy->array,
+                         (const int *) gdata->src_fixed->array);
+
+  sc_array_destroy_null (&gdata->src_fixed);
+
+  P4EST_FREE (src_gfq);
+  sc_array_destroy (particle_data_copy);
+  particle_data_copy = dest_data;
+  lpnum = 0;
+  lquad = 0;
+  for (tt = p4est_heating->first_local_tree; tt <= p4est_heating->last_local_tree; ++tt) {
+    tree = p4est_tree_array_index (p4est_heating->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      /* access quadrant */
+      quad = p4est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (quadrant_data_t *) quad->p.user_data;
+
+      /* back out particle count in quadrant from data size */
+      lcount = *(int *) sc_array_index (gdata->dest_fixed, lquad);
+      assert (lcount % ldatasize == 0);
+      lcount /= ldatasize;
+      lpnum += lcount;
+      qud->lpend = lpnum;
+      ++lquad;
+    }
+  }
+  sc_array_destroy_null (&gdata->dest_fixed);
+
+
+}
 void PelletSolver::destoryQuadtree(){
     
         p4est_destroy (p4est_heating);

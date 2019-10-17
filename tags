@@ -162,6 +162,7 @@ __REGISTRAR_H__	registrar.h	2;"	d
 __STATE_GRESHO_H__	state/state_gresho.h	2;"	d
 __STATE_H__	state/state.h	3;"	d
 __STATE_PELLET_H__	state/state_pellet.h	2;"	d
+adaptQuadtree	pellet_solver.cpp	/^void PelletSolver::adaptQuadtree(){$/;"	f	class:PelletSolver
 adapt_coarsen	octree_manager.cpp	/^int Octree_Manager:: adapt_coarsen (p8est_t * p8est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
 adapt_coarsen2d	octree_manager.cpp	/^int Octree_Manager:: adapt_coarsen2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
 adapt_octree	octree_manager.cpp	/^void Octree_Manager:: adapt_octree( p8est_t *p8est){$/;"	f	class:Octree_Manager
@@ -171,7 +172,7 @@ adapt_refine2d	octree_manager.cpp	/^int Octree_Manager:: adapt_refine2d (p4est_t
 adapt_refine2d	pellet_solver.cpp	/^static int adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 adapt_replace	octree_manager.cpp	/^void Octree_Manager:: adapt_replace (p8est_t * p8est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
 adapt_replace2d	octree_manager.cpp	/^void Octree_Manager:: adapt_replace2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
-adapt_replace2d	pellet_solver.cpp	/^static void adapt_replace2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
+adapt_replace2d	pellet_solver.cpp	/^static void  adapt_replace2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 addGhostParticle	particle_data.cpp	/^void Global_Data::addGhostParticle(pdata_copy_t * ghostnei, pdata_t *pad, double dx, double dy, double dz){$/;"	f	class:Global_Data
 adjustCoordByDomain	particle_data.cpp	/^void Global_Data:: adjustCoordByDomain( double xyz[3]){$/;"	f	class:Global_Data
 adjustCoordByDomain	pellet_solver.cpp	/^static void adjustCoordByDomain( double xyz[3], double dl){$/;"	f	file:
@@ -239,6 +240,7 @@ density	state/state_gresho.cpp	/^double Gresho2DState::density(double x, double 
 density	state/state_gresho.cpp	/^double Yee2DState::density(double x, double y, double z) {$/;"	f	class:Yee2DState
 density	state/state_pellet.cpp	/^double PelletState::density(double x, double y, double z){$/;"	f	class:PelletState
 dest_fixed	particle_data.h	/^      sc_array_t         *dest_fixed;       \/**< int Particle counts per quadrant *\/$/;"	m	class:Global_Data
+destoryQuadtree	pellet_solver.cpp	/^void PelletSolver::destoryQuadtree(){$/;"	f	class:PelletSolver
 destroy_octree	octree_manager.cpp	/^void Octree_Manager:: destroy_octree(){$/;"	f	class:Octree_Manager
 diagnosis	eos.h	/^    virtual void diagnosis(double rho0, double rho1, double t0, double t1){};$/;"	f	class:PolytropicGasEOS
 dimension	particle_data.h	/^        int dimension;$/;"	m	class:Global_Data

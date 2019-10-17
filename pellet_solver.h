@@ -30,9 +30,13 @@ class PelletSolver{
         
         void communicateParticles();
   
+        void partitionParticles2d();
         void adaptQuadtree();
         void destoryQuadtree();
   
+        void split_by_coord ( sc_array_t * in,
+                sc_array_t * out[2], pa_mode_t mode, int component,
+                const double lxyz[3], const double dxyz[3]);
         size_t elem_particle_box;
         sc_array_t *prebuf;
         p4est_t *p4est_heating;

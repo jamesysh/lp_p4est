@@ -560,7 +560,7 @@ int Octree_Manager:: adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,
               p4est_quadrant_t * quadrant)
 {
   
-  static p4est_locidx_t maxp = -1;  
+  //static p4est_locidx_t maxp = -1;  
   Global_Data      *g = (Global_Data *) p4est->user_pointer;
 
   p4est_topidx_t      tt;
@@ -574,7 +574,7 @@ int Octree_Manager:: adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,
   quad = p4est_quadrant_array_index (&tree->quadrants, 0);
   octant_data_t          *oud = (octant_data_t *) quadrant->p.user_data;
   
-  
+/*  
   if(g->flagstartrefine){
     maxp = -1;
 
@@ -602,7 +602,7 @@ int Octree_Manager:: adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,
         
   }
 
-
+*/
   
   
   /* we have set this to -1 in adapt_coarsen */
@@ -638,9 +638,11 @@ int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,
               p8est_quadrant_t * quadrant)
 {
    
-  static p4est_locidx_t maxp = -1;  
+ // static p4est_locidx_t maxp = -1;  
   Global_Data      *g = (Global_Data *) p8est->user_pointer;
 
+  octant_data_t          *oud = (octant_data_t *) quadrant->p.user_data;
+/*
   p4est_topidx_t      tt;
 
   p8est_quadrant_t   *quad;
@@ -650,7 +652,6 @@ int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,
   tree = p8est_tree_array_index (p8est->trees, tt);
   
   quad = p8est_quadrant_array_index (&tree->quadrants, 0);
-  octant_data_t          *oud = (octant_data_t *) quadrant->p.user_data;
   
 
   if(g->flagstartrefine){
@@ -680,7 +681,7 @@ int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,
   }
 
 
-  
+  */
   
   /* we have set this to -1 in adapt_coarsen */
 
@@ -712,19 +713,24 @@ int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,
 void Octree_Manager:: adapt_octree2d( p4est_t *p4est){
 
   
+    int oldquad = (int)p4est->global_num_quadrants;
 
-
-    for(int i=0;i<3;i++){
+    while(true){
         gdata->ireindex2 = gdata->irvindex2 = 0;
         p4est_coarsen_ext (p4est, 0, 0, adapt_coarsen2d, NULL, adapt_replace2d);
+    
+        if((int)p4est->global_num_quadrants == oldquad)
+            break;
+        else
+            oldquad = p4est->global_num_quadrants;
     }
+    
     gdata->flagrefine = 1;
     gdata->gflagrefine = -1;
     
     gdata->flagstartrefine = 1;
 
-    if(p4est->local_num_quadrants == 0)
-        gdata->flagrefine = 0;
+    
     while(true ){   
     
     gdata->irecumu = sc_array_new(sizeof(p4est_locidx_t));
@@ -734,9 +740,16 @@ void Octree_Manager:: adapt_octree2d( p4est_t *p4est){
     gdata->ireindex = gdata->ire2 = 0;
     gdata->irvindex = gdata->irv2 = 0;
     p4est_refine_ext (p4est, 0, gdata->maxlevel, adapt_refine2d, NULL, adapt_replace2d);
+    
+    if((int)p4est->global_num_quadrants == oldquad)
+        break;
+    else
+        oldquad = p4est->global_num_quadrants;
+   /* 
     if(gdata->gflagrefine == 0){
         break;
     }
+    */
     sc_array_destroy(gdata->irecumu);
     sc_array_destroy(gdata->irvcumu);
     
@@ -748,11 +761,17 @@ void Octree_Manager:: adapt_octree2d( p4est_t *p4est){
 void Octree_Manager:: adapt_octree( p8est_t *p8est){
 
   
-
-    for(int i=0;i<3;i++){
+    int oldquad = (int)p8est->global_num_quadrants;
+    
+    while(true){
         gdata->ireindex2 = gdata->irvindex2 = 0;
         p8est_coarsen_ext (p8est, 0, 1, adapt_coarsen, NULL, adapt_replace);
-    }
+   
+        if((int)p8est->global_num_quadrants == oldquad)
+            break;
+        else
+            oldquad = p8est->global_num_quadrants;
+   }
     gdata->flagrefine = 1;
     gdata->gflagrefine = 1;
     
@@ -768,9 +787,11 @@ void Octree_Manager:: adapt_octree( p8est_t *p8est){
     gdata->ireindex = gdata->ire2 = 0;
     gdata->irvindex = gdata->irv2 = 0;
     p8est_refine_ext (p8est, 0, gdata->maxlevel, adapt_refine, NULL, adapt_replace);
-    if(gdata->gflagrefine == 0){
+    
+    if((int)p8est->global_num_quadrants == oldquad)
         break;
-    }
+    else
+        oldquad = p8est->global_num_quadrants;
     sc_array_destroy(gdata->irecumu);
     sc_array_destroy(gdata->irvcumu);
     

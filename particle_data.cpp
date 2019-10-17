@@ -2051,8 +2051,8 @@ void Global_Data::createViewForOctant2d(){
       qud = (octant_data_t *) quad->p.user_data;
       qud->flagboundary = 0;  
       qud->poctant = qud->lpend - offset;
-        if(qud->poctant >= 250){
-            printf("This octant has more than 250 particles, please enlarge size of localparticle!!\n");
+        if(qud->poctant >= 300){
+            printf("This octant has more than 300 particles, please enlarge size of localparticle!!\n");
             assert(false);
         }
 //      qud->particle_data_view = sc_array_new_count(sizeof(pdata_t),(size_t)qud->poctant);
