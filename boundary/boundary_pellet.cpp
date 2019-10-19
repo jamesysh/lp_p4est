@@ -7,7 +7,7 @@
 #include "pellet_solver.h"
 using namespace std;
 
-PelletInflowBoundary::PelletInflowBoundary():Pinflow(17),Uinflow(0),Vinflow(100){}
+PelletInflowBoundary::PelletInflowBoundary():Pinflow(30),Uinflow(0),Vinflow(100){}
 
 void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx, double dt){
     computeMassFlowRate(g,dx);
@@ -73,7 +73,7 @@ void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS,
         pad->ifboundary = true;
         pad->flagdelete = !g->flagdelete;
         pad->soundspeed = m_pEOS->getSoundSpeed(pad->pressure,1./pad->volume);
-		}
+        }
 
     }
 
@@ -120,6 +120,7 @@ void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS,
                pad->mass = mass_fix;
                pad->ifboundary = false; 
                pad->soundspeed = m_pEOS->getSoundSpeed(pad->pressure,1./pad->volume);
+		       pad->redocount = 0;
            }
            
            }
