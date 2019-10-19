@@ -54,6 +54,9 @@ Global_Data:: Global_Data(Initializer* init){
     invaliddensity = init->getInvalidDensity();
     iffreeboundary = init->getIfFreeBoundary();
     flagdelete = true;
+    
+    pelletnumber = init->getPelletDistribution();
+
 }
 
 
@@ -2747,7 +2750,7 @@ void Global_Data::searchUpwindNeighbourParticle(){
   neighbour_info_t * nei_info, *nei_info2;
   double theta, phi, sigma;
   size_t numnei, neiid;
-  double anglemin = 1.374;
+  double anglemin = 0.9;//1.374;
   double anglemax = M_PI-anglemin;
   
   pdata_copy_t *padcopy;
@@ -4008,4 +4011,15 @@ void Global_Data::reorderNeighbourList(){
     }
 
 }
+
+void Global_Data:: setParticleIDAndRank(){
+    pdata_t *pad;
+    size_t li, lpnum = particle_data->elem_count;
+    for(li = 0; li<lpnum; li++){
+        pad = (pdata_t *) sc_array_index(particle_data, li);
+        pad->mpirank = mpirank;
+        pad->id = li; 
+        }
+    
+    }
 

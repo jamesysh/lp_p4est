@@ -1,8 +1,7 @@
 #ifndef __PELLET_SOLVER_H__
 #define __PELLET_SOLVER_H__
 #include "particle_data.h"
-
-
+#include "initializer.h"
 typedef struct quadrant_data
 {   
     
@@ -13,11 +12,21 @@ typedef struct quadrant_data
 }
 quadrant_data_t;
 
+typedef struct integral
+{
+    p4est_locidx_t id;
+    double leftintegral;
+    double rightintegral;
+    
+    }
+    integral_t;
+
+
 class PelletSolver{
     
     public:
     
-        PelletSolver(Global_Data *gdata);
+        PelletSolver(Initializer* init,Global_Data *gdata);
         ~PelletSolver();
         
         void build_quadtree();
@@ -41,12 +50,18 @@ class PelletSolver{
                 const double lxyz[3], const double dxyz[3]);
         
         int countNumberinRange(sc_array_t *view, int n, double x, double y); 
+        void packParticles_phase2();
+        void communicateParticles_phase2();
+
+        void writeIntegralValue();
         
         
+        void computeHeatDeposition( double dt);
         
         int elem_particle_box;
         int elem_particle_cell;
         sc_array_t *prebuf;
+        sc_array_t *prebuf_integral;
         p4est_t *p4est_heating;
         p4est_connectivity_t *conn;
         sc_array_t *particle_data_copy; //used for pellet problem;
@@ -54,9 +69,21 @@ class PelletSolver{
     
         sc_array_t *ilh[2],*jlh[2],*klh[2];
         
+       
+
+
         
+        double mu = 20.1797; 
+        double mass = 3.351e-23;
+        double Z = 10;
+        double I = 135.5;
+        double sublimationenergy = 1363;
+        double teinf = 2000.0;
+        double neinf = 1.204910e13;
         
-        
+        double heatK = 1.602e-18;
+        double masse = 9.109e-28;
+        double magneticfield;
     };
 
 

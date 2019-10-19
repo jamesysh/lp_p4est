@@ -60,6 +60,7 @@ public:
     Octree_Manager *octree;
     Global_Data * gdata; 
     ParticleViewer *viewer;
+    PelletSolver *pellet_solver;
     double tstart;
     double tend;
     double currenttime;

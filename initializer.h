@@ -110,6 +110,13 @@ class Initializer {
     double getEinf() const{return m_fEinf;}
     bool getIfFreeBoundary() const{return m_bIfFreeBoundary;}
 
+
+    int getQuadtreeResolution() const {return m_iQuadtreeResolution;}
+    int getBinarytreeResolution() const {return m_iBinarytreeResolution;}
+
+    double getMagneticField() const {return m_iMagneticField;}
+
+	int getPelletDistribution() const {return m_iPelletDistribution;}
    int getPrintVelocity(){return m_iPrintVelocity;} 
 
    int getPrintVelocityU(){return m_iPrintVelocityU;}
@@ -193,10 +200,14 @@ class Initializer {
 	double m_fGravity;///< gravity
 	bool m_iUseLimiter;///< if use limiter or not 1:yes 0:no
 	double m_fInitialPerturbation;//<amount of maximal initial perturbation in dx
-    
+    int m_iPelletDistribution; 
+    int m_iQuadtreeResolution;
+                        
+    int m_iBinarytreeResolution;
+    double m_iMagneticField;
+
 
 
 
 };
-
 #endif // __INITIALIZER_H__

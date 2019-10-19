@@ -24,7 +24,7 @@ public:
 	double& xb, double& yb, double& zb, 
 	double& pressureb, double& vxb, double& vyb, double& vzb);
 		
-    virtual void generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx);
+    virtual void generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx,double dt);
 		
 private:
 	double radius;	
@@ -54,7 +54,7 @@ public:
         std::vector<double>& xb, std::vector<double>& yb, std::vector<double>& zb,
         std::vector<double>& pressureb, std::vector<double>& vxb, std::vector<double>& vyb, std::vector<double>& vzb);
 
-        virtual void generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx);
+        virtual void generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx,double dt);
 
 private:
         double radius;
@@ -87,7 +87,7 @@ public:
         double& xb, double& yb, double& zb,
         double& pressureb, double& vxb, double& vyb, double& vzb);
 
-        virtual void generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx);
+        virtual void generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx,double dt);
 
 private:
         double radius;

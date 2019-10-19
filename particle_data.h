@@ -28,10 +28,8 @@ typedef struct pdata{
     bool ifhasghostneighbour;
     bool ifboundary;   //if a boundary particle
     bool flagdelete;   // delete boundary particle at current timestep: delete if its not the same as flag in gdata
-    double schemeorder;
-    int32_t redocount;
-    double leftintegral;
-    double rightintegral;
+    int8_t schemeorder;
+    int8_t redocount;
     sc_array_t * ghostneighbour;   //pdata_copy_t
     sc_array_t * neighbourparticle;
       
@@ -42,7 +40,11 @@ typedef struct pdata{
     sc_array_t * neighbourfrontparticle;
     sc_array_t * neighbourbackparticle;
     p4est_gloidx_t      id;
-
+    p4est_gloidx_t      mpirank;
+    double leftintegral;
+    double rightintegral;
+    double deltaq;
+    double qplusminus;
 } pdata_t;
 
 typedef struct pdata_copy{
@@ -189,6 +191,8 @@ class Global_Data{
         void createViewForOctant2d();
         void cleanForTimeStep();
         void cleanForTimeStep2d();
+        
+        void setParticleIDAndRank();
         void testquad();
         void testquad2d();
         void loopquad (p4est_topidx_t tt, p8est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]);
@@ -255,6 +259,10 @@ class Global_Data{
         p4est_ghost_t *ghost2d;
         sc_array_t *particle_data; //local particle data on process
         
+       
+       
+        int pelletnumber;
+        PelletSolver *pellet_solver; 
         sc_array_t *pfound; //target process of particle
         
         sc_array_t *iremain; /**< locidx_t Index into padata of stay-local particles */

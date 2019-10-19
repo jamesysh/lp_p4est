@@ -10,6 +10,7 @@ LPSolver::LPSolver(Initializer *init, Global_Data *g, Octree_Manager *o, Particl
     octree = o;
     viewer = v;
     splitorder = 0;
+    cfldt = 0;
     cflcoefficient = init->getCFLCoeff();
     tstart = init->getStartTime();
     tend = init->getEndTime();
@@ -35,7 +36,9 @@ LPSolver::LPSolver(Initializer *init, Global_Data *g, Octree_Manager *o, Particl
         totalphase = 2;
     }
     
-
+    if(init->getPelletDistribution()){
+        pellet_solver = new PelletSolver(init,gdata);
+    }
 
 }
 
@@ -149,7 +152,8 @@ if(p_d_0>0){
 	vel_d_0, vel_dd_0, p_d_0, p_dd_0,
     vel_d_1, vel_dd_1, p_d_1, p_dd_1,
     outvolume, outvelocity, outpressure);
-        
+
+    *outpressure += realdt*pad->deltaq*((*insoundspeed)*(*insoundspeed)/(*involume)/(*inpressure)-1); 
          if(*outpressure < gdata->invalidpressure || 1./(*outvolume)< gdata->invaliddensity)
          {
              redo  = true;
@@ -590,7 +594,7 @@ void LPSolver:: solve_2d(){
     {
     
         for(size_t id=0; id<gdata->boundarynumber; id++){ 
-           gdata->m_vBoundary[id]->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
+           gdata->m_vBoundary[id]->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing, cfldt);
         }
         
     //gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
@@ -688,15 +692,12 @@ void LPSolver::solve_3d(){
     
     viewer->writeResult(0);
     
-    PelletSolver *pellet_solver = new PelletSolver(gdata);
     while(currenttime < tend)
     {
     
-    
-    
-    
+         
         for(size_t id=0; id<gdata->boundarynumber; id++){ 
-           gdata->m_vBoundary[id]->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing);
+           gdata->m_vBoundary[id]->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing,cfldt);
          }
     
     //gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
@@ -746,28 +747,44 @@ void LPSolver::solve_3d(){
         if(gdata->iffreeboundary){ 
             gdata->generateGhostParticle();
         }
-    
-        pellet_solver->prerun();
-        pellet_solver->build_quadtree();
-      
-        pellet_solver->presearch2d();
-        
-        pellet_solver->packParticles();
-        
-        pellet_solver->communicateParticles();
-        
-        pellet_solver->postsearch2d();
-     
-        pellet_solver->adaptQuadtree();
+        gdata->setParticleIDAndRank();  
+      // if(0){ 
+        if(gdata->pelletnumber){
+            pellet_solver->prerun();
+            pellet_solver->build_quadtree();
+          
+            pellet_solver->presearch2d();
+            
+            pellet_solver->packParticles();
+            
+            pellet_solver->communicateParticles();
+            
+            pellet_solver->postsearch2d();
+         
+            pellet_solver->adaptQuadtree();
 
-     
-        pellet_solver->regroupParticles2d();
+         
+            pellet_solver->regroupParticles2d();
 
-        pellet_solver->partitionParticles2d();
-        
-        MPI_Barrier(gdata->mpicomm);
+            pellet_solver->partitionParticles2d();
+            
+            MPI_Barrier(gdata->mpicomm);
 
-        pellet_solver->computeDensityIntegral();
+            pellet_solver->computeDensityIntegral();
+            
+            pellet_solver->packParticles_phase2();
+            pellet_solver->communicateParticles_phase2();
+            
+            MPI_Barrier(gdata->mpicomm);
+            pellet_solver->writeIntegralValue();
+            
+            MPI_Barrier(gdata->mpicomm);
+            pellet_solver->computeHeatDeposition(cfldt);
+       
+            MPI_Barrier(gdata->mpicomm);
+            pellet_solver->destoryQuadtree();
+       } 
+        computeLocalBoundaryAndFluidNum();
         computeCFLCondition();
     
         bool iswritestep = adjustDtByWriteTimeInterval(); 
@@ -776,6 +793,7 @@ void LPSolver::solve_3d(){
         splitorder = (int)rand()%6;
         MPI_Bcast(&splitorder,1,MPI_INT,0,gdata->mpicomm);
         
+        P4EST_GLOBAL_ESSENTIALF ("Enter UPWIND.\n");
         for(int phase = 0;phase< totalphase;phase++){
             solve_upwind(phase);
             MPI_Barrier(gdata->mpicomm);
@@ -783,7 +801,8 @@ void LPSolver::solve_3d(){
             MPI_Barrier(gdata->mpicomm); 
         }
    
-    solve_laxwendroff();
+        P4EST_GLOBAL_ESSENTIALF ("FINISH UPWIND.\n");
+   // solve_laxwendroff();
     
     gdata->updateParticleStates();
    
@@ -803,13 +822,12 @@ void LPSolver::solve_3d(){
 
         gdata->switchFlagDelete();
     
-        pellet_solver->destoryQuadtree();
-    }
+    
 
 
 }
 
-
+}
 void LPSolver:: computeLocalBoundaryAndFluidNum(){
 
     pdata_t *pad;

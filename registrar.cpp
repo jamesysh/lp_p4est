@@ -11,7 +11,7 @@ namespace{
 
     GeometryRegistrar<PelletLayer> g1("pelletlayer");
     StateRegistrar<PelletState> s1("pelletstate");
-    BoundaryRegistrar<PelletInflowBoundary> b1("inflowboundary");
+    BoundaryRegistrar<PelletInflowBoundary> b1("pelletinflowboundary");
     GeometryRegistrar<Disk> g2("disk");
     StateRegistrar<Gresho2DState> s2("gresho2dstate");
     BoundaryRegistrar<Gresho2DSolidBoundary> b2("gresho2dboundary");

@@ -21,7 +21,7 @@ public:
 	 * \param [out] zb  The z-coordinate of boundary particle		
 	 */
 	virtual void UpdateInflowBoundary(Global_Data* gdata, EOS* m_pEOS, double dt, double m_fInitParticleSpacing){return ;}
-    virtual void generateBoundaryParticle(Global_Data *gdata, EOS* m_pEOS, double m_fInitParticleSpacing)  {return ;}  
+    virtual void generateBoundaryParticle(Global_Data *gdata, EOS* m_pEOS, double m_fInitParticleSpacing,double dt)  {return ;}  
 
 
 };

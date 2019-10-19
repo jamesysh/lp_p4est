@@ -144,8 +144,25 @@ void Initializer::readInputfile(const string& inputfileName) {
 	iss>>m_fInitialPerturbation;
 	save<<"m_fInitialPerturbation "<<m_fInitialPerturbation<<endl;
 	
+    iss.str(lines[i++]);
+	iss>>m_iPelletDistribution;
+	save<<"m_iPelletDistribution "<<m_iPelletDistribution<<endl;
       
 
+    if(m_iPelletDistribution){
+
+        iss.str(lines[i++]);
+	    iss>>m_iQuadtreeResolution;
+	    save<<"m_iQuadtreeResolution "<<m_iQuadtreeResolution<<endl;
+        
+        iss.str(lines[i++]);
+        iss>>m_iBinarytreeResolution;
+	    save<<"m_iBinarytreeResolution "<<m_iBinarytreeResolution<<endl;
+        
+        iss.str(lines[i++]);
+        iss>>m_iMagneticField;
+        save<<"m_iMagneticField "<<m_iMagneticField<<endl;
+    }
 //-------------------SETUP OUTPUT OPTION------------------------
   
     vector<string> output;

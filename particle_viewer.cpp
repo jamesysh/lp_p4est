@@ -231,6 +231,49 @@ void ParticleViewer:: writeResult(int step){
         
         fprintf(outfile,"%.16g\n",(double)pad->localspacing);
     }
+    
+	fprintf(outfile,"SCALARS leftintegral double\n");
+	fprintf(outfile,"LOOKUP_TABLE default\n");
+    
+    for(li = 0; li<lpnum; li++){
+    
+        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+        if(pad->ifboundary) continue;
+        
+        fprintf(outfile,"%.16g\n",(double)pad->leftintegral);
+    }
+    
+	fprintf(outfile,"SCALARS rightintegral double\n");
+	fprintf(outfile,"LOOKUP_TABLE default\n");
+    
+    for(li = 0; li<lpnum; li++){
+    
+        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+        if(pad->ifboundary) continue;
+        
+        fprintf(outfile,"%.16g\n",(double)pad->rightintegral);
+    }
+    
+	fprintf(outfile,"SCALARS deltaq double\n");
+	fprintf(outfile,"LOOKUP_TABLE default\n");
+    for(li = 0; li<lpnum; li++){
+    
+        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+        if(pad->ifboundary) continue;
+        
+        fprintf(outfile,"%.16g\n",(double)pad->deltaq);
+    }
+    
+	fprintf(outfile,"SCALARS qplusminus double\n");
+	fprintf(outfile,"LOOKUP_TABLE default\n");
+    for(li = 0; li<lpnum; li++){
+    
+        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+        if(pad->ifboundary) continue;
+        
+        fprintf(outfile,"%.16g\n",(double)pad->qplusminus);
+    }
+    
     fclose(outfile);
     if(mpirank == 0){
     FILE *visitfile;

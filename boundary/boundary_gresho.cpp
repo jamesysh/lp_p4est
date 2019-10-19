@@ -38,7 +38,7 @@ int Gresho2DSolidBoundary:: operator()(double x, double y, double z, double pres
 }
 
 
-void Gresho2DSolidBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx){
+void Gresho2DSolidBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx, double dt){
     
     size_t n, i,totalcount = 0 ,count = 0;
     double x, y;
@@ -113,7 +113,7 @@ int Yee2DSolidBoundary:: operator()(double x, double y, double z, double pressur
 
 
 
-void Yee2DSolidBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx){
+void Yee2DSolidBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx, double dt){
     
     size_t n, i,totalcount = 0 ,count = 0;
     double x, y;
@@ -230,7 +230,7 @@ int Yee3DSolidBoundary::operator()(double x, double y, double z, double pressure
 
 
 
-void Yee3DSolidBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx){
+void Yee3DSolidBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx, double dt){
     
     size_t n, i,totalcount = 0 ,count = 0;
     double x, y, z;

@@ -11,11 +11,14 @@ public:
     PelletInflowBoundary();	
     virtual ~PelletInflowBoundary() {};
 	virtual void UpdateInflowBoundary(Global_Data* gdata, EOS* m_pEOS, double dt, double m_fInitParticleSpacing);
-    virtual void generateBoundaryParticle(Global_Data *gdata, EOS* m_pEOS, double m_fInitParticleSpacing); 
+    virtual void generateBoundaryParticle(Global_Data *gdata, EOS* m_pEOS, double m_fInitParticleSpacing, double dt); 
+
+    void computeMassFlowRate(Global_Data *g,double dx);
 private:
     double Pinflow;//inflow pressure, constant
 	double Uinflow;//inflow velocity, calculated using energy absorb rate
 	double Vinflow;//inflow specific volume, constant
+    double massflowrate;
 };
 
 #endif
