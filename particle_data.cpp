@@ -2750,7 +2750,7 @@ void Global_Data::searchUpwindNeighbourParticle(){
   neighbour_info_t * nei_info, *nei_info2;
   double theta, phi, sigma;
   size_t numnei, neiid;
-  double anglemin = 0.9;//1.374;
+  double anglemin = 1.374;
   double anglemax = M_PI-anglemin;
   
   pdata_copy_t *padcopy;

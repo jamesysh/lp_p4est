@@ -29,7 +29,7 @@ public:
 	 * \param [in] writeStep The number of times of output
 	 * \return               0 if output success; 1 otherwise
 	 */
-     void writeResult(int step);
+     void writeResult(int step,double time);
      void writeGhost(int step);
      
      Global_Data *gdata;

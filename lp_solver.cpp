@@ -124,36 +124,14 @@ void LPSolver::solve_upwind(int phase){
         &vel_d_1, &vel_dd_1, &p_d_1, &p_dd_1);
         
         /* 
-         if(p_d_1 > 0){
-
-             printf("%f %f %f\n",pad->xyz[0],pad->xyz[1],pad->xyz[2]);
-             double x = pad->xyz[0];
-             double y = pad->xyz[1];
-             double z = pad->xyz[2];
-             cout<<sqrt(x*x+y*y+z*z)<<endl;
-         }
-         
-         if(p_d_0 > 0){
-             printf("%f %f %f\n",pad->xyz[0],pad->xyz[1],pad->xyz[2]);
-             double x = pad->xyz[0];
-             double y = pad->xyz[1];
-             double z = pad->xyz[2];
-             cout<<sqrt(x*x+y*y+z*z)<<endl;
-         }*/
-        /* 
-if(p_d_0>0){
-    printf("%f %f %f %f\n",p_d_0,p_d_1,vel_d_0,vel_d_1);
- 
-    printf("%f %f %f\n",pad->xyz[0],pad->xyz[1],pad->xyz[2]);
-}
 */
     timeIntegration( realdt,
 	 0,  *involume, *invelocity, *inpressure, *insoundspeed, 
 	vel_d_0, vel_dd_0, p_d_0, p_dd_0,
     vel_d_1, vel_dd_1, p_d_1, p_dd_1,
     outvolume, outvelocity, outpressure);
-
-    *outpressure += realdt*pad->deltaq*((*insoundspeed)*(*insoundspeed)/(*involume)/(*inpressure)-1); 
+    if(gdata->pelletnumber){
+        *outpressure += realdt*(pad->deltaq)*((*insoundspeed)*(*insoundspeed)/(*involume)/(*inpressure)-1);} 
          if(*outpressure < gdata->invalidpressure || 1./(*outvolume)< gdata->invaliddensity)
          {
              redo  = true;
@@ -588,7 +566,7 @@ void LPSolver:: computeCFLCondition(){
 void LPSolver:: solve_2d(){
 
     computeLocalBoundaryAndFluidNum();
-    viewer->writeResult(0);
+    viewer->writeResult(0,currenttime);
     
     while(currenttime<tend)
     {
@@ -671,7 +649,7 @@ void LPSolver:: solve_2d(){
         
          {
         computeLocalBoundaryAndFluidNum();
-        viewer->writeResult(writestep);
+        viewer->writeResult(writestep,currenttime);
     }
    
     
@@ -690,7 +668,7 @@ void LPSolver::solve_3d(){
     
     computeLocalBoundaryAndFluidNum();
     
-    viewer->writeResult(0);
+    viewer->writeResult(0,currenttime);
     
     while(currenttime < tend)
     {
@@ -748,7 +726,6 @@ void LPSolver::solve_3d(){
             gdata->generateGhostParticle();
         }
         gdata->setParticleIDAndRank();  
-      // if(0){ 
         if(gdata->pelletnumber){
             pellet_solver->prerun();
             pellet_solver->build_quadtree();
@@ -814,7 +791,7 @@ void LPSolver::solve_3d(){
     {
 
         computeLocalBoundaryAndFluidNum();
-        viewer->writeResult(writestep);
+        viewer->writeResult(writestep,currenttime);
     }
    
     
@@ -931,7 +908,8 @@ void LPSolver::solve_laxwendroff(){
                             outvolume, outvelocityu, outvelocityv, &temp2, outpressure); // output 
        }
    
-    
+         if(gdata->pelletnumber) {
+            *outpressure += cfldt*pad->deltaq*((*insoundspeed)*(*insoundspeed)/(*involume)/(*inpressure)-1);} 
          if(*outpressure < gdata->invalidpressure || 1./(*outvolume) < gdata->invaliddensity)
          {
              redo  = true;

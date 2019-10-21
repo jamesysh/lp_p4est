@@ -2,7 +2,7 @@
 #include "particle_viewer.h"
 #include <string.h>
 #include <cassert>
-
+#include "boundary_pellet.h"
 using namespace std;
 ParticleViewer::ParticleViewer(Global_Data *g, const std::string &filename,int numd ){
     gdata = g;
@@ -136,7 +136,7 @@ void ParticleViewer:: writeGhost(int step){
     }   
 
 }
-void ParticleViewer:: writeResult(int step){
+void ParticleViewer:: writeResult(int step, double time){
    writestep = step; 
    static bool FIRST = true;
    size_t lpnum = gdata->particle_data->elem_count;
@@ -297,5 +297,59 @@ void ParticleViewer:: writeResult(int step){
     
     fclose(visitfile);
     }   
+    
+    if( gdata->pelletnumber){
+        size_t li, lnump = gdata->particle_data->elem_count;
+        
+        double dx = gdata->initlocalspacing;
+        double mfr = 0;
+        double r = 1;
+        double dr = 5*dx;
+        double tr, vr;
+        double x, y, z;
+        double vx, vy, vz;
+        double mfr_g = 0;
+        for(li = 0; li<lnump; li++){
+            pad = (pdata_t *) sc_array_index(gdata->particle_data, li);
+            if(pad->ifboundary)
+                continue;
+            x = pad->xyz[0];
+            y = pad->xyz[1];
+            z = pad->xyz[2];
+            tr = (x*x) + (y*y) + (z*z);
+            double dis = fabs(sqrt(tr) - r);
+            if(dis < dr){
+                vx = pad->v[0];
+                vy = pad->v[1];
+                vz = pad->v[2];
+                vr = (vx*x+vy*y*vz*z)/sqrt(tr);
+                mfr += pad->mass*vr;
+                
+                }
+            
+            }
+        MPI_Allreduce(&mfr,&mfr_g,1,MPI_DOUBLE,MPI_SUM,gdata->mpicomm);
+
+        mfr_g = mfr_g/2/dr;
+        
+        if(mpirank == 0){
+        string mfrfilename = outputfilename + "/massflowrate.txt";
+        FILE *mfroutfile;
+        
+        if(writestep>0)
+                mfroutfile = fopen(mfrfilename.c_str(), "a");
+        else{
+                mfroutfile = fopen(mfrfilename.c_str(), "w");
+		fprintf(mfroutfile,"Time  Massflowrate around pellets.\n");
+	       }
+        if(mfroutfile==nullptr) {
+                printf("Unable to open file: %s\n",mfrfilename.c_str());
+                return;
+        }
+        PelletInflowBoundary* b = (PelletInflowBoundary *)gdata->m_vBoundary[0]; 
+        fprintf(mfroutfile,"%16g %16g %16g\n",time,b->massflowrate,mfr_g); 
+        fclose(mfroutfile); 
+        }
+     }
 
 }

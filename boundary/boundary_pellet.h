@@ -14,11 +14,12 @@ public:
     virtual void generateBoundaryParticle(Global_Data *gdata, EOS* m_pEOS, double m_fInitParticleSpacing, double dt); 
 
     void computeMassFlowRate(Global_Data *g,double dx);
+
+    double massflowrate;
 private:
     double Pinflow;//inflow pressure, constant
 	double Uinflow;//inflow velocity, calculated using energy absorb rate
 	double Vinflow;//inflow specific volume, constant
-    double massflowrate;
 };
 
 #endif
