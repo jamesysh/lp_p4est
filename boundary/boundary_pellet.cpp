@@ -7,7 +7,7 @@
 #include "pellet_solver.h"
 using namespace std;
 
-PelletInflowBoundary::PelletInflowBoundary():Pinflow(17),Uinflow(0),Vinflow(100){}
+PelletInflowBoundary::PelletInflowBoundary():Pinflow(30),Uinflow(0),Vinflow(100){}
 
 void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx, double dt){
     computeMassFlowRate(g,dx);

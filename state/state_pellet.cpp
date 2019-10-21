@@ -2,7 +2,7 @@
 #include <iostream>
 
 PelletState::PelletState():
-m_fDen(1./100), m_fVel(0), m_fPressure(17), xcen(0), ycen(0), zcen(0){}
+m_fDen(1./100), m_fVel(0), m_fPressure(30), xcen(0), ycen(0), zcen(0){}
 
 double PelletState::pressure(double x, double y, double z) {
 	return m_fPressure;

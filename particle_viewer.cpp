@@ -304,7 +304,7 @@ void ParticleViewer:: writeResult(int step, double time){
         double dx = gdata->initlocalspacing;
         double mfr = 0;
         double r = 1;
-        double dr = 5*dx;
+        double dr = 3*dx;
         double tr, vr;
         double x, y, z;
         double vx, vy, vz;
@@ -322,7 +322,7 @@ void ParticleViewer:: writeResult(int step, double time){
                 vx = pad->v[0];
                 vy = pad->v[1];
                 vz = pad->v[2];
-                vr = (vx*x+vy*y*vz*z)/sqrt(tr);
+                vr = (vx*x+vy*y + vz*z)/sqrt(tr);
                 mfr += pad->mass*vr;
                 
                 }
