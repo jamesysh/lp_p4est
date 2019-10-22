@@ -24,7 +24,7 @@ typedef struct pdata{
     double soundspeedT2;
     double mass;
     double localspacing;
-    double flagboundary;
+    bool flagboundary;
     bool ifhasghostneighbour;
     bool ifboundary;   //if a boundary particle
     bool flagdelete;   // delete boundary particle at current timestep: delete if its not the same as flag in gdata
@@ -65,7 +65,7 @@ typedef struct pdata_copy{
 /** Data type for payload data inside each quadrant */
 typedef struct octant_data
 {   
-    int flagboundary;  //if true, octant is at cloud boundary;
+    bool flagboundary;  //if true, octant is at cloud boundary;
     sc_array_t *localneighbourid;
     sc_array_t *ghostneighbourid;
    // sc_array_t* particle_data_view;
@@ -193,6 +193,8 @@ class Global_Data{
         void cleanForTimeStep2d();
         
         void setParticleIDAndRank();
+        
+        void setFlagBoundaryForParticle();
         void testquad();
         void testquad2d();
         void loopquad (p4est_topidx_t tt, p8est_quadrant_t * quad,double lxyz[3], double hxyz[3], double dxyz[3]);

@@ -219,7 +219,7 @@ void ParticleViewer:: writeResult(int step, double time){
         pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
         if(pad->ifboundary) continue;
         
-        fprintf(outfile,"%.16g\n",(double)pad->soundspeed);
+        fprintf(outfile,"%d\n",pad->ifhasghostneighbour);
     }
 	fprintf(outfile,"SCALARS localspacing double\n");
 	fprintf(outfile,"LOOKUP_TABLE default\n");
@@ -229,7 +229,7 @@ void ParticleViewer:: writeResult(int step, double time){
         pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
         if(pad->ifboundary) continue;
         
-        fprintf(outfile,"%.16g\n",(double)pad->localspacing);
+        fprintf(outfile,"%d\n",pad->flagboundary);
     }
     
 	fprintf(outfile,"SCALARS leftintegral double\n");

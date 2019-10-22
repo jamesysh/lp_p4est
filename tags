@@ -276,9 +276,9 @@ fetchParticle	particle_data.cpp	/^void Global_Data::fetchParticle(pdata_t* pad, 
 fetchParticle2d	particle_data.cpp	/^void Global_Data::fetchParticle2d(pdata_t* pad, pdata_copy_t **padnei, neighbour_info_t *neiinfo){$/;"	f	class:Global_Data
 fillArrayWithGhostParticle	particle_data.cpp	/^void Global_Data::fillArrayWithGhostParticle(sc_array_t * neighbourlist, pdata_t * pad, int count, int dir){$/;"	f	class:Global_Data
 fillArrayWithGhostParticle2d	particle_data.cpp	/^void Global_Data::fillArrayWithGhostParticle2d(sc_array_t * neighbourlist, pdata_t * pad, int count, int dir){$/;"	f	class:Global_Data
+flagboundary	particle_data.h	/^    bool flagboundary;  \/\/if true, octant is at cloud boundary;$/;"	m	struct:octant_data
+flagboundary	particle_data.h	/^    bool flagboundary;$/;"	m	struct:pdata
 flagboundary	particle_data.h	/^    bool flagboundary;$/;"	m	struct:pdata_copy
-flagboundary	particle_data.h	/^    double flagboundary;$/;"	m	struct:pdata
-flagboundary	particle_data.h	/^    int flagboundary;  \/\/if true, octant is at cloud boundary;$/;"	m	struct:octant_data
 flagdelete	particle_data.h	/^        bool flagdelete; $/;"	m	class:Global_Data
 flagdelete	particle_data.h	/^    bool flagdelete;   \/\/ delete boundary particle at current timestep: delete if its not the same as flag in gdata$/;"	m	struct:pdata
 flagrefine	particle_data.h	/^        int flagrefine, gflagrefine, flagstartrefine;$/;"	m	class:Global_Data
@@ -688,6 +688,7 @@ searchUpwindNeighbourParticle	particle_data.cpp	/^void Global_Data::searchUpwind
 searchUpwindNeighbourParticle2d	particle_data.cpp	/^void Global_Data::searchUpwindNeighbourParticle2d(){$/;"	f	class:Global_Data
 send_req	particle_data.h	/^        sc_array_t *send_req; \/**< sc_MPI_Request for sending *\/$/;"	m	class:Global_Data
 setEOS	particle_data.cpp	/^void Global_Data::setEOS(){$/;"	f	class:Global_Data
+setFlagBoundaryForParticle	particle_data.cpp	/^void Global_Data::setFlagBoundaryForParticle(){$/;"	f	class:Global_Data
 setInAndOutPointer	lp_solver.cpp	/^void LPSolver::setInAndOutPointer(pdata_t *pad, double **inpressure, double **outpressure, double **involume, double **outvolume,$/;"	f	class:LPSolver
 setNeighbourListPointer	lp_solver.cpp	/^void LPSolver::setNeighbourListPointer(pdata_t *pad, sc_array_t** neilist0, sc_array_t **neilist1,int dir){$/;"	f	class:LPSolver
 setParams	initializer.cpp	/^void Initializer::setParams() {$/;"	f	class:Initializer
@@ -754,7 +755,7 @@ volumeT1	particle_data.h	/^    double volumeT1;$/;"	m	struct:pdata
 volumeT2	particle_data.h	/^    double volumeT2;$/;"	m	struct:pdata
 writeGhost	particle_viewer.cpp	/^void ParticleViewer:: writeGhost(int step){$/;"	f	class:ParticleViewer
 writeIntegralValue	pellet_solver.cpp	/^void PelletSolver::writeIntegralValue(){$/;"	f	class:PelletSolver
-writeResult	particle_viewer.cpp	/^void ParticleViewer:: writeResult(int step){$/;"	f	class:ParticleViewer
+writeResult	particle_viewer.cpp	/^void ParticleViewer:: writeResult(int step, double time){$/;"	f	class:ParticleViewer
 writeVTKFiles	particle_data.cpp	/^void Global_Data:: writeVTKFiles(){$/;"	f	class:Global_Data
 writestep	lp_solver.h	/^    int writestep;$/;"	m	class:LPSolver
 writestep	particle_viewer.h	/^    int writestep;$/;"	m	class:ParticleViewer

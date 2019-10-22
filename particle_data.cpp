@@ -74,7 +74,6 @@ static void testcornerside2d( p4est_iter_corner_info_t * info, void *user_data){
     p4est_locidx_t quadid;
     p4est_locidx_t *neighbourid;
     for(size_t i=0;i<sidescount;i++){
-    
        sidedest = p4est_iter_cside_array_index_int(sides,i); 
        if(sidedest->is_ghost)
            continue;
@@ -86,7 +85,7 @@ static void testcornerside2d( p4est_iter_corner_info_t * info, void *user_data){
            if(sidesrc->is_ghost){
                 oudsrc = &ghost_data[sidesrc->quadid]; 
                 if(oudsrc->poctant == 0){
-                    ouddest->flagboundary = 1;
+                    ouddest->flagboundary = true;
                     continue;
                 }
                 neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->ghostneighbourid,1);
@@ -99,7 +98,7 @@ static void testcornerside2d( p4est_iter_corner_info_t * info, void *user_data){
                 qsrc = sidesrc->quad;
                 oudsrc = (octant_data_t *)qsrc->p.user_data;
                 if(oudsrc->poctant == 0){
-                    ouddest->flagboundary = 1;
+                    ouddest->flagboundary = true;
                     continue;
                 }
                 neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->localneighbourid,1);
@@ -136,7 +135,8 @@ static void testcornerside( p8est_iter_corner_info_t * info, void *user_data){
            if(sidesrc->is_ghost){
                 oudsrc = &ghost_data[sidesrc->quadid]; 
                 if(oudsrc->poctant == 0){
-                    ouddest->flagboundary = 1;
+                    ouddest->flagboundary = true;
+
                     continue;
                 }
                 neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->ghostneighbourid,1);
@@ -149,8 +149,10 @@ static void testcornerside( p8est_iter_corner_info_t * info, void *user_data){
                 qsrc = sidesrc->quad;
                 oudsrc = (octant_data_t *)qsrc->p.user_data;
                 if(oudsrc->poctant == 0){
-                    ouddest->flagboundary = 1;
+                    ouddest->flagboundary = true;
+                    
                     continue;
+                
                 }
                 neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->localneighbourid,1);
                 *neighbourid = sidesrc->quadid;
@@ -2052,7 +2054,7 @@ void Global_Data::createViewForOctant2d(){
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p4est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
-      qud->flagboundary = 0;  
+      qud->flagboundary = false;  
       qud->poctant = qud->lpend - offset;
         if(qud->poctant >= 300){
             printf("This octant has more than 300 particles, please enlarge size of localparticle!!\n");
@@ -2075,6 +2077,37 @@ void Global_Data::createViewForOctant2d(){
 
 }
 
+void Global_Data::setFlagBoundaryForParticle(){
+    
+    p4est_topidx_t      tt;
+  
+    p4est_locidx_t      lq;
+
+  p8est_tree_t       *tree;
+  p8est_quadrant_t   *quad;
+  octant_data_t          *qud;
+
+  p4est_locidx_t   offset = 0,lpend;
+  pdata_t * pad;
+  for (tt = p8est->first_local_tree; tt <= p8est->last_local_tree; ++tt) {
+    tree = p8est_tree_array_index (p8est->trees, tt);
+    for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
+      quad = p8est_quadrant_array_index (&tree->quadrants, lq);
+      qud = (octant_data_t *) quad->p.user_data;
+      lpend = qud->lpend;
+      for(int i=offset;i<lpend;i++){
+         pad = (pdata_t *)sc_array_index(particle_data,i);
+         if(pad->ifboundary)
+             continue;
+         pad->flagboundary = qud->flagboundary;
+            }
+       offset = lpend;  
+    
+        }
+    }
+    
+}
+
 
 void Global_Data::createViewForOctant(){
     p4est_topidx_t      tt;
@@ -2091,7 +2124,7 @@ void Global_Data::createViewForOctant(){
     for (lq = 0; lq < (p4est_locidx_t) tree->quadrants.elem_count; ++lq) {
       quad = p8est_quadrant_array_index (&tree->quadrants, lq);
       qud = (octant_data_t *) quad->p.user_data;
-      qud->flagboundary = 0;  
+      qud->flagboundary = false;  
       qud->poctant = qud->lpend - offset;
         if(qud->poctant >= 250){
             printf("This octant has more than 250 particles, please enlarge size of localparticle!!\n");

@@ -721,12 +721,15 @@ void LPSolver::solve_3d(){
         gdata->searchUpwindNeighbourParticle(); 
      //   gdata->reorderNeighbourList();
 
+        gdata->setFlagBoundaryForParticle();  
         MPI_Barrier(gdata->mpicomm); 
         if(gdata->iffreeboundary){ 
             gdata->generateGhostParticle();
         }
-        gdata->setParticleIDAndRank();  
+        
         if(gdata->pelletnumber){
+            
+            gdata->setParticleIDAndRank();  
             pellet_solver->prerun();
             pellet_solver->build_quadtree();
           
