@@ -7,7 +7,7 @@
 #include "pellet_solver.h"
 using namespace std;
 
-PelletInflowBoundary::PelletInflowBoundary():Pinflow(30),Uinflow(0),Vinflow(100){}
+PelletInflowBoundary::PelletInflowBoundary():Pinflow(17),Uinflow(0),Vinflow(100){}
 
 void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx, double dt){
     computeMassFlowRate(g,dx);
@@ -79,7 +79,11 @@ void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS,
 
 
      int numberofNewFluid = massflowrate*dt/mass_fix;
-     
+     double actualdx = sqrt(4*M_PI*pr*pr/numberofNewFluid)/2;
+
+    if(dx<actualdx && actualdx<1)
+        dx = actualdx;
+    
      P4EST_GLOBAL_ESSENTIALF("Generate %d new fluid particles.\n", numberofNewFluid);
      g->gpnum += numberofNewFluid;
 
@@ -88,7 +92,6 @@ void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS,
      double dis = pv*dt;
      double offset = 2./numberofNewFluid;
      double increment = M_PI*(3-sqrt(5));
-     
      if(g->mpirank == 0){
          for(int i=0;i<numberofNewFluid;i++){
                double r_random = ((double)rand()/(double)(RAND_MAX))*dis; 

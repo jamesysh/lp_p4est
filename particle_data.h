@@ -69,7 +69,7 @@ typedef struct octant_data
     sc_array_t *localneighbourid;
     sc_array_t *ghostneighbourid;
    // sc_array_t* particle_data_view;
-    pdata_copy_t localparticle[200];
+    pdata_copy_t localparticle[400];
     int octantid;
    // int mpirank;
     

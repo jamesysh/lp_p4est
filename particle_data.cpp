@@ -2066,8 +2066,8 @@ void Global_Data::createViewForOctant2d(){
       qud = (octant_data_t *) quad->p.user_data;
       qud->flagboundary = false;  
       qud->poctant = qud->lpend - offset;
-        if(qud->poctant >= 300){
-            printf("This octant has more than 300 particles, please enlarge size of localparticle!!\n");
+        if(qud->poctant >= 400){
+            printf("This octant has more than 400 particles, please enlarge size of localparticle!!\n");
             assert(false);
         }
 //      qud->particle_data_view = sc_array_new_count(sizeof(pdata_t),(size_t)qud->poctant);
@@ -2136,8 +2136,8 @@ void Global_Data::createViewForOctant(){
       qud = (octant_data_t *) quad->p.user_data;
       qud->flagboundary = false;  
       qud->poctant = qud->lpend - offset;
-        if(qud->poctant >= 250){
-            printf("This octant has more than 250 particles, please enlarge size of localparticle!!\n");
+        if(qud->poctant >= 400){
+            printf("This octant has more than 400 particles, please enlarge size of localparticle!!\n");
             assert(false);
         }
 //      qud->particle_data_view = sc_array_new_count(sizeof(pdata_t),(size_t)qud->poctant);
@@ -3655,15 +3655,24 @@ void Global_Data::fetchNeighbourParticle(pdata_t* pad, pdata_copy_t **padnei ,sc
 
 
 void Global_Data::addGhostParticle(pdata_copy_t * ghostnei, pdata_t *pad, double dx, double dy, double dz){
-
+                double volume;
+                double pressure;
+                if(pad->flagboundary){
+                    volume = 1.0e6;
+                    pressure = 0.64;
+                    }
+                else{
+                    volume = 1.0e6;//pad->volume;
+                    pressure = 0.64;//pad->pressure;
+                    }
                 ghostnei->xyz[0] = pad->xyz[0] - dx; 
                 ghostnei->xyz[1] = pad->xyz[1] - dy; 
                 ghostnei->xyz[2] = pad->xyz[2] - dz; 
                 ghostnei->v[0] = pad->v[0];
                 ghostnei->v[1] = pad->v[1];
                 ghostnei->v[2] = pad->v[2];
-                ghostnei->pressure = 0.64;//pad->pressure; 
-                ghostnei->volume = 1.0e6; 
+                ghostnei->pressure = pressure; 
+                ghostnei->volume = volume; 
                 ghostnei->soundspeed = pad->soundspeed; 
                 ghostnei->mass = 0; 
                 ghostnei->localspacing = pad->localspacing; 
