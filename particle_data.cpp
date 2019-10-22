@@ -64,7 +64,8 @@ Global_Data:: ~Global_Data(){
 
 }
 static void testcornerside2d( p4est_iter_corner_info_t * info, void *user_data){
-
+    
+    bool treeboundary = info->tree_boundary;
     octant_data_t *ghost_data = (octant_data_t *)user_data;
     sc_array_t         *sides = &(info->sides);
     size_t sidescount = sides->elem_count;
@@ -79,6 +80,10 @@ static void testcornerside2d( p4est_iter_corner_info_t * info, void *user_data){
            continue;
        qdest = sidedest->quad;
        ouddest = (octant_data_t *)qdest->p.user_data;
+       
+        if(treeboundary){
+            ouddest->flagboundary = true;
+            }
        for(size_t j=0;j<sidescount;j++){
        
            sidesrc = p4est_iter_cside_array_index_int(sides,j); 
@@ -113,7 +118,8 @@ static void testcornerside2d( p4est_iter_corner_info_t * info, void *user_data){
 
 }
 static void testcornerside( p8est_iter_corner_info_t * info, void *user_data){
-
+    bool treeboundary = info->tree_boundary;
+    
     octant_data_t *ghost_data = (octant_data_t *)user_data;
     sc_array_t         *sides = &(info->sides);
     size_t sidescount = sides->elem_count;
@@ -129,6 +135,10 @@ static void testcornerside( p8est_iter_corner_info_t * info, void *user_data){
            continue;
        qdest = sidedest->quad;
        ouddest = (octant_data_t *)qdest->p.user_data;
+       
+        if(treeboundary){
+            ouddest->flagboundary = true;
+            }
        for(size_t j=0;j<sidescount;j++){
        
            sidesrc = p8est_iter_cside_array_index_int(sides,j); 
@@ -152,8 +162,8 @@ static void testcornerside( p8est_iter_corner_info_t * info, void *user_data){
                     ouddest->flagboundary = true;
                     
                     continue;
-                
                 }
+                
                 neighbourid = (p4est_locidx_t *)sc_array_push_count(ouddest->localneighbourid,1);
                 *neighbourid = sidesrc->quadid;
            

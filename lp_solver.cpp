@@ -721,9 +721,10 @@ void LPSolver::solve_3d(){
         gdata->searchUpwindNeighbourParticle(); 
      //   gdata->reorderNeighbourList();
 
-        gdata->setFlagBoundaryForParticle();  
         MPI_Barrier(gdata->mpicomm); 
         if(gdata->iffreeboundary){ 
+            
+            gdata->setFlagBoundaryForParticle();  
             gdata->generateGhostParticle();
         }
         
