@@ -14,7 +14,7 @@ LPSolver::LPSolver(Initializer *init, Global_Data *g, Octree_Manager *o, Particl
     cflcoefficient = init->getCFLCoeff();
     tstart = init->getStartTime();
     tend = init->getEndTime();
-
+    LPFOrder = init->getLPFOrder();
     writestep = init->getWriteStep();
     writetimeinterval = init->getWriteTimeInterval();
     currenttime = tstart;
@@ -638,7 +638,9 @@ void LPSolver:: solve_2d(){
         MPI_Barrier(gdata->mpicomm); 
     }
     
+    if(LPFOrder == 2){
         solve_laxwendroff();
+        }
         gdata->updateParticleStates();
    
    
@@ -783,8 +785,9 @@ void LPSolver::solve_3d(){
         }
    
         P4EST_GLOBAL_ESSENTIALF ("FINISH UPWIND.\n");
-    solve_laxwendroff();
-    
+    if(LPFOrder == 2){
+        solve_laxwendroff();
+    }
     gdata->updateParticleStates();
    
     updateLocalSpacing();

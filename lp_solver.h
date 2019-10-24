@@ -61,6 +61,7 @@ public:
     Global_Data * gdata; 
     ParticleViewer *viewer;
     PelletSolver *pellet_solver;
+    int LPFOrder;
     double tstart;
     double tend;
     double currenttime;
@@ -72,7 +73,7 @@ public:
     int writestep;
     double writetimeinterval;
     double nextwritetime;
-    
+        
 };
 
 
