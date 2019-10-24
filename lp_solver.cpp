@@ -783,7 +783,7 @@ void LPSolver::solve_3d(){
         }
    
         P4EST_GLOBAL_ESSENTIALF ("FINISH UPWIND.\n");
-   // solve_laxwendroff();
+    solve_laxwendroff();
     
     gdata->updateParticleStates();
    

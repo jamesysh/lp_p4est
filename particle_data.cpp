@@ -2504,6 +2504,7 @@ void Global_Data:: searchNeighbourParticle(){
         if(pad->ifboundary)
             continue;
         pad->neighbourparticle = sc_array_new(sizeof(neighbour_info_t));
+        pad->ifhasghostneighbour = false;
         radius = pad->localspacing * timesearchingradius; 
         position = pad->xyz;
         x = position[0];
@@ -2528,6 +2529,7 @@ void Global_Data:: searchNeighbourParticle(){
                 if(dissquared == 0){
                     continue;  } // the neighbour is itslef
                 if(dissquared <= radius*radius){
+                    pad->ifhasghostneighbour = pad->ifhasghostneighbour || padnei->ifboundary;
                     nei_info = (neighbour_info_t *) sc_array_push(pad->neighbourparticle);
                     nei_info->ifremote = false;
                     nei_info->ifghost = false;
@@ -2545,7 +2547,7 @@ void Global_Data:: searchNeighbourParticle(){
             }  
         }
         
-        for(size_t i=0; i<ghostsize; i++){ //iterate through local neighbour octants
+        for(size_t i=0; i<ghostsize; i++){ //iterate through ghost neighbour octants
             ghostneiid = (p4est_locidx_t *)sc_array_index(qud->ghostneighbourid,i);
           //  quadnei = p8est_quadrant_array_index(&tree->quadrants,*localneiid);
             qudnei = &ghost_data[*ghostneiid];
@@ -2562,6 +2564,8 @@ void Global_Data:: searchNeighbourParticle(){
                 if(dissquared == 0)
                     continue;   // the neighbour is itslef
                 if(dissquared <= radius*radius){
+                    
+                    pad->ifhasghostneighbour = pad->ifhasghostneighbour || padnei->ifboundary;
                     nei_info = (neighbour_info_t *) sc_array_push(pad->neighbourparticle);
                     nei_info->ifremote = true;
                     nei_info->ifghost =false;
@@ -3248,7 +3252,7 @@ void Global_Data::generateGhostParticle(){
         if(pad->ifboundary)
             continue;
         pad->ghostneighbour =  sc_array_new(sizeof(pdata_copy_t));
-        pad->ifhasghostneighbour = false;
+//        pad->ifhasghostneighbour = false;
 
         count = pad->neighbourupparticle->elem_count;
         if(count<numrow1st)
