@@ -11,14 +11,21 @@ PelletInflowBoundary::PelletInflowBoundary():Pinflow(17),Uinflow(0),Vinflow(100)
 
 void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx, double dt){
     computeMassFlowRate(g,dx);
+    
+    static double mass_fix = dx*dx*dx/Vinflow/sqrt(2);
+    
+    double pr = 0.2;
     double xcen = 0;
     double ycen = 0;
     double zcen = 0;
-    double pr = 0.2;
     int n = 4.0*3.1416*pr*pr*pr/dx/dx/dx*sqrt(2.0)/5;
 
-     double mass_fix = dx*dx*dx/Vinflow/sqrt(2);
     double newpir = pr * 4/5;
+     int numberofNewFluid = massflowrate*dt/mass_fix;
+     double actualdx = sqrt(4*M_PI*pr*pr/numberofNewFluid)/2;
+
+    if(dx<actualdx && actualdx<0.1)
+        dx = actualdx;
     
     g->gpnum += n;
     pdata_t*  pad;
@@ -78,11 +85,6 @@ void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS,
     }
 
 
-     int numberofNewFluid = massflowrate*dt/mass_fix;
-     double actualdx = sqrt(4*M_PI*pr*pr/numberofNewFluid)/2;
-
-    if(dx<actualdx && actualdx<1)
-        dx = actualdx;
     
      P4EST_GLOBAL_ESSENTIALF("Generate %d new fluid particles.\n", numberofNewFluid);
      g->gpnum += numberofNewFluid;
