@@ -15,11 +15,14 @@ public:
 
     void computeMassFlowRate(Global_Data *g,double dx);
 
+    void computeRadialDerivative(Global_Data *g,double dx);
     double massflowrate;
 private:
     double Pinflow;//inflow pressure, constant
 	double Uinflow;//inflow velocity, calculated using energy absorb rate
 	double Vinflow;//inflow specific volume, constant
+    double ux, px ,pelletvelocity;
+    double avg_dis;
 };
 
 #endif
