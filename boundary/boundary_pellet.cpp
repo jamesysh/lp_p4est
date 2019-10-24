@@ -281,7 +281,7 @@ void PelletInflowBoundary::computeRadialDerivative(Global_Data *g,double dx){
        y = pad->xyz[1];
        z = pad->xyz[2];
        dr = sqrt((x-xcen)*(x-xcen)+(y-ycen)*(y-ycen)+(z-zcen)*(z-zcen))-pr;
-       if(dr>2*dx && dr < 3*dx){
+       if(dr>0*dx && dr < 1*dx){
             vx = pad->v[0];
             vy = pad->v[1];
             vz = pad->v[2];
@@ -301,7 +301,7 @@ void PelletInflowBoundary::computeRadialDerivative(Global_Data *g,double dx){
            return;
            }
 
-       avg_dis = 2.5*dx;
+       avg_dis = .5*dx;
        MPI_Allreduce(&psum, &psum_g,1,MPI_DOUBLE, MPI_SUM, g->mpicomm);
        
        px = (psum_g/counter_g-Pinflow)/avg_dis;
@@ -310,6 +310,5 @@ void PelletInflowBoundary::computeRadialDerivative(Global_Data *g,double dx){
        
        ux = (usum_g/counter_g-pelletvelocity)/avg_dis;
         
-//        cout<<ux<<" "<<px<<endl;
 }
 
