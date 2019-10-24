@@ -15,7 +15,20 @@ void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS,
     static double mass_fix = dx*dx*dx/Vinflow/sqrt(2);
     
     double pr = 0.2;
-    double pv  = Vinflow*massflowrate/4/M_PI/pr/pr;
+    
+    double Ts = 700;
+    double gamma = 1.67;
+    double R = 83.1446/20.18;
+    
+    //double pv  = Vinflow*massflowrate/4/M_PI/pr/pr;
+    
+    double pv = sqrt(gamma*R*Ts)/10;
+    if(massflowrate != 0){
+        Vinflow = 4*M_PI*pr*pr*pv/massflowrate;
+        Pinflow = R*Ts/Vinflow;
+    }
+    
+    
     pelletvelocity = pv;
     double xcen = 0;
     double ycen = 0;
@@ -197,7 +210,12 @@ void PelletInflowBoundary::UpdateInflowBoundary(Global_Data* g, EOS* m_pEOS, dou
 
 
 void PelletInflowBoundary::computeMassFlowRate(Global_Data *g,double dx){
-
+   static bool first=true;
+   if(first){
+       massflowrate = 0;
+       first = false;
+       return;
+       }
    pdata_t *pad;
    size_t li, lpnum = g->particle_data->elem_count;
    double x, y, z, dr;
