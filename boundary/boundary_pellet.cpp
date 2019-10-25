@@ -7,7 +7,7 @@
 #include "pellet_solver.h"
 using namespace std;
 
-PelletInflowBoundary::PelletInflowBoundary():Pinflow(30),Uinflow(0),Vinflow(100){}
+PelletInflowBoundary::PelletInflowBoundary():Pinflow(30),Uinflow(0),Vinflow(100){ massflowrate = 0;}
 
 void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx, double dt){
     computeMassFlowRate(g,dx);
@@ -74,8 +74,6 @@ void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS,
         d_y = ty*tr;
         d_z = tz*tr;
         dr = sqrt(d_x*d_x+d_y*d_y+d_z*d_z);
-	    if(dr>0.2)
-            cout<<"warning"<<endl;
         /*	vx[inflowEndIndex] = m_voldv[pi]*d_x/dr;
            	vy[inflowEndIndex] = m_voldv[pi]*d_y/dr;
            	vz[inflowEndIndex] = m_voldv[pi]*d_z/dr;
@@ -309,6 +307,7 @@ void PelletInflowBoundary::computeRadialDerivative(Global_Data *g,double dx){
        MPI_Allreduce(&usum, &usum_g,1,MPI_DOUBLE, MPI_SUM, g->mpicomm);
        
        ux = (usum_g/counter_g-pelletvelocity)/avg_dis;
-        
+       if(px > 0 )
+           px = 0;
 }
 

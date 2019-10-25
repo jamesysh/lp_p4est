@@ -668,9 +668,9 @@ void LPSolver::solve_3d(){
 
 
     
-    computeLocalBoundaryAndFluidNum();
+  //  computeLocalBoundaryAndFluidNum();
     
-    viewer->writeResult(0,currenttime);
+  //  viewer->writeResult(0,currenttime);
     
     while(currenttime < tend)
     {
@@ -721,7 +721,7 @@ void LPSolver::solve_3d(){
         gdata->searchNeighbourParticle();
         
         gdata->searchUpwindNeighbourParticle(); 
-     //   gdata->reorderNeighbourList();
+       // gdata->reorderNeighbourList();
 
         MPI_Barrier(gdata->mpicomm); 
         if(gdata->iffreeboundary){ 
@@ -806,8 +806,6 @@ void LPSolver::solve_3d(){
 
         gdata->switchFlagDelete();
     
-    
-
 
 }
 
@@ -855,7 +853,10 @@ void LPSolver::solve_laxwendroff(){
                continue;
            }
        }
-        
+       if(pad->neighbourparticle->elem_count < gdata->numrow2nd)
+       { 
+           continue;
+       }
        bool redo = false;
        
        inpressure = &pad->pressure;
