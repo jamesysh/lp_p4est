@@ -157,6 +157,8 @@ int main(int argc, const char* argv[]){
     mpiret = sc_MPI_Finalize ();
 
     double t2 = MPI_Wtime();
-    printf( "Elapsed time is %f\n", t2 - t1 ); 
+   
+    P4EST_GLOBAL_ESSENTIALF ("Elapsed time is %f.\n", t2-t1);
+   
     return 0;
 }
