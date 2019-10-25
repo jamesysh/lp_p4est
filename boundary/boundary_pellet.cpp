@@ -20,7 +20,7 @@ void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS,
     double gamma = 1.67;
     double R = 83.1446/20.18;
     
-    //double pv  = Vinflow*massflowrate/4/M_PI/pr/pr;
+//    double pv  = Vinflow*massflowrate/4/M_PI/pr/pr;
     
     double pv = sqrt(gamma*R*Ts)/10;
     if(massflowrate != 0){
@@ -42,7 +42,9 @@ void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS,
         dx = actualdx;
     
     computeRadialDerivative(g,dx);
-    
+
+
+
     double newpir = pr * 4/5;
     g->gpnum += n;
     pdata_t*  pad;
