@@ -2,6 +2,7 @@
 #define __PELLET_SOLVER_H__
 #include "particle_data.h"
 #include "initializer.h"
+#include <map>
 typedef struct quadrant_data
 {   
     
@@ -58,6 +59,11 @@ class PelletSolver{
         
         void computeHeatDeposition( double dt);
         
+        void getOne_Plus_Zstar(double teinf);
+        
+       
+
+        
         int elem_particle_box;
         int elem_particle_cell;
         sc_array_t *prebuf;
@@ -75,7 +81,7 @@ class PelletSolver{
         
         double mu = 20.1797; 
         double mass = 3.351e-23;
-        double Z = 10;
+        double Z = 10.;
         double I = 135.5;
         double sublimationenergy = 1363;
         double teinf = 2000.0;
@@ -83,7 +89,9 @@ class PelletSolver{
         
         double heatK = 1.602e-18;
         double masse = 9.109e-28;
+        double one_plus_Zstar;
         double magneticfield;
+    
     };
 
 

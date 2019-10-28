@@ -17,6 +17,8 @@ PelletSolver::PelletSolver(Initializer *init,Global_Data*g){
     elem_particle_cell = init->getBinarytreeResolution();
     magneticfield = init->getMagneticField();
     gdata->pellet_solver = this;
+    getOne_Plus_Zstar(teinf);
+    
     }
 
 
@@ -1307,7 +1309,18 @@ void PelletSolver::computeHeatDeposition( double dt){
     double guleft;
     double guright; 
     double nt;
-    
+    static double m_fCurrentTime = 0; 
+	double k_warmup;
+
+    m_fCurrentTime  += dt;
+
+    if ( m_fCurrentTime > 0.01)
+      k_warmup = 1.0;
+    else
+      k_warmup = 1.0;//m_fCurrentTime/0.01;
+
+
+
     for(li = 0; li<lnump ; li++){
         pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
         if(pad->ifboundary)
@@ -1315,7 +1328,7 @@ void PelletSolver::computeHeatDeposition( double dt){
         tauleft = pad->leftintegral/mass*Z;
         tauright = pad->rightintegral/mass*Z;
         tauinf = heatK*heatK*teinf*teinf/(8.0*3.1416*e*e*e*e*lnLambda);
-		taueff = tauinf*sqrt(2./(1.+Z));//tauinf/(0.625+0.55*sqrt(one_plus_zstar)); //tauinf*sqrt(2./(1.+ZNe));//tauinf/(0.625+0.55*sqrt(one_plus_Zstar));
+		taueff = tauinf/(0.625+0.55*sqrt(one_plus_Zstar)); //tauinf*sqrt(2./(1.+ZNe));//tauinf/(0.625+0.55*sqrt(one_plus_Zstar));
         uleft = tauleft/taueff;
         uright = tauright/taueff;                               
         qinf=sqrt(2.0/3.1416/masse)*neinf*pow(heatK*teinf,1.5);
@@ -1323,8 +1336,8 @@ void PelletSolver::computeHeatDeposition( double dt){
         guright = sqrt(uright)*Bessel_K1(sqrt(uright))/4;
         nt=1.0/pad->volume/mass;
 
-        pad->deltaq = qinf*nt/tauinf*(guleft+guright);
-        pad->qplusminus = qinf*0.5*(uleft*Bessel_Kn(2,sqrt(uleft))+uright*Bessel_Kn(2,sqrt(uright)));
+        pad->deltaq = qinf*nt*Z/tauinf*(guleft+guright)*k_warmup;
+        pad->qplusminus = qinf*0.5*(uleft*Bessel_Kn(2,sqrt(uleft))+uright*Bessel_Kn(2,sqrt(uright)))*k_warmup;
        // if(pad->qplusminus == 0)
          //   cout<<pad->leftintegral<<" "<<pad->rightintegral<<endl;
         
@@ -1519,6 +1532,25 @@ float           Bessel_Kn(
 
 
 
+void PelletSolver::getOne_Plus_Zstar(double teinf){
+
+        map<double, double> map_one_plus_Zstar;                                                     
+
+	    map_one_plus_Zstar[1000] = 4.93908;                                                               
+	    map_one_plus_Zstar[2000] = 4.92710;                                                               
+	    map_one_plus_Zstar[3000] = 4.93727;                                                               
+	    map_one_plus_Zstar[4000] = 4.94743;                                                               
+	    map_one_plus_Zstar[6000] = 4.96337;                                                               
+	    map_one_plus_Zstar[8000] = 4.97493;                                                               
+	    map_one_plus_Zstar[10000] = 4.98376;                                                              
+                                                                                                             
+	    one_plus_Zstar = map_one_plus_Zstar[teinf];                                          
+        if (floor(one_plus_Zstar) != 4)                                                                   
+	      printf("in %s, line %d, function %s: error in map initialization of 1+Z*\n", __FILE__,__LINE__,\
+		     __PRETTY_FUNCTION__);                                                                                        
+
+
+}
 
 
 

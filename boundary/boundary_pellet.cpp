@@ -10,7 +10,7 @@ using namespace std;
 PelletInflowBoundary::PelletInflowBoundary():Pinflow(30),Uinflow(0),Vinflow(100){ massflowrate = 0;}
 
 void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS, double dx, double dt){
-    computeMassFlowRate(g,dx);
+    computeMassFlowRate(g,dx/2);
     
     static double mass_fix = dx*dx*dx/Vinflow/sqrt(2);
     
@@ -20,9 +20,9 @@ void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS,
     double gamma = 1.67;
     double R = 83.1446/20.18;
     
-//    double pv  = Vinflow*massflowrate/4/M_PI/pr/pr;
+  //  double pv  = Vinflow*massflowrate/4/M_PI/pr/pr;
     
-    double pv = sqrt(gamma*R*Ts)/10;
+    double pv = sqrt(gamma*R*Ts)/2.;
     if(massflowrate != 0){
         Vinflow = 4*M_PI*pr*pr*pv/massflowrate;
         Pinflow = R*Ts/Vinflow;
@@ -35,14 +35,16 @@ void PelletInflowBoundary::generateBoundaryParticle(Global_Data *g, EOS* m_pEOS,
     double zcen = 0;
     int n = 4.0*3.1416*pr*pr*pr/dx/dx/dx*sqrt(2.0)/5;
 
-     int numberofNewFluid = massflowrate*dt/mass_fix;
-     double actualdx = sqrt(4*M_PI*pr*pr/numberofNewFluid)/2.5;
+    int numberofNewFluid = massflowrate*dt/mass_fix;
+
+    computeRadialDerivative(g,dx);
+    px = ux = 0; 
+    
+    double actualdx = sqrt(4*M_PI*pr*pr/numberofNewFluid)/2.5;
 
     if(dx<actualdx && actualdx<0.1)
         dx = actualdx;
     
-    computeRadialDerivative(g,dx);
-
 
 
     double newpir = pr * 4/5;
@@ -281,7 +283,7 @@ void PelletInflowBoundary::computeRadialDerivative(Global_Data *g,double dx){
        y = pad->xyz[1];
        z = pad->xyz[2];
        dr = sqrt((x-xcen)*(x-xcen)+(y-ycen)*(y-ycen)+(z-zcen)*(z-zcen))-pr;
-       if(dr>0*dx && dr < 1*dx){
+       if(dr>dx && dr < 2*dx){
             vx = pad->v[0];
             vy = pad->v[1];
             vz = pad->v[2];
@@ -301,7 +303,7 @@ void PelletInflowBoundary::computeRadialDerivative(Global_Data *g,double dx){
            return;
            }
 
-       avg_dis = .5*dx;
+       avg_dis = 1.5*dx;
        MPI_Allreduce(&psum, &psum_g,1,MPI_DOUBLE, MPI_SUM, g->mpicomm);
        
        px = (psum_g/counter_g-Pinflow)/avg_dis;
