@@ -741,9 +741,65 @@ void PelletSolver::regroupParticles2d(){
   particle_data_copy = newpa;
 }
 
+static int  adapt_coarsen2d (p4est_t * p4est, p4est_topidx_t which_tree,
+               p4est_quadrant_t * quadrants[])
+{
+    int i;
+    p4est_locidx_t remain = 0, receive = 0;
+    quadrant_data_t *oud;
+    PelletSolver      *p = (PelletSolver *) p4est->user_pointer;
+    Global_Data      *g = p->gdata;
+    
+    if (quadrants[1] == NULL ||
+      quadrants[0]->level == g->minlevel) {
+    
+        oud = (quadrant_data_t *) quadrants[0]->p.user_data;
+        g->ireindex2 += oud->premain;
+        g->irvindex2 += oud->preceive;
+    
+        return 0;
+  }
+   
+    remain = receive = 0;
+  
+    for (i = 0; i < P4EST_CHILDREN; ++i) {
+        oud = (quadrant_data_t *) quadrants[i]->p.user_data;
+        remain += oud->premain;
+        receive += oud->preceive;
+  }
+  if ((double) (remain + receive) <  p->elem_particle_box) {
+    /* we will coarsen and adjust ireindex, irvindex in adapt_replace */
+    g->qremain = remain;
+    g->qreceive = receive;
+    return 1;
+  }
+  else {
+    /* we will not coarsen and proceed with next quadrant */
+    oud = (quadrant_data_t *) quadrants[0]->p.user_data;
+    g->ireindex2 += oud->premain;
+    g->irvindex2 += oud->preceive;
+    return 0;
+  }
+
+
+}
+
 void PelletSolver::adaptQuadtree(){
     
     int oldquad = (int)p4est_heating->global_num_quadrants;
+    
+    while(true){
+        gdata->ireindex2 = gdata->irvindex2 = 0;
+        p4est_coarsen_ext (p4est_heating, 0, 0, adapt_coarsen2d, NULL, adapt_replace2d);
+    
+        if((int)p4est_heating->global_num_quadrants == oldquad)
+            break;
+        else
+            oldquad = p4est_heating->global_num_quadrants;
+    }
+    
+    
+    
     while(true){
     
         gdata->ireindex = gdata->ire2 = 0;
