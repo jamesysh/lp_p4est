@@ -2195,8 +2195,6 @@ void Global_Data::cleanForTimeStep2d(){
     
     }
   }
-    sc_array_destroy(irecumu);
-    sc_array_destroy(irvcumu);
 
     p4est_ghost_destroy (ghost2d);
     P4EST_FREE (ghost_data);
@@ -2246,8 +2244,6 @@ void Global_Data::cleanForTimeStep(){
     
     }
   }
-    sc_array_destroy(irecumu);
-    sc_array_destroy(irvcumu);
 
     p8est_ghost_destroy (ghost);
     P4EST_FREE (ghost_data);

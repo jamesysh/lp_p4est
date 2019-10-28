@@ -188,6 +188,13 @@ static int adapt_refine2d (p4est_t * p4est, p4est_topidx_t which_tree,
     g->ireindex += oud->premain;
     g->irvindex += oud->preceive;
     
+    p4est_locidx_t *irecumu = (p4est_locidx_t *)sc_array_push(g->irecumu);
+    *irecumu = g->ireindex;
+
+    p4est_locidx_t *irvcumu = (p4est_locidx_t *)sc_array_push(g->irvcumu);
+    *irvcumu = g->irvindex;
+    oud->quadrantid = g->octantid;
+    g->octantid ++;
     return 0;
   }
 
@@ -784,6 +791,108 @@ static int  adapt_coarsen2d (p4est_t * p4est, p4est_topidx_t which_tree,
 
 }
 
+static void balance_replace2d (p4est_t * p4est, p4est_topidx_t which_tree,
+               int num_outgoing, p4est_quadrant_t * outgoing[],
+               int num_incoming, p4est_quadrant_t * incoming[]){
+
+  int quadrantid;
+  int                 wx, wy, wz;
+  double              lxyz[3], hxyz[3], dxyz[3];
+  sc_array_t          iview, *arr;
+  p4est_locidx_t      irem, ibeg, offset, *newoffset;
+  p4est_quadrant_t  **pchild, *outoctant;
+  quadrant_data_t          *oud, *iud;
+  PelletSolver      *p = (PelletSolver *) p4est->user_pointer;
+  Global_Data      *g = p->gdata;
+  if (num_outgoing == P4EST_CHILDREN) {
+    // we are coarsening 
+      oud = (quadrant_data_t *) incoming[0]->p.user_data;
+      oud->premain = oud->preceive = 0;
+      for(int i=0;i<P4EST_CHILDREN;i++){
+      iud = (quadrant_data_t *) outgoing[i]->p.user_data;
+      oud->premain += iud->premain;
+      oud->preceive += iud->preceive;
+      }
+      
+  }
+
+  else {
+    outoctant = outgoing[0];
+    iud = (quadrant_data_t *)outoctant->p.user_data;
+    quadrantid = iud->quadrantid;
+    // we are refining 
+    // access parent quadrant 
+    loopquad2d (p,which_tree, outgoing[0],lxyz,hxyz,dxyz);
+    // recover window onto remaining particles for the new family 
+    
+    irem = iud->premain ;//sc_array_index(g->irecumu,octantid);
+    
+    ibeg = *(p4est_locidx_t *) sc_array_index_int(g->irecumu,quadrantid) - irem;
+    offset = ibeg;
+    sc_array_init_view (&iview, g->iremain, ibeg, irem);
+
+    // sort remaining particles into the children 
+    pchild = incoming;
+    
+    g->klh[0] = &iview;
+    wz = 0;
+
+    
+    g->split_by_coord ( g->klh[wz], g->jlh, PA_MODE_REMAIN, 1, lxyz, dxyz);
+    
+    for (wy = 0; wy < 2; ++wy) {
+      g->split_by_coord (g->jlh[wy], g->ilh, PA_MODE_REMAIN, 0, lxyz, dxyz);
+      for (wx = 0; wx < 2; ++wx) {
+        // we have a set of particles for child 4 * wz + 2 * wy + wx 
+        arr = g->ilh[wx];
+        sc_array_init_view (&iview, g->iremain, ibeg, arr->elem_count);
+        g->sc_array_paste (&iview, arr);
+        oud = (quadrant_data_t *) (*pchild++)->p.user_data;
+        ibeg += (oud->premain = (p4est_locidx_t) arr->elem_count);
+        oud->quadrantid = g->octantid;
+        g->octantid ++;
+        newoffset = (p4est_locidx_t *)sc_array_push(g->irecumu);
+        *newoffset = offset + oud->premain;
+        offset = offset + oud->premain;
+
+      }
+    }
+    // recover window onto received particles for the new family 
+    
+    irem = iud->preceive ;//sc_array_index(g->irecumu,octantid);
+    ibeg = *(p4est_locidx_t *) sc_array_index_int(g->irvcumu,quadrantid) - irem;
+    offset = ibeg;
+    P4EST_ASSERT (irem >= 0);
+    sc_array_init_view (&iview, g->ireceive, ibeg, irem);
+    P4EST_ASSERT (qod->preceive == irem);
+
+    // sort received particles into the children 
+    pchild = incoming;
+   
+    g->klh[0] = &iview;
+    wz = 0;
+    
+    g->split_by_coord ( g->klh[wz], g->jlh, PA_MODE_RECEIVE, 1, lxyz, dxyz);
+    for (wy = 0; wy < 2; ++wy) {
+      g->split_by_coord ( g->jlh[wy], g->ilh, PA_MODE_RECEIVE, 0, lxyz, dxyz);
+      for (wx = 0; wx < 2; ++wx) {
+        // we have a set of particles for child 4 * wz + 2 * wy + wx 
+        arr = g->ilh[wx];
+        sc_array_init_view (&iview, g->ireceive, ibeg, arr->elem_count);
+        g->sc_array_paste (&iview, arr);
+        oud = (quadrant_data_t *) (*pchild++)->p.user_data;
+        ibeg += (oud->preceive = (p4est_locidx_t) arr->elem_count);
+        newoffset = (p4est_locidx_t *)sc_array_push(g->irvcumu);
+        *newoffset = offset + oud->preceive;
+        offset += oud->preceive;
+      }
+    }
+    P4EST_ASSERT (pchild == incoming + P4EST_CHILDREN);
+
+  }
+}
+
+
 void PelletSolver::adaptQuadtree(){
     
     int oldquad = (int)p4est_heating->global_num_quadrants;
@@ -802,6 +911,9 @@ void PelletSolver::adaptQuadtree(){
     
     while(true){
     
+        gdata->octantid = 0;
+        gdata->irecumu = sc_array_new(sizeof(p4est_locidx_t));
+        gdata->irvcumu = sc_array_new(sizeof(p4est_locidx_t));
         gdata->ireindex = gdata->ire2 = 0;
         gdata->irvindex = gdata->irv2 = 0;
         p4est_refine_ext (p4est_heating, 0, 50, adapt_refine2d, NULL, adapt_replace2d);
@@ -809,8 +921,14 @@ void PelletSolver::adaptQuadtree(){
             break;
         else
             oldquad = p4est_heating->global_num_quadrants;
+    
+    
+        sc_array_destroy(gdata->irecumu);
+        sc_array_destroy(gdata->irvcumu);
     }
     
+    sc_array_destroy(gdata->irecumu);
+    sc_array_destroy(gdata->irvcumu);
     }
 
 static int
@@ -1392,7 +1510,7 @@ void PelletSolver::computeHeatDeposition( double dt){
         guright = sqrt(uright)*Bessel_K1(sqrt(uright))/4;
         nt=1.0/pad->volume/mass;
 
-        pad->deltaq = qinf*nt*Z/tauinf*(guleft+guright)*k_warmup;
+        pad->deltaq = qinf*nt/tauinf*(guleft+guright)*k_warmup;
         pad->qplusminus = qinf*0.5*(uleft*Bessel_Kn(2,sqrt(uleft))+uright*Bessel_Kn(2,sqrt(uright)))*k_warmup;
        // if(pad->qplusminus == 0)
          //   cout<<pad->leftintegral<<" "<<pad->rightintegral<<endl;

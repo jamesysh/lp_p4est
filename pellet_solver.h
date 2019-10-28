@@ -10,6 +10,7 @@ typedef struct quadrant_data
 //    p4est_locidx_t ghostneighbourid[300];
   /** counts of local particles remaining on this quadrant and recieved ones */
   p4est_locidx_t      premain, preceive;
+  int quadrantid;
 }
 quadrant_data_t;
 

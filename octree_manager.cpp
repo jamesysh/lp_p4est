@@ -805,12 +805,16 @@ void Octree_Manager::balance_octree2d(p4est_init_t init_fn, p4est_replace_t repl
 
     p4est_balance_ext(gdata->p4est,P4EST_CONNECT_FULL,init_fn,replace_fn);
 
+    sc_array_destroy(gdata->irecumu);
+    sc_array_destroy(gdata->irvcumu);
 }
 
 void Octree_Manager::balance_octree(p8est_init_t init_fn, p8est_replace_t replace_fn){
 
     p8est_balance_ext(gdata->p8est,P8EST_CONNECT_FULL,init_fn,replace_fn);
 
+    sc_array_destroy(gdata->irecumu);
+    sc_array_destroy(gdata->irvcumu);
 }
 
 static void testfaceside( p8est_iter_face_info_t * info, void *user_data){
