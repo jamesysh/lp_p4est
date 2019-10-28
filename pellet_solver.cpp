@@ -834,17 +834,17 @@ static void balance_replace2d (p4est_t * p4est, p4est_topidx_t which_tree,
     // sort remaining particles into the children 
     pchild = incoming;
     
-    g->klh[0] = &iview;
+    p->klh[0] = &iview;
     wz = 0;
 
     
-    g->split_by_coord ( g->klh[wz], g->jlh, PA_MODE_REMAIN, 1, lxyz, dxyz);
+    p->split_by_coord ( p->klh[wz], p->jlh, PA_MODE_REMAIN, 1, lxyz, dxyz);
     
     for (wy = 0; wy < 2; ++wy) {
-      g->split_by_coord (g->jlh[wy], g->ilh, PA_MODE_REMAIN, 0, lxyz, dxyz);
+      p->split_by_coord (p->jlh[wy], p->ilh, PA_MODE_REMAIN, 0, lxyz, dxyz);
       for (wx = 0; wx < 2; ++wx) {
         // we have a set of particles for child 4 * wz + 2 * wy + wx 
-        arr = g->ilh[wx];
+        arr = p->ilh[wx];
         sc_array_init_view (&iview, g->iremain, ibeg, arr->elem_count);
         g->sc_array_paste (&iview, arr);
         oud = (quadrant_data_t *) (*pchild++)->p.user_data;
@@ -869,15 +869,15 @@ static void balance_replace2d (p4est_t * p4est, p4est_topidx_t which_tree,
     // sort received particles into the children 
     pchild = incoming;
    
-    g->klh[0] = &iview;
+    p->klh[0] = &iview;
     wz = 0;
     
-    g->split_by_coord ( g->klh[wz], g->jlh, PA_MODE_RECEIVE, 1, lxyz, dxyz);
+    p->split_by_coord ( p->klh[wz], p->jlh, PA_MODE_RECEIVE, 1, lxyz, dxyz);
     for (wy = 0; wy < 2; ++wy) {
-      g->split_by_coord ( g->jlh[wy], g->ilh, PA_MODE_RECEIVE, 0, lxyz, dxyz);
+      p->split_by_coord ( p->jlh[wy], p->ilh, PA_MODE_RECEIVE, 0, lxyz, dxyz);
       for (wx = 0; wx < 2; ++wx) {
         // we have a set of particles for child 4 * wz + 2 * wy + wx 
-        arr = g->ilh[wx];
+        arr = p->ilh[wx];
         sc_array_init_view (&iview, g->ireceive, ibeg, arr->elem_count);
         g->sc_array_paste (&iview, arr);
         oud = (quadrant_data_t *) (*pchild++)->p.user_data;
@@ -927,6 +927,7 @@ void PelletSolver::adaptQuadtree(){
         sc_array_destroy(gdata->irvcumu);
     }
     
+    p4est_balance_ext(p4est_heating,P4EST_CONNECT_FULL,NULL,balance_replace2d);
     sc_array_destroy(gdata->irecumu);
     sc_array_destroy(gdata->irvcumu);
     }
@@ -1510,7 +1511,7 @@ void PelletSolver::computeHeatDeposition( double dt){
         guright = sqrt(uright)*Bessel_K1(sqrt(uright))/4;
         nt=1.0/pad->volume/mass;
 
-        pad->deltaq = qinf*nt/tauinf*(guleft+guright)*k_warmup;
+        pad->deltaq = qinf*nt*Z/tauinf*(guleft+guright)*k_warmup;
         pad->qplusminus = qinf*0.5*(uleft*Bessel_Kn(2,sqrt(uleft))+uright*Bessel_Kn(2,sqrt(uright)))*k_warmup;
        // if(pad->qplusminus == 0)
          //   cout<<pad->leftintegral<<" "<<pad->rightintegral<<endl;

@@ -173,6 +173,7 @@ __STATE_PELLET_H__	state/state_pellet.h	2;"	d
 adaptQuadtree	pellet_solver.cpp	/^void PelletSolver::adaptQuadtree(){$/;"	f	class:PelletSolver
 adapt_coarsen	octree_manager.cpp	/^int Octree_Manager:: adapt_coarsen (p8est_t * p8est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
 adapt_coarsen2d	octree_manager.cpp	/^int Octree_Manager:: adapt_coarsen2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
+adapt_coarsen2d	pellet_solver.cpp	/^static int  adapt_coarsen2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 adapt_octree	octree_manager.cpp	/^void Octree_Manager:: adapt_octree( p8est_t *p8est){$/;"	f	class:Octree_Manager
 adapt_octree2d	octree_manager.cpp	/^void Octree_Manager:: adapt_octree2d( p4est_t *p4est){$/;"	f	class:Octree_Manager
 adapt_refine	octree_manager.cpp	/^int Octree_Manager:: adapt_refine (p8est_t * p8est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
@@ -191,6 +192,7 @@ balance_octree	octree_manager.cpp	/^void Octree_Manager::balance_octree(p8est_in
 balance_octree2d	octree_manager.cpp	/^void Octree_Manager::balance_octree2d(p4est_init_t init_fn, p4est_replace_t replace_fn){$/;"	f	class:Octree_Manager
 balance_replace	octree_manager.cpp	/^void Octree_Manager:: balance_replace (p8est_t * p8est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
 balance_replace2d	octree_manager.cpp	/^void Octree_Manager:: balance_replace2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	class:Octree_Manager
+balance_replace2d	pellet_solver.cpp	/^static void balance_replace2d (p4est_t * p4est, p4est_topidx_t which_tree,$/;"	f	file:
 bb	particle_data.h	/^        double bb[6]; \/\/ bounding box of initial fluid particles  $/;"	m	class:Global_Data
 bo	boundary/boundary_gresho.h	/^	double bo; $/;"	m	class:Gresho2DSolidBoundary
 bo	boundary/boundary_gresho.h	/^        double bo;$/;"	m	class:Yee2DSolidBoundary
@@ -655,6 +657,7 @@ qremain	particle_data.h	/^        p4est_locidx_t qremain, qreceive;$/;"	m	class:
 quadid	particle_data.h	/^    size_t quadid;$/;"	m	struct:neighbour_info
 quadrant_data	pellet_solver.h	/^typedef struct quadrant_data$/;"	s
 quadrant_data_t	pellet_solver.h	/^quadrant_data_t;$/;"	t	typeref:struct:quadrant_data
+quadrantid	pellet_solver.h	/^  int quadrantid;$/;"	m	struct:quadrant_data
 radius	boundary/boundary_gresho.h	/^	double radius;	$/;"	m	class:Gresho2DSolidBoundary
 radius	boundary/boundary_gresho.h	/^        double radius;$/;"	m	class:Yee2DSolidBoundary
 radius	boundary/boundary_gresho.h	/^        double radius;$/;"	m	class:Yee3DSolidBoundary
