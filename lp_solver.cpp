@@ -729,46 +729,9 @@ void LPSolver::solve_3d(){
             gdata->generateGhostParticle();
         }
        
-          pellet_solver->heatingModel(cfldt);
-
-/*        if(gdata->pelletnumber){
-            
-            gdata->setParticleIDAndRank();  
-            pellet_solver->prerun();
-            pellet_solver->build_quadtree();
-          
-            pellet_solver->presearch2d();
-            
-            pellet_solver->packParticles();
-            
-            pellet_solver->communicateParticles();
-            
-            pellet_solver->postsearch2d();
-         
-            pellet_solver->adaptQuadtree();
-
-         
-            pellet_solver->regroupParticles2d();
-
-            pellet_solver->partitionParticles2d();
-            
-            MPI_Barrier(gdata->mpicomm);
-
-            pellet_solver->computeDensityIntegral();
-            
-            pellet_solver->packParticles_phase2();
-            pellet_solver->communicateParticles_phase2();
-            
-            MPI_Barrier(gdata->mpicomm);
-            pellet_solver->writeIntegralValue();
-            
-            MPI_Barrier(gdata->mpicomm);
-            pellet_solver->computeHeatDeposition(cfldt);
-       
-            MPI_Barrier(gdata->mpicomm);
-            pellet_solver->destoryQuadtree();
-       } 
-        */
+        if(gdata->pelletnumber){ 
+            pellet_solver->heatingModel(cfldt);
+        }
         computeLocalBoundaryAndFluidNum();
         computeCFLCondition();
     
