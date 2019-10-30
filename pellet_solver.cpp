@@ -13,9 +13,12 @@ float     Bessel_I1(float  x);
 
 PelletSolver::PelletSolver(Initializer *init,Global_Data*g){
     gdata = g;
-    elem_particle_box = init->getQuadtreeResolution();
-    elem_particle_cell = init->getBinarytreeResolution();
-    magneticfield = init->getMagneticField();
+    heatingmodel = init->getHeatingModel();
+    if(heatingmodel){
+        elem_particle_box = init->getQuadtreeResolution();
+        elem_particle_cell = init->getBinarytreeResolution();
+        magneticfield = init->getMagneticField();
+    }
     gdata->pellet_solver = this;
     getOne_Plus_Zstar(teinf);
     
@@ -1510,10 +1513,16 @@ void PelletSolver::computeHeatDeposition( double dt){
         guleft = sqrt(uleft)*Bessel_K1(sqrt(uleft))/4;
         guright = sqrt(uright)*Bessel_K1(sqrt(uright))/4;
         nt=1.0/pad->volume/mass;
-
-        pad->deltaq = qinf*nt*Z/tauinf*(guleft+guright)*k_warmup;
-        pad->qplusminus = qinf*0.5*(uleft*Bessel_Kn(2,sqrt(uleft))+uright*Bessel_Kn(2,sqrt(uright)))*k_warmup;
-       // if(pad->qplusminus == 0)
+        if(heatingmodel == 1){
+            pad->deltaq = qinf*nt/tauinf*(guleft+guright)*k_warmup;
+            pad->qplusminus = qinf*0.5*(uleft*Bessel_Kn(2,sqrt(uleft))+uright*Bessel_Kn(2,sqrt(uright)))*k_warmup;
+      } 
+      
+        else if(heatingmodel == 0){
+            pad->deltaq = qinf*nt*Z/tauinf*guleft*k_warmup;
+            pad->qplusminus = qinf*0.5*uleft*Bessel_Kn(2,sqrt(uleft))*k_warmup;
+            }
+        // if(pad->qplusminus == 0)
          //   cout<<pad->leftintegral<<" "<<pad->rightintegral<<endl;
         
         }
@@ -1727,9 +1736,131 @@ void PelletSolver::getOne_Plus_Zstar(double teinf){
 
 }
 
+void PelletSolver::heatingModel(double dt){
+        
+           gdata->setParticleIDAndRank();  
+        if(heatingmodel == 1){    
+            prerun();
+            build_quadtree();
+          
+            presearch2d();
+            
+            packParticles();
+            
+            communicateParticles();
+            
+            postsearch2d();
+         
+            adaptQuadtree();
+            regroupParticles2d();
+
+            partitionParticles2d();
+            
+            MPI_Barrier(gdata->mpicomm);
+
+            computeDensityIntegral();
+             
+            packParticles_phase2();
+            communicateParticles_phase2();
+            
+            MPI_Barrier(gdata->mpicomm);
+            writeIntegralValue();
+            
+            MPI_Barrier(gdata->mpicomm);
+            
+            computeHeatDeposition(dt);
+       
+            MPI_Barrier(gdata->mpicomm);
+            
+            destoryQuadtree();
+            
+            }
+        else if(heatingmodel == 0){
+            
+             computeDensityIntegral1D();
+             
+             packParticles_phase2();
+             communicateParticles_phase2();
+             
+             writeIntegralValue();
+            
+            computeHeatDeposition(dt);
+            
+            sc_array_destroy_null(&prebuf_integral);  
+            sc_array_destroy_null(&particle_data_copy); 
+            }
+        else{
+            cout<<"Heating Model does not exsit."<<endl;
+            assert(false);
+            }
+    }
 
 
+static int
+compareRadialDis (const void *p1, const void *p2)
+{
+  int t = 0;
+  pdata_t                * i1 = (pdata_t *) p1;
+  pdata_t                * i2 = (pdata_t *) p2;
+  
+  double d1 = i1->xyz[0]*i1->xyz[0]+i1->xyz[1]*i1->xyz[1]+i1->xyz[2]*i1->xyz[2]; 
+  double d2 = i2->xyz[0]*i2->xyz[0]+i2->xyz[1]*i2->xyz[1]+i2->xyz[2]*i2->xyz[2]; 
+  if((d1-d2)>0)
+      t = 1;
+  return t;
+}
+void PelletSolver::computeDensityIntegral1D(){
+    size_t gpnum = gdata->gpnum;
+    int lpnum = (int)gdata->particle_data->elem_count;
+    
+    int lpnum_count[gdata->mpisize];
+    int msglen;
+    pdata_t *pad;
+    
+    particle_data_copy = sc_array_new(sizeof(pdata_t)); 
+    if(gdata->mpirank != 0){
+        MPI_Send(&lpnum,1,MPI_INT,0,666,gdata->mpicomm);        
+    }
+    else{
+        
+        for(int i=1;i<(int)gdata->mpisize;i++){
+            MPI_Recv(&lpnum_count[i], 1, MPI_INT, i, 666, gdata->mpicomm,MPI_STATUS_IGNORE);
+        }
+        
+        lpnum_count[0] = lpnum;
+        
+    }
+    
+    if(gdata->mpirank == 0){
+        sc_array_init_count(particle_data_copy,sizeof(pdata_t),gpnum);
+        int offset = lpnum_count[0];
+        sc_array_copy_into(particle_data_copy,0,gdata->particle_data);
+         
+        for(int i=1;i<gdata->mpisize;i++){
+            msglen = lpnum_count[i]*(int)sizeof(pdata_t);
+            MPI_Recv(sc_array_index_int(particle_data_copy,offset),msglen,MPI_BYTE,i,COMM_TAG_PART,gdata->mpicomm,MPI_STATUS_IGNORE);
+            offset += lpnum_count[i];
+        }
+    }
+    else{
+        msglen = lpnum*(int)sizeof(pdata_t);
+        MPI_Send(gdata->particle_data->array,msglen,MPI_BYTE,0,COMM_TAG_PART,gdata->mpicomm);
+    
+    }
+    if(gdata->mpirank == 0){
+        
+        sc_array_sort(particle_data_copy,compareRadialDis);
+        double integral = 0;
+        for(int i = gpnum-1; i>=0; i--){
+           pad = (pdata_t *)sc_array_index_int(particle_data_copy,i);
+           double r = pad->xyz[0]*pad->xyz[0]+pad->xyz[1]*pad->xyz[1]+pad->xyz[2]*pad->xyz[2];
+           double temp = pad->mass/4./M_PI/r;
+           pad->leftintegral = integral + 0.5*temp; 
+           integral += temp; 
+        }
+    }   
 
+}
 
 
 

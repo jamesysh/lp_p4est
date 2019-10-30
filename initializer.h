@@ -113,7 +113,7 @@ class Initializer {
 
     int getQuadtreeResolution() const {return m_iQuadtreeResolution;}
     int getBinarytreeResolution() const {return m_iBinarytreeResolution;}
-
+    int getHeatingModel() const{return m_iHeatingModel;}
     double getMagneticField() const {return m_iMagneticField;}
 
 	int getPelletDistribution() const {return m_iPelletDistribution;}
@@ -204,6 +204,7 @@ class Initializer {
     int m_iQuadtreeResolution;
                         
     int m_iBinarytreeResolution;
+    int m_iHeatingModel;
     double m_iMagneticField;
 
 

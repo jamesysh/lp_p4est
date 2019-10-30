@@ -152,6 +152,11 @@ void Initializer::readInputfile(const string& inputfileName) {
     if(m_iPelletDistribution){
 
         iss.str(lines[i++]);
+	    iss>>m_iHeatingModel;
+	    save<<"m_iHeatingModel "<<m_iHeatingModel<<endl;
+        
+        if(m_iHeatingModel == 1){
+        iss.str(lines[i++]);
 	    iss>>m_iQuadtreeResolution;
 	    save<<"m_iQuadtreeResolution "<<m_iQuadtreeResolution<<endl;
         
@@ -162,6 +167,9 @@ void Initializer::readInputfile(const string& inputfileName) {
         iss.str(lines[i++]);
         iss>>m_iMagneticField;
         save<<"m_iMagneticField "<<m_iMagneticField<<endl;
+        }
+
+
     }
 //-------------------SETUP OUTPUT OPTION------------------------
   

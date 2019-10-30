@@ -680,7 +680,6 @@ void LPSolver::solve_3d(){
            gdata->m_vBoundary[id]->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing,cfldt);
          }
     
-    //gdata->boundary->UpdateInflowBoundary(gdata,gdata->eos,lpsolver->dt,gdata->initlocalspacing);
     gdata->presearch();
         
     gdata->packParticles();
@@ -729,8 +728,10 @@ void LPSolver::solve_3d(){
             gdata->setFlagBoundaryForParticle();  
             gdata->generateGhostParticle();
         }
-        
-        if(gdata->pelletnumber){
+       
+          pellet_solver->heatingModel(cfldt);
+
+/*        if(gdata->pelletnumber){
             
             gdata->setParticleIDAndRank();  
             pellet_solver->prerun();
@@ -767,6 +768,7 @@ void LPSolver::solve_3d(){
             MPI_Barrier(gdata->mpicomm);
             pellet_solver->destoryQuadtree();
        } 
+        */
         computeLocalBoundaryAndFluidNum();
         computeCFLCondition();
     
@@ -806,7 +808,6 @@ void LPSolver::solve_3d(){
 
         gdata->switchFlagDelete();
     
-
 }
 
 }

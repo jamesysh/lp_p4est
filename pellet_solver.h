@@ -31,6 +31,7 @@ class PelletSolver{
         PelletSolver(Initializer* init,Global_Data *gdata);
         ~PelletSolver();
         
+        void heatingModel(double dt);
         void build_quadtree();
         void prerun();
         void resetQuadrantData();
@@ -60,11 +61,12 @@ class PelletSolver{
         
         void computeHeatDeposition( double dt);
         
+        void computeDensityIntegral1D();
         void getOne_Plus_Zstar(double teinf);
         
        
 
-        
+        int heatingmodel; 
         int elem_particle_box;
         int elem_particle_cell;
         sc_array_t *prebuf;
