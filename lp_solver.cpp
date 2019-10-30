@@ -1160,7 +1160,7 @@ bool LPSolver::adjustDtByWriteTimeInterval() {
 	if(currenttime+cfldt >= nextwritetime) {
 		cfldt = nextwritetime - currenttime;
 		
-        P4EST_GLOBAL_ESSENTIALF ("MINCFL timestep is %f. \n", cfldt);
+        P4EST_GLOBAL_ESSENTIALF ("MINCFL timestep is %.16g. \n", cfldt);
         nextwritetime += writetimeinterval;
 		writestep ++;
         if(nextwritetime > tend) nextwritetime = tend;
@@ -1171,7 +1171,7 @@ bool LPSolver::adjustDtByWriteTimeInterval() {
 		return true; // m_fDt adjusted
 	}
 	
-    P4EST_GLOBAL_ESSENTIALF ("MINCFL timestep is %f. \n", cfldt);
+    P4EST_GLOBAL_ESSENTIALF ("MINCFL timestep is %.16g. \n", cfldt);
     return false; // m_fDt did not get adjusted
 }
 
