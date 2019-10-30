@@ -2793,8 +2793,10 @@ void Global_Data::searchUpwindNeighbourParticle(){
   neighbour_info_t * nei_info, *nei_info2;
   double theta, phi, sigma;
   size_t numnei, neiid;
-  double anglemin = 1.374;
-  double anglemax = M_PI-anglemin;
+  double angle_min = 1.374;
+  double angle_max = M_PI-angle_min;
+  double anglemin, anglemax;
+  double anglefactor;
   
   pdata_copy_t *padcopy;
 
@@ -2846,6 +2848,9 @@ void Global_Data::searchUpwindNeighbourParticle(){
         for(neiid = 0; neiid<numnei; neiid++){
             
             nei_info = (neighbour_info_t *)sc_array_index(pad->neighbourparticle,neiid); 
+            anglefactor = max(nei_info->distance/pad->localspacing/3.8*2.,1.);
+            anglemin = angle_min/anglefactor;
+            anglemax = M_PI-anglemin;
             theta = nei_info->theta;
             phi = nei_info->phi;
             sigma = nei_info->sigma;

@@ -32,6 +32,7 @@ public:
      void writeResult(int step,double time);
      void writeGhost(int step);
      
+     void writeTXTFile(int step);
      Global_Data *gdata;
 
 	std::string  outputfilename;///< The name of the output file 
