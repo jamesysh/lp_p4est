@@ -1,6 +1,6 @@
 CC = mpic++ 
 DEBUG = -g
-LAPACK_DIR = /gpfs/home/shyyuan/local/lapack/
+LAPACK_DIR = /home/syuan/local/lapack
 P4EST_INC = /home/syuan/p4est/include
 P4EST_LIB = /home/syuan/p4est/lib
 MAIN_DIR:=${CURDIR}

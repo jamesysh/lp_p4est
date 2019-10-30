@@ -244,9 +244,9 @@ void Initializer::setParams() {
 
 	m_iWriteStep = 0; // The default value
 	if(m_iDimension==2)
-		m_fTimeSearchRadius = 4;//4
+		m_fTimeSearchRadius = 4.;//4
     if(m_iDimension==3)
-            m_fTimeSearchRadius = 2.5;//4
+            m_fTimeSearchRadius = 4.;
 
 	if(m_iDimension==3) {
 		m_iNumRow2ndOrder = 53; 

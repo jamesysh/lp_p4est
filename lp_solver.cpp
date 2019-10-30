@@ -677,7 +677,7 @@ void LPSolver::solve_3d(){
     
          
         for(size_t id=0; id<gdata->boundarynumber; id++){ 
-           gdata->m_vBoundary[id]->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing,cfldt);
+           //gdata->m_vBoundary[id]->generateBoundaryParticle(gdata,gdata->eos,gdata->initlocalspacing,cfldt);
          }
     
     gdata->presearch();
@@ -729,6 +729,9 @@ void LPSolver::solve_3d(){
             gdata->generateGhostParticle();
         }
        
+        computeLocalBoundaryAndFluidNum();
+        viewer->writeResult(writestep,currenttime);
+        exit(0);
         if(gdata->pelletnumber){ 
             pellet_solver->heatingModel(cfldt);
         }

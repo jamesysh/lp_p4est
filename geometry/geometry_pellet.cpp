@@ -5,7 +5,7 @@ PelletLayer::PelletLayer(){
     xcen = 0;
     ycen = 0;
     zcen = 0;
-    innerradius = 0.2;
+    innerradius = 0.;
     outerradius = 0.24;
 
 }
