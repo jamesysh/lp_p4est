@@ -71,6 +71,7 @@ public:
     int splitorder;
     int totalphase;
     int writestep;
+    int timestep;
     double writetimeinterval;
     double nextwritetime;
         

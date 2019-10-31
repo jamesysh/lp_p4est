@@ -1495,7 +1495,7 @@ void PelletSolver::computeHeatDeposition( double dt){
     if ( m_fCurrentTime > 0.01)
       k_warmup = 1.0;
     else
-      k_warmup = 1.0;//m_fCurrentTime/0.01;
+      k_warmup = m_fCurrentTime/0.01;
 
 
 

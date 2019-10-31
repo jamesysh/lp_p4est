@@ -219,9 +219,10 @@ void ParticleViewer:: writeResult(int step, double time){
         pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
         if(pad->ifboundary) continue;
         
-        fprintf(outfile,"%d\n",pad->ifhasghostneighbour);
+        fprintf(outfile,"%.16g\n",pad->soundspeed);
     }
-	fprintf(outfile,"SCALARS localspacing double\n");
+	
+    fprintf(outfile,"SCALARS localspacing double\n");
 	fprintf(outfile,"LOOKUP_TABLE default\n");
     
     for(li = 0; li<lpnum; li++){
@@ -229,9 +230,29 @@ void ParticleViewer:: writeResult(int step, double time){
         pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
         if(pad->ifboundary) continue;
         
-        fprintf(outfile,"%d\n",pad->flagboundary);
+        fprintf(outfile,"%.16g\n",pad->localspacing);
     }
     
+    fprintf(outfile,"SCALARS schemeorder int\n");
+	fprintf(outfile,"LOOKUP_TABLE default\n");
+    
+    for(li = 0; li<lpnum; li++){
+    
+        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+        if(pad->ifboundary) continue;
+        
+        fprintf(outfile,"%d\n",pad->schemeorder);
+    }
+    fprintf(outfile,"SCALARS ifhasghostnei int\n");
+	fprintf(outfile,"LOOKUP_TABLE default\n");
+    
+    for(li = 0; li<lpnum; li++){
+    
+        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+        if(pad->ifboundary) continue;
+        
+        fprintf(outfile,"%d\n",pad->ifhasghostneighbour);
+    }
 	fprintf(outfile,"SCALARS leftintegral double\n");
 	fprintf(outfile,"LOOKUP_TABLE default\n");
     
@@ -246,13 +267,6 @@ void ParticleViewer:: writeResult(int step, double time){
 	fprintf(outfile,"SCALARS rightintegral double\n");
 	fprintf(outfile,"LOOKUP_TABLE default\n");
     
-    for(li = 0; li<lpnum; li++){
-    
-        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
-        if(pad->ifboundary) continue;
-        
-        fprintf(outfile,"%.16g\n",(double)pad->rightintegral);
-    }
     
 	fprintf(outfile,"SCALARS deltaq double\n");
 	fprintf(outfile,"LOOKUP_TABLE default\n");
@@ -274,6 +288,13 @@ void ParticleViewer:: writeResult(int step, double time){
         fprintf(outfile,"%.16g\n",(double)pad->qplusminus);
     }
     
+    for(li = 0; li<lpnum; li++){
+    
+        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+        if(pad->ifboundary) continue;
+        
+        fprintf(outfile,"%.16g\n",(double)pad->rightintegral);
+    }
     fclose(outfile);
     if(mpirank == 0){
     FILE *visitfile;
@@ -303,7 +324,7 @@ void ParticleViewer:: writeResult(int step, double time){
         
         double dx = gdata->initlocalspacing;
         double mfr = 0;
-        double r = 1;
+        double r = 2;
         double dr = 3*dx;
         double tr, vr;
         double x, y, z;
@@ -353,3 +374,48 @@ void ParticleViewer:: writeResult(int step, double time){
      }
 
 }
+
+
+void ParticleViewer::writeTXTFile(int step){
+
+   string filename = outputfilename +"/out_fluid" + rightFlush(numdigit) + ".txt";
+   
+	MPI_File outfile;
+
+    MPI_File_open(gdata->mpicomm,filename.c_str(),MPI_MODE_CREATE|MPI_MODE_WRONLY,MPI_INFO_NULL,&outfile);
+
+   size_t lpnum = gdata->particle_data->elem_count;
+   size_t li;
+   double x,y,z;
+   double vx,vy,vz;
+   char buf[400];
+   pdata_t *pad;
+   for(li =0; li<lpnum; li++){
+       pad = (pdata_t *)sc_array_index(gdata->particle_data,li);
+       if(pad->ifboundary)
+           continue;
+       x = pad->xyz[0];
+       y = pad->xyz[1];
+       z = pad->xyz[2];
+       vx = pad->v[0];
+       vy = pad->v[1];
+       vz = pad->v[2];
+        
+       snprintf(buf,400,"%.16g %.16g %.16g %.16g %.16g %.16g %.16g %.16g %.16g %.16g %.16g\n",
+                         x, y, z, vx, vy, vz,pad->pressure,1./pad->volume,pad->soundspeed, pad->leftintegral, pad->deltaq);
+       MPI_File_write_shared(outfile,buf,strlen(buf),MPI_CHAR,MPI_STATUS_IGNORE);
+
+       }
+    MPI_Barrier(gdata->mpicomm);
+    MPI_File_close(&outfile);
+    }
+
+
+
+
+
+
+
+
+
+
