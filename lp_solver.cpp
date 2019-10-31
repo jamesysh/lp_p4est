@@ -18,6 +18,7 @@ LPSolver::LPSolver(Initializer *init, Global_Data *g, Octree_Manager *o, Particl
     writestep = init->getWriteStep();
     writetimeinterval = init->getWriteTimeInterval();
     currenttime = tstart;
+    timestep = 0;
     nextwritetime = writetimeinterval;
     if(gdata->dimension == 3){
         m_vDirSplitTable = vector<vector<int> >
@@ -625,9 +626,6 @@ void LPSolver:: solve_2d(){
     
         bool iswritestep = adjustDtByWriteTimeInterval(); 
         
-        currenttime += cfldt;
-        
-        P4EST_GLOBAL_ESSENTIALF ("Current Time: %f .\n", currenttime);
         splitorder = (int)rand()%2;
         MPI_Bcast(&splitorder,1,MPI_INT,0,gdata->mpicomm);
        
@@ -736,8 +734,6 @@ void LPSolver::solve_3d(){
         computeCFLCondition();
     
         bool iswritestep = adjustDtByWriteTimeInterval(); 
-        currenttime += cfldt;
-        P4EST_GLOBAL_ESSENTIALF ("Current Time: %f .\n", currenttime);
         splitorder = (int)rand()%6;
         MPI_Bcast(&splitorder,1,MPI_INT,0,gdata->mpicomm);
         
@@ -1157,10 +1153,11 @@ void LPSolver::timeIntegration( double gravity, double inVolume, double inVeloci
 
 
 bool LPSolver::adjustDtByWriteTimeInterval() {
-	if(currenttime+cfldt >= nextwritetime) {
+	timestep += 1;
+    bool ifadjust;
+    if(currenttime+cfldt >= nextwritetime) {
 		cfldt = nextwritetime - currenttime;
-		
-        P4EST_GLOBAL_ESSENTIALF ("MINCFL timestep is %.16g. \n", cfldt);
+	    	
         nextwritetime += writetimeinterval;
 		writestep ++;
         if(nextwritetime > tend) nextwritetime = tend;
@@ -1168,11 +1165,16 @@ bool LPSolver::adjustDtByWriteTimeInterval() {
 		//cout<<"-------TimeController::adjustDtByWriteTimeInterval()-------"<<endl;
 		//cout<<"m_fDt="<<m_fDt<<endl;
 		//cout<<"-----------------------------------------------------------"<<endl;
-		return true; // m_fDt adjusted
+		ifadjust = true;
 	}
-	
+    else{	
+        ifadjust = false;
+    }
+    
+    currenttime += cfldt;
     P4EST_GLOBAL_ESSENTIALF ("MINCFL timestep is %.16g. \n", cfldt);
-    return false; // m_fDt did not get adjusted
+    P4EST_GLOBAL_ESSENTIALF ("Number of Timesteps: %d     Current Time: %f .\n", timestep, currenttime);
+    return ifadjust; // m_fDt did not get adjusted
 }
 
 
