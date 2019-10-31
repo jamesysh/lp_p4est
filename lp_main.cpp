@@ -145,7 +145,11 @@ int main(int argc, const char* argv[]){
     
     
     gdata->cleanUpArrays(); 
-    
+  
+
+    double t2 = MPI_Wtime();
+   
+    P4EST_GLOBAL_ESSENTIALF ("Elapsed time is %f.\n", t2-t1);
     octree->destroy_octree();
    
     
@@ -156,9 +160,6 @@ int main(int argc, const char* argv[]){
 
     mpiret = sc_MPI_Finalize ();
 
-    double t2 = MPI_Wtime();
-   
-    P4EST_GLOBAL_ESSENTIALF ("Elapsed time is %f.\n", t2-t1);
    
     return 0;
 }

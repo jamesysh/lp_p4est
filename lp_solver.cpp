@@ -718,7 +718,7 @@ void LPSolver::solve_3d(){
         gdata->searchNeighbourParticle();
         
         gdata->searchUpwindNeighbourParticle(); 
-       // gdata->reorderNeighbourList();
+        gdata->reorderNeighbourList();
 
         MPI_Barrier(gdata->mpicomm); 
         if(gdata->iffreeboundary){ 

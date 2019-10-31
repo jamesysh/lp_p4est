@@ -233,6 +233,16 @@ void ParticleViewer:: writeResult(int step, double time){
         fprintf(outfile,"%.16g\n",pad->localspacing);
     }
     
+    fprintf(outfile,"SCALARS schemeorder int\n");
+	fprintf(outfile,"LOOKUP_TABLE default\n");
+    
+    for(li = 0; li<lpnum; li++){
+    
+        pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
+        if(pad->ifboundary) continue;
+        
+        fprintf(outfile,"%d\n",pad->schemeorder);
+    }
     fprintf(outfile,"SCALARS ifhasghostnei int\n");
 	fprintf(outfile,"LOOKUP_TABLE default\n");
     
@@ -314,7 +324,7 @@ void ParticleViewer:: writeResult(int step, double time){
         
         double dx = gdata->initlocalspacing;
         double mfr = 0;
-        double r = 1;
+        double r = 2;
         double dr = 3*dx;
         double tr, vr;
         double x, y, z;
