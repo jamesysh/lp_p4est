@@ -737,7 +737,7 @@ void LPSolver::solve_3d(){
         splitorder = (int)rand()%6;
         MPI_Bcast(&splitorder,1,MPI_INT,0,gdata->mpicomm);
         
-        P4EST_GLOBAL_ESSENTIALF ("Enter UPWIND.\n");
+        P4EST_GLOBAL_ESSENTIALF ("ENTER UPWIND.\n");
         for(int phase = 0;phase< totalphase;phase++){
             solve_upwind(phase);
             MPI_Barrier(gdata->mpicomm);
@@ -747,7 +747,10 @@ void LPSolver::solve_3d(){
    
         P4EST_GLOBAL_ESSENTIALF ("FINISH UPWIND.\n");
     if(LPFOrder == 2){
+
+        P4EST_GLOBAL_ESSENTIALF ("ENTER LAW-WENDROFF.\n");
         solve_laxwendroff();
+        P4EST_GLOBAL_ESSENTIALF ("FINISH LAW-WENDROFF.\n");
     }
     gdata->updateParticleStates();
    
