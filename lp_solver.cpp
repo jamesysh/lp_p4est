@@ -718,7 +718,6 @@ void LPSolver::solve_3d(){
         gdata->searchNeighbourParticle();
         
         gdata->searchUpwindNeighbourParticle(); 
-        gdata->reorderNeighbourList();
 
         MPI_Barrier(gdata->mpicomm); 
         if(gdata->iffreeboundary){ 
@@ -727,9 +726,6 @@ void LPSolver::solve_3d(){
             gdata->generateGhostParticle();
         }
        
-        computeLocalBoundaryAndFluidNum();
-        viewer->writeResult(writestep,currenttime);
-        exit(0);
         if(gdata->pelletnumber){ 
             pellet_solver->heatingModel(cfldt);
         }
@@ -752,6 +748,8 @@ void LPSolver::solve_3d(){
     if(LPFOrder == 2){
 
         P4EST_GLOBAL_ESSENTIALF ("ENTER LAW-WENDROFF.\n");
+        
+        //gdata->reorderNeighbourList();
         solve_laxwendroff();
         P4EST_GLOBAL_ESSENTIALF ("FINISH LAW-WENDROFF.\n");
     }
