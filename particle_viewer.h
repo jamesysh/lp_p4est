@@ -29,9 +29,10 @@ public:
 	 * \param [in] writeStep The number of times of output
 	 * \return               0 if output success; 1 otherwise
 	 */
-     void writeResult(double time);
-
+     void writeResult(int step,double time);
+     void writeGhost(int step);
      
+     void writeTXTFile(int step);
      Global_Data *gdata;
 
 	std::string  outputfilename;///< The name of the output file 

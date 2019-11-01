@@ -6,9 +6,6 @@
 #include "initializer.h"
 #include "boundary.h"
 
-#include "geometry_pellet.h"
-#include "state_pellet.h"
-#include "boundary_pellet.h"
 /**
  * \class GeometryRegistrar
  * 
