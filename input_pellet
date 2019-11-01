@@ -1,0 +1,36 @@
+0				start time
+0.1				end time
+0.001				write time interval
+40              domain length
+5               initial level of octree
+0               min level of octree
+18              max level of octree
+200             max number of particles per cell
+0.5				CFL coefficient
+3				dimension (2 or 3)
+pelletlayer		geometry for fluid object0
+pelletstate			intiial condition for fluid object0
+1				number of boundary conditions
+pelletinflowboundary   boundary name
+1				if free boundary condition
+1				use random order for direction splittig (1) or not(0)
+2				order of numerical scheme: 1: upwind method, 2: Lax-Wendroff method
+1				EOS choice: 1:polytropic 2:Stiffened polytropic
+1.67			EOS parameter: gamma
+0				EOS parameter: pinf (only meaningful for stiffened polytropic eos)
+0.				EOS parameter: einf (only meaningful for stiffened polytropic eos)
+0.02				initial particle spacing
+0.				gravity
+0				switch to upwind method on local extremal points (1) or not(2) (only meaningful for Lax-Wendroff method with moving particles)
+1.				amount of initial perturbation (unit: initial particle spacing)
+1               pelletnumber
+0               heating model(0:radial heating  1:directional heating)
+200            quad   resolution
+5              binary resolution
+0               magneticfield
+pressure
+density
+soundspeed
+velocity
+mass
+temperature
