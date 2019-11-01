@@ -35,6 +35,8 @@ void ParticleViewer:: writeGhost(int step){
    static bool FIRST = true;
    size_t lpnum = gdata->particle_data->elem_count;
    size_t ghostn = gdata->lghostnum;
+   size_t boundaryn = gdata->lboundarynum; 
+   size_t totalnum = ghostn + boundaryn; 
    size_t ghostnum;
    size_t li;
    int mpirank = gdata->mpirank;
@@ -54,14 +56,18 @@ void ParticleViewer:: writeGhost(int step){
 	fprintf(outfile,"ASCII\n");
 	fprintf(outfile,"DATASET POLYDATA\n");
 	
-	fprintf(outfile,"POINTS %ld double\n",(long int)ghostn);
+	fprintf(outfile,"POINTS %ld double\n",(long int)totalnum);
     
     //pad = (pdata_t *)sc_array_index_begin(particle_data);
     for(li = 0; li<lpnum; li++){
        
         pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
-        if(pad->ifboundary)
-            continue;
+        if(pad->ifboundary){
+            if(gdata->dimension == 3)
+                fprintf(outfile,"%.16g %.16g %.16g\n",pad->xyz[0],pad->xyz[1],pad->xyz[2]);
+            else 
+                fprintf(outfile,"%.16g %.16g %.16g\n",pad->xyz[0],pad->xyz[1],0.);
+        }
         ghostnum = pad->ghostneighbour->elem_count;
 
         padd = (pdata_copy_t *)pad->ghostneighbour->array; 
@@ -69,12 +75,12 @@ void ParticleViewer:: writeGhost(int step){
             if(gdata->dimension == 3)
                 fprintf(outfile,"%.16g %.16g %.16g\n",padd->xyz[0],padd->xyz[1],padd->xyz[2]);
             else 
-                fprintf(outfile,"%.16g %.16g %.16g\n",padd->xyz[0],padd->xyz[1],0);
+                fprintf(outfile,"%.16g %.16g %.16g\n",padd->xyz[0],padd->xyz[1],0.);
          padd++;
         }
     }
     
-    fprintf(outfile,"POINT_DATA %ld\n",(long int)ghostn);
+    fprintf(outfile,"POINT_DATA %ld\n",(long int)totalnum);
 
 	fprintf(outfile,"VECTORS Velocity double\n");
     
@@ -83,8 +89,13 @@ void ParticleViewer:: writeGhost(int step){
     for(li = 0; li<lpnum; li++){
         
         pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
-        if(pad->ifboundary)
-            continue;
+        
+        if(pad->ifboundary){
+            if(gdata->dimension == 3)
+                fprintf(outfile,"%.16g %.16g %.16g\n",pad->v[0],pad->v[1],pad->v[2]);
+            else 
+                fprintf(outfile,"%.16g %.16g %.16g\n",pad->xyz[0],pad->xyz[1],0.);
+        }
         ghostnum = pad->ghostneighbour->elem_count;
         padd = (pdata_copy_t *)pad->ghostneighbour->array; 
         for(size_t j=0; j<ghostnum;j++){
@@ -101,8 +112,9 @@ void ParticleViewer:: writeGhost(int step){
     for(li = 0; li<lpnum; li++){
         
         pad = (pdata_t *) sc_array_index(gdata->particle_data,li);
-        if(pad->ifboundary)
-            continue;
+        if(pad->ifboundary){
+         fprintf(outfile,"%.16g\n",pad->pressure);
+        }
         ghostnum = pad->ghostneighbour->elem_count;
         padd = (pdata_copy_t *)pad->ghostneighbour->array; 
         for(size_t j=0;j<ghostnum;j++){
@@ -114,7 +126,7 @@ void ParticleViewer:: writeGhost(int step){
     fclose(outfile);
     if(mpirank == 0){
     FILE *visitfile;
-    string fname = outputfilename+ "output_alldata.visit";
+    string fname = outputfilename+ "/output_alldata.visit";
     visitfile = fopen(fname.c_str(),"a");
    
 	if(visitfile==nullptr) {
@@ -171,7 +183,7 @@ void ParticleViewer:: writeResult(int step, double time){
         if(gdata->dimension == 3)
             fprintf(outfile,"%.16g %.16g %.16g\n",pad->xyz[0],pad->xyz[1],pad->xyz[2]);
         else 
-            fprintf(outfile,"%.16g %.16g %.16g\n",pad->xyz[0],pad->xyz[1],0);
+            fprintf(outfile,"%.16g %.16g %.16g\n",pad->xyz[0],pad->xyz[1],0.);
     }
   
     fprintf(outfile,"POINT_DATA %ld\n",(long int)lfluidnum);
@@ -186,7 +198,7 @@ void ParticleViewer:: writeResult(int step, double time){
         if(gdata->dimension == 3)
             fprintf(outfile,"%.16g %.16g %.16g\n",pad->v[0],pad->v[1],pad->v[2]);
         else
-            fprintf(outfile,"%.16g %.16g %.16g\n",pad->v[0],pad->v[1],0);
+            fprintf(outfile,"%.16g %.16g %.16g\n",pad->v[0],pad->v[1],0.);
     }
 
 	fprintf(outfile,"SCALARS pressure double\n");
