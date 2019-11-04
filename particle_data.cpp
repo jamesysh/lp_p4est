@@ -3663,11 +3663,11 @@ void Global_Data::addGhostParticle(pdata_copy_t * ghostnei, pdata_t *pad, double
                 double pressure;
                 if(pad->flagboundary){
                     volume = 1.0e6;
-                    pressure = 0.64;
+                    pressure = 0.;
                     }
                 else{
                     volume = 1.0e6;//pad->volume;
-                    pressure = 0.64;//pad->pressure;
+                    pressure = 0.;//pad->pressure;
                     }
                 ghostnei->xyz[0] = pad->xyz[0] - dx; 
                 ghostnei->xyz[1] = pad->xyz[1] - dy; 
