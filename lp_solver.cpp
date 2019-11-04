@@ -763,6 +763,7 @@ void LPSolver::solve_3d(){
 
         computeLocalBoundaryAndFluidNum();
         viewer->writeResult(writestep,currenttime);
+        viewer->writeGhost(writestep);
     }
    
     
